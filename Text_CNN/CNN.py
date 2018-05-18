@@ -18,23 +18,24 @@ class TextCNN():
     
     
     def weight(self,shape):
+        """
+        权重向量或者卷积向量
+        :param shape:
+        :return:
+        """
         weight=tf.Variable(initial_value=tf.random_normal(shape,stddev=2.0),name='weight')
-        
         return weight
     
     def biases(self,shape):
         biases=tf.Variable(initial_value=tf.random_normal(shape=shape,stddev=1.0),name='biases')
         return biases
     
-    def filters(self,shape):
-        filters=tf.Variable(initial_value=tf.random_normal(shape,dtype=tf.float32),name='filter')
-        return filters
-        
     def create_model(self):
         with tf.name_scope('conv'):
             # 由于conv2d卷积shape为[batch, width, height,channel]，需要添加的一个1，增加其维度
             filtersize=[self.filter_size,self.vector_length,1,CNN.filter_nums]
-            conv=tf.nn.conv2d(self.input_x,filter=self.filters(filtersize),strides=(1,1,1,1))
+            convd=tf.nn.conv2d(self.input_x,filter=self.weight(filtersize),strides=(1,1,1,1),padding='VALID',name='convd')
+            
             
             
     
