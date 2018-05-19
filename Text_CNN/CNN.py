@@ -32,11 +32,10 @@ class TextCNN():
     
     def create_model(self):
         with tf.name_scope('conv'):
-            # 由于conv2d卷积shape为[batch, width, height,channel]，需要添加的一个1，增加其维度
+            # 由于conv2d卷积shape为[height, width, in_channels, out_channels]，
+            # in_channels: 图片的深度；在文本处理中深度为1，需要添加的一个1，增加其维度。
             filtersize=[self.filter_size,self.vector_length,1,CNN.filter_nums]
             convd=tf.nn.conv2d(self.input_x,filter=self.weight(filtersize),strides=(1,1,1,1),padding='VALID',name='convd')
-            
-            
-            
-    
-    
+
+        with tf.name_scope('pool'):
+            max_pool=tf.nn.max_pool(convd,ksize=())

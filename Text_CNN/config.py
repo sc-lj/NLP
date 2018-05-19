@@ -6,3 +6,5 @@ class CNN():
     
     # 每种卷积的个数
     filter_nums=2
+
+
