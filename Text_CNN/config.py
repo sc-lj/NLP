@@ -7,4 +7,10 @@ class seq():
     # 每种卷积的个数
     filter_nums=2
 
+    # dropout概率
+    dropout_prob=0.5
+
+    # 规定每个句子的长度
+    seqence_length=600
+
 
