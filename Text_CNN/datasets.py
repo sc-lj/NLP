@@ -136,7 +136,7 @@ class DealData():
         self.contents.append(one_line)
         self.vocab.update(set(one_line))
         self.word_freq.update(Counter(one_line))
-
+        return one_line
 
     def gene_dict(self):
         """
@@ -182,7 +182,8 @@ class DealData():
                     text_vector[i][index]=1
         return text_vector
 
-    def gen_vector(self,bow_seq='seq'):
+    def gen_vector(self,batch_size, num_epochs,bow_seq='seq', shuffle=True):
+        
         pass
 
 

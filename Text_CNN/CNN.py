@@ -165,8 +165,8 @@ class TextCNN():
                     if writer:
                         writer.add_summary(summary,step)
                         
-                
 
+    
 
 
 
