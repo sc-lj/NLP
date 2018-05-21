@@ -70,7 +70,7 @@ class TextCNN():
             correct_predictions=tf.equal(self.prediction,tf.argmax(self.input_y,1))
             self.accuracy=tf.reduce_mean(tf.cast(correct_predictions,'float'),name='accuracy')
 
-    def train_model(self,x_train, y_train, vocab_processor, x_dev, y_dev):
+    def train_model(self,x_train, y_train, x_dev, y_dev):
         with tf.Graph().as_default():
             gpu_config=tf.GPUOptions(per_process_gpu_memory_fraction=self.FLAGS.per_process_gpu_memory_fraction)
             session_conf=tf.ConfigProto(gpu_options=gpu_config,
@@ -134,40 +134,30 @@ class TextCNN():
         
                 saver=tf.train.Saver(tf.all_variables(),max_to_keep=self.FLAGS.num_checkpoints)
                 
-                # 写入词汇表
-                vocab_processor.save(os.path.join(out_dir,'vocab'))
-                
                 sess.run(tf.global_variables_initializer())
                 
                 def train_step(x_batch, y_batch):
                     feed_dict={self.input_x:x_batch,
                                 self.input_y:y_batch}
-                    
-                    
+
                     _,step,summary,loss,accuracy=sess.run([train_op,global_step,train_summary,self.loss,self.accuracy],feed_dict)
 
                     time_str=datetime.datetime.now().isoformat()
                     print("{}: step {}, loss {:g}, acc {:g}".format(time_str,step,loss,accuracy))
-                    
                     train_writer.add_summary(summary,step)
                     
                 
                 def dev_step(x_batch, y_batch, writer=None):
                     feed_dict={self.input_x:x_batch,self.input_y:y_batch}
-    
                     step,summary,loss,accuracy=sess.run([global_step,dev_summary,self.loss,self.accuracy],
                                                           feed_dict)
-    
                     time_str=datetime.datetime.now().isoformat()
                     print("{}: step {}, loss {:g}, acc {:g}".format(time_str,step,loss,accuracy))
-    
-                    
                     if writer:
                         writer.add_summary(summary,step)
                         
 
     
-
 
 
 

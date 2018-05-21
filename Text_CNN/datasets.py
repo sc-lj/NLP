@@ -8,6 +8,7 @@ from multiprocessing.dummy import Pool
 import string,re
 import numpy as np
 from collections import Counter
+from .config import *
 
 
 # 根据搜狐新闻的网址的host，将这些划分如下
@@ -85,10 +86,10 @@ def write_file(data):
 
 class DealData():
     def __init__(self,filename):
+        self.FLAGS=seq_param()
         self.filename=filename
         self.vocab=set()#词汇表
-        self.lables=[]#标签
-        self.contents = []# 文本内容
+        self.cont_label = []# 文本内容
         self.word_freq=Counter()#词频表,Counter能对key进行累加
         self. punctuation = re.compile(u"[-~!@#$%^&*()_+`=\[\]\\\{\}\"|;':,./<>?·！@#￥%……&*（）——+【】,、；‘：“”，。、《》？「『」』\t\n]+")
         self.rule = re.compile(r"[^a-zA-Z0-9\u4e00-\u9fa5]")  # 去除所有半角全角符号，只留字母、数字、中文。
@@ -109,9 +110,8 @@ class DealData():
 
     def get_label_content(self):
         for label, content, title in self.read_file():
-            self.lables.append(label)
-            self.get_vocab(content)
-
+            line=self.get_vocab(content)
+            self.cont_label.append([line,label])
 
     def get_vocab(self,line):
         """
@@ -133,7 +133,6 @@ class DealData():
                 one_line.append(one)
             else:
                 one_line.extend(list(one))
-        self.contents.append(one_line)
         self.vocab.update(set(one_line))
         self.word_freq.update(Counter(one_line))
         return one_line
@@ -145,7 +144,6 @@ class DealData():
         """
         self.word_id=dict(zip(self.vocab,range(len(self.vocab))))
         self.id_word=dict(zip(range(len(self.vocab)),self.vocab))
-
 
     def seq_vector(self,line):
         """
@@ -182,10 +180,23 @@ class DealData():
                     text_vector[i][index]=1
         return text_vector
 
-    def gen_vector(self,batch_size, num_epochs,bow_seq='seq', shuffle=True):
-        
-        pass
+    def batch_iter(self,bow_seq='seq', shuffle=True):
+        data_size=len(self.cont_label)
+        data=np.array(self.cont_label)
 
+        for epoch in range(self.FLAGS.num_epochs):
+            if shuffle:
+                shuffle_indices = np.random.permutation(np.arange(data_size))
+                shuffle_data = data[list(shuffle_indices)]
+            else:
+                shuffle_data = data
+
+            for cont,label in shuffle_data:
+                if bow_seq=='seq':
+                    vector=self.seq_vector(cont)
+                else:
+                    vector=self.bow_vector(cont)
+                yield vector,label
 
 
 

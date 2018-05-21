@@ -29,7 +29,13 @@ def seq_param():
     
     # 最多保存的中间结果
     tf.flags.DEFINE_integer("num_checkpoints",5,"Number of checkpoints to store (default: 5)")
-    
+
+    # 每块包含的数据量
+    tf.flags.DEFINE_integer('batch_size',60,'num of each batch')
+
+    # 训练轮数
+    tf.flags.DEFINE_integer('num_epochs',200,'Number of training epochs (default: 200)')
+
     FLAGS=tf.flags.FLAGS
     return FLAGS
     
