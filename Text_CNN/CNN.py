@@ -1,58 +1,63 @@
 # coding:utf-8
+import sys,os
+sys.path.append(os.path.abspath(__file__))
 
 import tensorflow as tf
-from .config import *
-import os,datetime
-from .datasets import *
+from Text_CNN.config import *
+import datetime
+from Text_CNN.datasets import *
 
 class TextCNN():
-    dealdata=Data
-    FLAGS=seq_param()
-    def __init__(self, vector_length,lable_length,bow_seq):
+    def __init__(self,bow_seq='seq'):
         """
-        :param vector_length: 词向量的长度
-        :param lable_length: 类别长度
         :param bow_seq:使用seq-cnn模型还是bow-cnn模型
         """
+        self.FLAGS = seq_param()
+        self.dealdata = DealData(self.FLAGS.corpus_dir,self.FLAGS)
+
         if bow_seq not in ['seq','bow']:
             assert '请选择seq模型或者bow模型中的其中一种'
         self.bow_seq=bow_seq
-        self.filter_sizes=list(map(int,self.FLAGS.filter_sizes.split(',')))
-        self.vector_length=vector_length
-        self.lable_length=lable_length
+        self.filter_sizes=list(map(int,self.FLAGS.filter_size.split(',')))
+        self.vector_length=self.dealdata.vector_length
+        self.lable_length=self.dealdata.lable_length
         self.input_x=tf.placeholder(shape=[None,self.dealdata.max_sequence_length,self.vector_length],name='input_x',dtype=tf.float32)
         self.input_y=tf.placeholder(shape=[None,self.lable_length],name='input_y',dtype=tf.float32)
 
+        self.create_model()
 
-    def weight(self,shape):
+    def weights(self,shape):
         """
         权重向量或者卷积向量
         :param shape:
         :return:
         """
-        weight=tf.Variable(initial_value=tf.random_normal(shape,stddev=2.0),name='weight')
+        weight=tf.Variable(initial_value=tf.random_normal(shape,stddev=2.0,dtype=tf.float32),name='weight')
         return weight
 
-    def biases(self,shape):
-        biases=tf.Variable(initial_value=tf.random_normal(shape=shape,stddev=1.0),name='biases')
+    def biaseses(self,shape):
+        biases=tf.Variable(initial_value=tf.random_normal(shape=shape,stddev=1.0,dtype=tf.float32),name='biases')
         return biases
 
     def create_model(self):
         with tf.name_scope('conv'):
             pools=[]
+            # 将input_x扩展维度
+            self.input_x=tf.expand_dims(self.input_x,-1)
             for i,filter_size in enumerate(self.filter_sizes):
                 # 由于conv2d卷积shape为[height, width, in_channels, out_channels]，
                 # in_channels: 图片的深度；在文本处理中深度为1，需要添加的一个1，增加其维度。
-                filtersize=[filter_size,self.vector_length,1,self.FLAGS.filter_nums]
+                filtersize=[filter_size,self.vector_length,1,self.FLAGS.filter_num]
                 # 'SAME'模式下的convd的形状是：[1,sequence_length-filter_size+1,1,1]
-                convd=tf.nn.conv2d(self.input_x,filter=self.weight(filtersize),strides=(1,1,1,1),padding='SAME',name='convd')
-                biase_shape=[self.FLAGS.filter_nums]
-                convd=tf.nn.relu(tf.nn.bias_add(convd,self.biases(biase_shape)),name='relu')
+
+                convd=tf.nn.conv2d(self.input_x,filter=self.weights(filtersize),strides=(1,1,1,1),padding='SAME',name='convd')
+                biase_shape=[self.FLAGS.filter_num]
+                convd=tf.nn.relu(tf.nn.bias_add(convd,self.biaseses(biase_shape)),name='relu')
                 # convd的shape为：[batch_size,1]
-                pooled=tf.nn.max_pool(convd,ksize=(1,self.FLAGS.seqence_length-filter_size+1,1,1),strides=(1,1,1,1),padding='SAME',name='pool')
+                pooled=tf.nn.max_pool(convd,ksize=(1,self.dealdata.max_sequence_length-filter_size+1,1,1),strides=(1,1,1,1),padding='SAME',name='pool')
                 pools.append(pooled)
 
-            num_filters_total=self.FLAGS.filter_nums*len(self.filter_sizes)
+            num_filters_total=self.FLAGS.filter_num*len(self.filter_sizes)
             self.h_pool=tf.concat(pools,3)
             # pool_flat的shape为：[batch_size,num_filters_total]
             self.pool_flat=tf.reshape(self.h_pool,[-1,num_filters_total])
@@ -62,25 +67,25 @@ class TextCNN():
             self.h_drop=tf.nn.dropout(self.pool_flat,self.FLAGS.dropout_prob)
 
         with tf.name_scope('output'):
-            W=self.weight([num_filters_total,self.lable_length])
-            b=self.biases([self.lable_length])
+            W=self.weights([num_filters_total,self.lable_length])
+            b=self.biaseses([self.lable_length])
             self.score=tf.nn.xw_plus_b(self.h_drop,W,b,name='score')
             self.prediction=tf.argmax(self.score,1,name='prediction')
 
         with tf.name_scope('loss'):
-            losses=tf.nn.softmax_cross_entropy_with_logits(self.score,self.input_y)
+            losses=tf.nn.softmax_cross_entropy_with_logits(logits=self.score,labels=self.input_y)
             self.loss=tf.reduce_mean(losses)
 
         with tf.name_scope('accuracy'):
             correct_predictions=tf.equal(self.prediction,tf.argmax(self.input_y,1))
             self.accuracy=tf.reduce_mean(tf.cast(correct_predictions,'float'),name='accuracy')
 
-    def train_model(self,x_train, y_train, x_dev, y_dev):
+    def train_model(self):
         with tf.Graph().as_default():
             gpu_config=tf.GPUOptions(per_process_gpu_memory_fraction=self.FLAGS.per_process_gpu_memory_fraction)
             session_conf=tf.ConfigProto(gpu_options=gpu_config,
-                                        allow_soft_placemen=self.FLAGS.allow_soft_placemen,
-                                        log_device_placemen=self.FLAGS.log_device_placement)
+                                        allow_soft_placement=self.FLAGS.allow_soft_placement,
+                                        log_device_placement=self.FLAGS.log_device_placement)
             # 配置session参数
             sess=tf.Session(config=session_conf)
             with sess.as_default():
@@ -88,7 +93,7 @@ class TextCNN():
                 global_step=tf.Variable(0,name='global_step',trainable=False)
 
                 # 定义优化算法
-                optimizer=tf.train.AdamOptimizer(1e-4)
+                optimizer=tf.train.AdamOptimizer(1e-3)
 
                 # minimize 只是简单的结合了compute_gradients和apply_gradients两个过程，
                 # 如果单独使用compute_gradients和apply_gradients可以组合自己的意愿处理梯度
@@ -161,13 +166,22 @@ class TextCNN():
                     if writer:
                         writer.add_summary(summary,step)
 
-                for batch in self.dealdata.batch_iter(bow_seq=self.bow_seq):
+                x_train, y_train, x_dev_vector, y_dev_array=self.dealdata.slice_batch(bow_seq=self.bow_seq)
+                print('a'*100)
+                for batch in self.dealdata.batch_iter(x_train,y_train,bow_seq=self.bow_seq):
                     x_batch, y_batch = zip(*batch)
                     train_step(x_batch, y_batch)
                     current_step=tf.train.global_step(sess,global_step)
                     if current_step % self.FLAGS.evaluate_every==0:
-                        pass
+                        print("\nEvaluation:")
+                        dev_step(x_dev_vector, y_dev_array, writer=dev_writer)
+                        path=saver.save(sess,save_path=checkpoint_prefix,global_step=current_step)
+                        print("Saved model checkpoint to {}\n".format(path))
 
+
+if __name__ == '__main__':
+    textcnn=TextCNN()
+    textcnn.train_model()
 
 
 

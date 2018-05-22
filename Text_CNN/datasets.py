@@ -5,10 +5,9 @@ import chardet,codecs
 from xml.dom import minidom
 from urllib.parse import urlparse
 from multiprocessing.dummy import Pool
-import string,re
+import string,re,time
 import numpy as np
 from collections import Counter
-from .config import *
 
 
 # 根据搜狐新闻的网址的host，将这些划分如下
@@ -75,18 +74,19 @@ def write_file(data):
     pool.join()
     with open('./new_sohu.txt','w') as f:
         for label,content,title in host_content:
+            content=content.replace('\n','')
             if label not in dicurl:
                 continue
             lable=dicurl[label]
             f.write(lable+"++"+title+"++"+content.strip()+'\n')
 
-# data=read_souhu_corpus('./news_sohusite_xml.dat','gb2312')
+# data=read_souhu_corpus('../datasets/news_sohusite_xml.dat','gb2312')
 # write_file(data)
 
 
 class DealData():
-    def __init__(self,filename):
-        self.FLAGS=seq_param()
+    def __init__(self,filename,FLAGS):
+        self.FLAGS=FLAGS
         self.filename=filename
         self.max_sequence_length = 0
 
@@ -103,14 +103,20 @@ class DealData():
         self.times=re.compile('\d{1,2}:\d{1,2}|[\d{1,2}点]*[\d{1,2}分]*')
         self.alpha=re.compile(string.ascii_letters)
 
+        self.get_label_content()
+        self.gene_dict()
+
+        # 词向量的长度
+        self.vector_length=len(self.vocab)
+        self.lable_length=len(self.labels)
+
     def read_file(self):
         with open(self.filename,'r') as f:
-            data=f.readline(100)
+            data=f.readline()
             while data:
-                for da in data:
-                    host, content, title=da.split('++',2)
-                    yield host,content,title
-                data = f.readline(100)
+                host, content, title=data.split('++',2)
+                yield host,content,title
+                data = f.readline()
 
     def get_label_content(self):
         for label, content, title in self.read_file():
@@ -158,7 +164,7 @@ class DealData():
         :param line: 单个文本
         :return:
         """
-        text_vector=np.zeros([len(line),len(self.vocab)],dtype=np.float32)
+        text_vector=np.zeros([self.max_sequence_length,len(self.vocab)],dtype=np.float32)
         j=0
         # 将没有在词汇表中的字用零代替
         for word in line:
@@ -187,16 +193,14 @@ class DealData():
     def single_bow_line(self,line,num):
         """
         这是针对单个文本处理
-        :param line:
+        :param line: 单个文本
         :param num:
         :return:
         """
         line_len = len(line)
-        text_vector = np.zeros([self.FLAGS.sequence_length - num + 1, len(self.vocab)], dtype=np.float32)
+        text_vector = np.zeros([self.max_sequence_length- num + 1, len(self.vocab)], dtype=np.float32)
         # 将没有在词汇表中的字用零代替
         for i in range(0, line_len - num):
-            if i >= self.FLAGS.sequence_length:
-                break
             for word in line[i:i + num]:
                 if word in self.vocab:
                     index = self.word_id[word]
@@ -223,7 +227,7 @@ class DealData():
             raise('要生成bow模型的文本输入的维度不在处理范围内')
         return text_vectors
 
-    def batch_iter(self,bow_seq='seq', shuffle=True):
+    def slice_batch(self,bow_seq='seq'):
         labellist=list(self.labels)
         data_size=len(self.cont_label)
         data=np.array(self.cont_label)
@@ -234,6 +238,17 @@ class DealData():
         x_dev, x_train = X[dev_data_size:],X[:dev_data_size]#验证集和训练集
         y_dev,y_train=Y[dev_data_size:],Y[:dev_data_size]
 
+        if bow_seq=='seq':
+            x_dev_vector=self.seq_vector(x_dev)
+        else:
+            x_dev_vector=self.bow_vector(x_dev)
+        label_index = list(map(labellist.index, y_dev))
+        dev_y_array = np.zeros([len(y_dev), len(labellist)], dtype=np.float32)
+        dev_y_array[list(range(len(y_dev))), label_index] = 1
+        return x_train,y_train,x_dev_vector,dev_y_array
+
+    def batch_iter(self,x_train,y_train,bow_seq,shuffle=True):
+        labellist = list(self.labels)
         # 重新计算数据大小
         data_size=len(x_train)
         for epoch in range(self.FLAGS.num_epochs):
@@ -249,16 +264,11 @@ class DealData():
                 conts=x_train[num:end_index]
                 labels=y_train[num:end_index]
                 if bow_seq=='seq':
-                    vector=self.seq_vector(conts)
+                    x_train_vector=self.seq_vector(conts)
                 else:
-                    vector=self.bow_vector(conts)
+                    x_train_vector=self.bow_vector(conts)
                 label_index = list(map(labellist.index,labels))
-                labelarray = np.zeros([len(labels),len(labellist)], dtype=np.float32)
-                array_index=zip(range(len(labels),label_index))
-                labelarray[array_index]=1
-                labels.append(labelarray)
-                yield (vector,labels)
-
-
-Data=DealData('./')
+                y_train_array = np.zeros([len(labels),len(labellist)], dtype=np.float32)
+                y_train_array[list(range(len(labels))),label_index]=1
+                yield (x_train_vector,y_train_array)
 
