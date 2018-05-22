@@ -11,14 +11,14 @@ class TextCNN():
         :param vector_length: 词向量的长度
         :param lable_length: 类别长度
         """
-        
-        self.filter_sizes=self.FLAGS.filter_sizes
+
+        self.filter_sizes=list(map(int,self.FLAGS.filter_sizes.split(',')))
         self.vector_length=vector_length
         self.lable_length=lable_length
         self.input_x=tf.placeholder(shape=[None,self.vector_length],name='input_x',dtype=tf.float32)
         self.input_y=tf.placeholder(shape=[None,self.lable_length],name='input_y',dtype=tf.float32)
-    
-    
+
+
     def weight(self,shape):
         """
         权重向量或者卷积向量
@@ -27,11 +27,11 @@ class TextCNN():
         """
         weight=tf.Variable(initial_value=tf.random_normal(shape,stddev=2.0),name='weight')
         return weight
-    
+
     def biases(self,shape):
         biases=tf.Variable(initial_value=tf.random_normal(shape=shape,stddev=1.0),name='biases')
         return biases
-    
+
     def create_model(self):
         with tf.name_scope('conv'):
             pools=[]
@@ -81,18 +81,18 @@ class TextCNN():
             with sess.as_default():
                 #用于记录全局训练步骤的单值
                 global_step=tf.Variable(0,name='global_step',trainable=False)
-        
+
                 # 定义优化算法
                 optimizer=tf.train.AdamOptimizer(1e-4)
 
                 # minimize 只是简单的结合了compute_gradients和apply_gradients两个过程，
                 # 如果单独使用compute_gradients和apply_gradients可以组合自己的意愿处理梯度
                 # train_op=optimizer.minimize(self.loss,global_step=global_step)
-                
+
                 grads_and_vars=optimizer.compute_gradients(self.loss)
                 # 在参数上进行梯度更新,每执行一次 train_op 就是一次训练步骤
                 train_op=optimizer.apply_gradients(grads_and_vars,global_step)
-                
+
                 # 记录梯度值和稀疏性
                 grad_summaries=[]
                 for g,v in grads_and_vars:
@@ -103,39 +103,39 @@ class TextCNN():
                         #
                         sparsity_summary=tf.summary.scalar('{}/grad/sparsity'.format(v.name), tf.nn.zero_fraction(g))
                         grad_summaries.append(sparsity_summary)
-                        
+
                 grad_summary_merge=tf.summary.merge(grad_summaries)
-                
+
                 # 记录loss和accuracy变化情况
                 loss_summary=tf.summary.scalar('loss', self.loss)
                 accuracy_summary=tf.summary.scalar('accuracy',self.accuracy)
-                
+
                 out_dir= self.FLAGS.out_dir
                 if not os.path.exists(out_dir):
                     os.makedirs(out_dir)
-                
+
                 # 训练的summary
                 train_summary=tf.summary.merge([loss_summary,accuracy_summary,grad_summary_merge])
                 train_summary_dir=os.path.join(out_dir, 'summary', 'train')
                 train_writer=tf.summary.FileWriter(train_summary_dir,sess.graph)
-                
+
                 # 测试的summary
                 dev_summary=tf.summary.merge([loss_summary,accuracy_summary])
                 dev_summary_dir=os.path.join(out_dir, 'summary', 'dev')
                 dev_writer=tf.summary.FileWriter(dev_summary_dir,sess.graph)
-                
-                
-                
+
+
+
                 checkpoint_dir = os.path.abspath(os.path.join(out_dir,'checkpoints'))
-        
+
                 checkpoint_prefix = os.path.join(checkpoint_dir,'model')
                 if not os.path.exists(checkpoint_dir):
                     os.makedirs(checkpoint_dir)
-        
+
                 saver=tf.train.Saver(tf.all_variables(),max_to_keep=self.FLAGS.num_checkpoints)
-                
+
                 sess.run(tf.global_variables_initializer())
-                
+
                 def train_step(x_batch, y_batch):
                     feed_dict={self.input_x:x_batch,
                                 self.input_y:y_batch}
@@ -145,8 +145,8 @@ class TextCNN():
                     time_str=datetime.datetime.now().isoformat()
                     print("{}: step {}, loss {:g}, acc {:g}".format(time_str,step,loss,accuracy))
                     train_writer.add_summary(summary,step)
-                    
-                
+
+
                 def dev_step(x_batch, y_batch, writer=None):
                     feed_dict={self.input_x:x_batch,self.input_y:y_batch}
                     step,summary,loss,accuracy=sess.run([global_step,dev_summary,self.loss,self.accuracy],
@@ -155,9 +155,9 @@ class TextCNN():
                     print("{}: step {}, loss {:g}, acc {:g}".format(time_str,step,loss,accuracy))
                     if writer:
                         writer.add_summary(summary,step)
-                        
 
-    
+
+
 
 
 
