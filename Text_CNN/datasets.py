@@ -17,7 +17,7 @@ dicurl={'media':'传媒','baobao':'母婴','stock':'金融','it':'IT','fund':'�
         "women":"健康","s":"体育","dm":"动漫","chihe":"美食","2008":"体育","learning":"留学","business":"商业",
         "gongyi":"公益","men":"健康","health":"健康","sports":"体育","money":"金融","green":"美食","gd":"城市"}
 
-filename='/Users/lj/Downloads/news_sohusite_xml.full.zip'
+filename='./news_sohusite_xml.full.zip'
 # 解压zip文件
 def extract_zip(filename):
     with zipfile.ZipFile(filename) as files:
@@ -88,9 +88,13 @@ class DealData():
     def __init__(self,filename):
         self.FLAGS=seq_param()
         self.filename=filename
+        self.max_sequence_length = 0
+
+        self.labels=set()# 标签集
         self.vocab=set()#词汇表
-        self.cont_label = []# 文本内容
+        self.cont_label = []# 文本内容和标签
         self.word_freq=Counter()#词频表,Counter能对key进行累加
+
         self. punctuation = re.compile(u"[-~!@#$%^&*()_+`=\[\]\\\{\}\"|;':,./<>?·！@#￥%……&*（）——+【】,、；‘：“”，。、《》？「『」』\t\n]+")
         self.rule = re.compile(r"[^a-zA-Z0-9\u4e00-\u9fa5]")  # 去除所有半角全角符号，只留字母、数字、中文。
         self.num=re.compile('\d{1,}')#将文本中的数字替换成该标示符
@@ -110,6 +114,7 @@ class DealData():
 
     def get_label_content(self):
         for label, content, title in self.read_file():
+            self.labels.add(label)
             line=self.get_vocab(content)
             self.cont_label.append([line,label])
 
@@ -135,24 +140,25 @@ class DealData():
                 one_line.extend(list(one))
         self.vocab.update(set(one_line))
         self.word_freq.update(Counter(one_line))
+        if len(one_line)>self.max_sequence_length:
+            self.max_sequence_length=len(one_line)
         return one_line
 
     def gene_dict(self):
         """
-        生成数字和字的映射
+        生成数值和字的映射
         :return:
         """
         self.word_id=dict(zip(self.vocab,range(len(self.vocab))))
         self.id_word=dict(zip(range(len(self.vocab)),self.vocab))
 
-    def seq_vector(self,line):
+    def single_seq_vector(self,line):
         """
-        生成seq-CNN模型需要的向量
-        :param line: 单个文本的字串
+        针对单个文本生成向量
+        :param line: 单个文本
         :return:
         """
-        assert isinstance(line, list)
-        text_vector=np.zeros([len(line),len(self.vocab)],dtype=np.int32)
+        text_vector=np.zeros([len(line),len(self.vocab)],dtype=np.float32)
         j=0
         # 将没有在词汇表中的字用零代替
         for word in line:
@@ -162,42 +168,97 @@ class DealData():
             j+=1
         return text_vector
 
-    def bow_vector(self,line,num=3):
+    def seq_vector(self,text_list):
         """
-        生成bow-CNN模型需要的向量
-        :param line: 单个文本的字串,是list形式
+        生成seq-CNN模型需要的向量
+        :param text_list: 单个文本或者多个文本组成的list
+        :return:
+        """
+        lines=np.array(text_list)
+        if len(lines.shape)==1:
+            text_vectors=self.single_seq_vector(lines)
+        elif len(lines.shape)==2:
+            text_vectors=[]
+            text_vectors.append(self.single_seq_vector(line) for line in lines)
+        else:
+            raise('要生成seq模型的文本输入的维度不在处理范围内')
+        return text_vectors
+
+    def single_bow_line(self,line,num):
+        """
+        这是针对单个文本处理
+        :param line:
+        :param num:
+        :return:
+        """
+        line_len = len(line)
+        text_vector = np.zeros([self.FLAGS.sequence_length - num + 1, len(self.vocab)], dtype=np.float32)
+        # 将没有在词汇表中的字用零代替
+        for i in range(0, line_len - num):
+            if i >= self.FLAGS.sequence_length:
+                break
+            for word in line[i:i + num]:
+                if word in self.vocab:
+                    index = self.word_id[word]
+                    text_vector[i][index] = 1
+        return text_vector
+
+    def bow_vector(self,text_list,num=3):
+        """
+        生成bow-CNN模型需要的向量，这是针对多个文本集
+        :param text_list: 单个文本的字串,是list形式
         :param num: 每个向量包含相邻的字，默认为3
         :return:
         """
-        assert isinstance(line,list)
-        line_len=len(line)
-        text_vector=np.zeros([line_len-num+1,len(self.vocab)],dtype=np.int32)
-        # 将没有在词汇表中的字用零代替
-        for i in range(0,line_len-num):
-            for word in line[i:i+num]:
-                if word in self.vocab:
-                    index=self.word_id[word]
-                    text_vector[i][index]=1
-        return text_vector
+        lines=np.array(text_list)
+
+        if len(lines.shape)==1:
+            text_vectors=self.single_bow_line(lines,num)
+        elif len(lines.shape)==2:
+            text_vectors=[]
+            for line in lines:
+                text_vector=self.single_bow_line(line,num)
+                text_vectors.append(text_vector)
+        else:
+            raise('要生成bow模型的文本输入的维度不在处理范围内')
+        return text_vectors
 
     def batch_iter(self,bow_seq='seq', shuffle=True):
+        labellist=list(self.labels)
         data_size=len(self.cont_label)
         data=np.array(self.cont_label)
+        X,Y =np.transpose(data)
 
+        # 验证集的大小
+        dev_data_size = -1 * int(self.FLAGS.dev_sample_percent * data_size)
+        x_dev, x_train = X[dev_data_size:],X[:dev_data_size]#验证集和训练集
+        y_dev,y_train=Y[dev_data_size:],Y[:dev_data_size]
+
+        # 重新计算数据大小
+        data_size=len(x_train)
         for epoch in range(self.FLAGS.num_epochs):
             if shuffle:
                 shuffle_indices = np.random.permutation(np.arange(data_size))
-                shuffle_data = data[list(shuffle_indices)]
-            else:
-                shuffle_data = data
+                x_train = x_train[list(shuffle_indices)]
+                y_train = y_train[list(shuffle_indices)]
 
-            for cont,label in shuffle_data:
+            for num in range(0,data_size,self.FLAGS.batch_size):
+                end_index=num+self.FLAGS.batch_size
+                if data_size> end_index:
+                    end_index = data_size
+                conts=x_train[num:end_index]
+                labels=y_train[num:end_index]
                 if bow_seq=='seq':
-                    vector=self.seq_vector(cont)
+                    vector=self.seq_vector(conts)
                 else:
-                    vector=self.bow_vector(cont)
-                yield vector,label
+                    vector=self.bow_vector(conts)
+                label_index = list(map(labellist.index,labels))
+                labelarray = np.zeros([len(labels),len(labellist)], dtype=np.float32)
+                array_index=zip(range(len(labels),label_index))
+                labelarray[array_index]=1
+                labels.append(labelarray)
+                yield (vector,labels)
 
 
-
+Data=DealData('./')
 

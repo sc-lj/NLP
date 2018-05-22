@@ -3,19 +3,24 @@
 import tensorflow as tf
 from .config import *
 import os,datetime
+from .datasets import *
 
 class TextCNN():
+    dealdata=Data
     FLAGS=seq_param()
-    def __init__(self, vector_length,lable_length):
+    def __init__(self, vector_length,lable_length,bow_seq):
         """
         :param vector_length: 词向量的长度
         :param lable_length: 类别长度
+        :param bow_seq:使用seq-cnn模型还是bow-cnn模型
         """
-
+        if bow_seq not in ['seq','bow']:
+            assert '请选择seq模型或者bow模型中的其中一种'
+        self.bow_seq=bow_seq
         self.filter_sizes=list(map(int,self.FLAGS.filter_sizes.split(',')))
         self.vector_length=vector_length
         self.lable_length=lable_length
-        self.input_x=tf.placeholder(shape=[None,self.vector_length],name='input_x',dtype=tf.float32)
+        self.input_x=tf.placeholder(shape=[None,self.dealdata.max_sequence_length,self.vector_length],name='input_x',dtype=tf.float32)
         self.input_y=tf.placeholder(shape=[None,self.lable_length],name='input_y',dtype=tf.float32)
 
 
@@ -155,6 +160,13 @@ class TextCNN():
                     print("{}: step {}, loss {:g}, acc {:g}".format(time_str,step,loss,accuracy))
                     if writer:
                         writer.add_summary(summary,step)
+
+                for batch in self.dealdata.batch_iter(bow_seq=self.bow_seq):
+                    x_batch, y_batch = zip(*batch)
+                    train_step(x_batch, y_batch)
+                    current_step=tf.train.global_step(sess,global_step)
+                    if current_step % self.FLAGS.evaluate_every==0:
+                        pass
 
 
 
