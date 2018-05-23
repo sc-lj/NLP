@@ -88,8 +88,8 @@ class DealData():
         self.cont_label = []# 文本内容和标签
         self.word_freq=Counter()#词频表,Counter能对key进行累加
 
-        self. punctuation = re.compile(u"[-~!@#$%^&*()_+`=\[\]\\\{\}\"|;':,./<>?·！@#￥%……&*（）——+【】,、；‘：“”，。、《》？「『」』\t\n]+")
-        self.rule = re.compile(r"[^a-zA-Z0-9\u4e00-\u9fa5]")  # 去除所有半角全角符号，只留字母、数字、中文。
+        self.punctuation = re.compile(u"[~!@#$%^&*()_+`=\[\]\\\{\}\"|;':,./<>?·！@#￥%……&*（）——+【】,、；‘：“”，。、《》？「『」』\t\n]+")
+        self.rule = re.compile(r"[^-a-zA-Z0-9\u4e00-\u9fa5]")  # 去除所有半角全角符号，只留字母、数字、中文。要保留-符号，以防2014-3-23时间类型出现
         self.num=re.compile('\d{1,}')#将文本中的数字替换成该标示符
         # self.date=re.compile("((^((1[8-9]\d{2})|([2-9]\d{3}))([-\/\._])(10|12|0?[13578])([-\/\._])(3[01]|[12][0-9]|0?[1-9])$)|(^((1[8-9]\d{2})|([2-9]\d{3}))([-\/\._])(11|0?[469])([-\/\._])(30|[12][0-9]|0?[1-9])$)|(^((1[8-9]\d{2})|([2-9]\d{3}))([-\/\._])(0?2)([-\/\._])(2[0-8]|1[0-9]|0?[1-9])$)|(^([2468][048]00)([-\/\._])(0?2)([-\/\._])(29)$)|(^([3579][26]00)([-\/\._])(0?2)([-\/\._])(29)$)|(^([1][89][0][48])([-\/\._])(0?2)([-\/\._])(29)$)|(^([2-9][0-9][0][48])([-\/\._])(0?2)([-\/\._])(29)$)|(^([1][89][2468][048])([-\/\._])(0?2)([-\/\._])(29)$)|(^([2-9][0-9][2468][048])([-\/\._])(0?2)([-\/\._])(29)$)|(^([1][89][13579][26])([-\/\._])(0?2)([-\/\._])(29)$)|(^([2-9][0-9][13579][26])([-\/\._])(0?2)([-\/\._])(29)$))|(^\d{4}年\d{1,2}月\d{1,2}日$)$")
         self.date=re.compile("^(^(\d{4}|\d{2})(\-|\/|\.)\d{1,2}(\-|\/|\.)\d{1,2}$)|(^\d{4}年\d{1,2}月\d{1,2}日$)$")
@@ -107,12 +107,14 @@ class DealData():
         with open(self.filename,'r') as f:
             data=f.readline()
             while data:
-                host, content, title=data.split('++',2)
+                host,title, content=data.split('++',2)
                 yield host,content,title
                 data = f.readline()
 
     def get_label_content(self):
         for label, content, title in self.read_file():
+            if len(content)==0:
+                continue
             self.labels.add(label)
             line=self.get_vocab(content)
             self.cont_label.append([line,label])
@@ -124,15 +126,16 @@ class DealData():
         :return:
         """
         one_line=[]
-        # 先替换日期或者数字、字母
-        line=self.date.sub('\s<DATE>\s',line)#注意<DATE>前后要留空格，方便后面好分割
-        line=self.num.sub('\s<NUM>\s',line)
-        line=self.times.sub('',line)
         line=self.alpha.sub('',line)# 去掉字母
-        line=self.punctuation.sub('',line)
+        line=self.punctuation.sub('',line)#
         line=self.rule.sub('',line)
-        lines=line.split('\s')
-        for one in lines:
+
+        line = self.date.sub(' <DATE> ', line)  # 注意<DATE>前后要留空格，方便后面好分割
+        line = self.num.sub(' <NUM> ', line)
+        line = self.times.sub(' <DATE> ', line)
+        line = re.sub('-','',line)
+        line = line.split(' ')
+        for one in line:
             if one.strip() in ['<DATE>','<NUM>','<TIMES>']:
                 one_line.append(one)
             else:
@@ -174,6 +177,7 @@ class DealData():
         :return:
         """
         lines=np.array(text_list)
+        print(lines.shape)
         if len(lines.shape)==1:
             text_vectors=self.single_seq_vector(lines)
         elif len(lines.shape)==2:
@@ -234,6 +238,7 @@ class DealData():
         # 验证集的大小
         dev_data_size = -1 * int(self.FLAGS.dev_sample_percent * data_size)
         x_dev, x_train = X[dev_data_size:],X[:dev_data_size]#验证集和训练集
+        print(x_dev)
         y_dev,y_train=Y[dev_data_size:],Y[:dev_data_size]
 
         if bow_seq=='seq':
@@ -276,5 +281,5 @@ if __name__ == '__main__':
     FLAGS = seq_param()
     dealdata = DealData(FLAGS)
     x_train, y_train, x_dev_vector, y_dev_array = dealdata.slice_batch(bow_seq='seq')
-    for x_batch, y_batch in dealdata.batch_iter(x_train, y_train, bow_seq='seq'):
-        print(x_batch.shape,',',y_batch.shape)
+    # for x_batch, y_batch in dealdata.batch_iter(x_train, y_train, bow_seq='seq'):
+    #     print(x_batch.shape,',',y_batch.shape)
