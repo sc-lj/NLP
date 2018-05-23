@@ -221,6 +221,11 @@ class DealData():
         return text_vectors
 
     def slice_batch(self,bow_seq='seq'):
+        """
+        切分数据集
+        :param bow_seq:
+        :return:
+        """
         labellist=list(self.labels)
         data_size=len(self.cont_label)
         data=np.array(self.cont_label)
@@ -252,7 +257,7 @@ class DealData():
 
             for num in range(0,data_size,self.FLAGS.batch_size):
                 end_index=num+self.FLAGS.batch_size
-                if data_size> end_index:
+                if data_size< end_index:
                     end_index = data_size
                 conts=x_train[num:end_index]
                 labels=y_train[num:end_index]
@@ -262,8 +267,14 @@ class DealData():
                     x_train_vector=self.bow_vector(conts)
                 label_index = list(map(labellist.index,labels))
                 y_train_array = np.zeros([len(labels),len(labellist)], dtype=np.float32)
-                print(y_train_array.shape)
                 y_train_array[list(range(len(labels))),label_index]=1
-                print(x_train_vector.shape)
                 yield x_train_vector,y_train_array
 
+
+if __name__ == '__main__':
+    from Text_CNN.config import *
+    FLAGS = seq_param()
+    dealdata = DealData(FLAGS)
+    x_train, y_train, x_dev_vector, y_dev_array = dealdata.slice_batch(bow_seq='seq')
+    for x_batch, y_batch in dealdata.batch_iter(x_train, y_train, bow_seq='seq'):
+        print(x_batch.shape,',',y_batch.shape)

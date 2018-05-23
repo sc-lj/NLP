@@ -98,6 +98,7 @@ def train_model(bow_seq='seq'):
         with sess.as_default():
             """TextCNN必须在sess.as_default()下面执行，这是因为tensorflow在运行时会自动创建会话，但是不会创建默认的会话，即sess.as_default()。
             如果在其上面执行，那么TextCNN所在的会话与下面的程序不在同一个会话中，就会报错。
+            如果不自己创建默认会话sess.as_default()，那么可以用with tf.Session(config=session_conf)代替，那么TextCNN(bow_seq=bow_seq)函数就可以在上面进行初始化了
             """
             cnn=TextCNN(bow_seq=bow_seq)
             #用于记录全局训练步骤的单值
