@@ -4,7 +4,7 @@ import tensorflow as tf
 
 def seq_param():
     # 卷积的宽度，在cnn中，卷积的长度为词向量的长度，宽度表示包含多少词
-    tf.flags.DEFINE_string('filter_size', '2,4,6', 'Comma-separated filter sizes (default: "3,4,5")')
+    tf.flags.DEFINE_string('filter_size', '3,4,5', 'Comma-separated filter sizes (default: "3,4,5")')
     
     # 每种卷积的个数
     tf.flags.DEFINE_integer('filter_num', 128,  "Number of filters per filter size (default: 128)")

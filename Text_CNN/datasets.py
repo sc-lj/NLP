@@ -16,7 +16,6 @@ dicurl={'media':'传媒','baobao':'母婴','stock':'金融','it':'IT','fund':'�
         "women":"健康","s":"体育","dm":"动漫","chihe":"美食","2008":"体育","learning":"留学","business":"商业",
         "gongyi":"公益","men":"健康","health":"健康","sports":"体育","money":"金融","green":"美食","gd":"城市"}
 
-filename='./news_sohusite_xml.full.zip'
 # 解压zip文件
 def extract_zip(filename):
     with zipfile.ZipFile(filename) as files:
@@ -30,9 +29,6 @@ def detext_souhu_encod(filename):
     predict=chardet.detect(data)
     f.close()
     return predict['encoding']
-
-def deal_souhu_corpus(data):
-    pass
 
 def read_souhu_corpus(filename,encode):
     dometree=[]
@@ -64,9 +60,6 @@ def map_function(da):
         title=''
     return host,content,title
 
-
-
-
 def write_file(data):
     pool=Pool(3)
     host_content=pool.map(map_function,data)
@@ -85,9 +78,9 @@ def write_file(data):
 
 
 class DealData():
-    def __init__(self,filename,FLAGS):
+    def __init__(self,FLAGS):
         self.FLAGS=FLAGS
-        self.filename=filename
+        self.filename=self.FLAGS.corpus_dir
         self.max_sequence_length = 0
 
         self.labels=set()# 标签集
@@ -168,7 +161,7 @@ class DealData():
         j=0
         # 将没有在词汇表中的字用零代替
         for word in line:
-            if word in self.vocab:
+            if word in list(self.vocab):
                 index=self.word_id[word]
                 text_vector[j][index] = 1
             j+=1
@@ -269,6 +262,8 @@ class DealData():
                     x_train_vector=self.bow_vector(conts)
                 label_index = list(map(labellist.index,labels))
                 y_train_array = np.zeros([len(labels),len(labellist)], dtype=np.float32)
+                print(y_train_array.shape)
                 y_train_array[list(range(len(labels))),label_index]=1
-                yield (x_train_vector,y_train_array)
+                print(x_train_vector.shape)
+                yield x_train_vector,y_train_array
 
