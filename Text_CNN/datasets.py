@@ -4,10 +4,10 @@ import zipfile
 import chardet,codecs
 from xml.dom import minidom
 from urllib.parse import urlparse
-from multiprocessing.dummy import Pool
-import string,re,time
+import string,re,time,json
 import numpy as np
 from collections import Counter
+from multiprocessing import cpu_count,Pool
 
 
 # 根据搜狐新闻的网址的host，将这些划分如下
@@ -88,12 +88,12 @@ class DealData():
         self.cont_label = []# 文本内容和标签
         self.word_freq=Counter()#词频表,Counter能对key进行累加
 
-        self.punctuation = re.compile(u"[~!@#$%^&*()_+`=\[\]\\\{\}\"|;':,./<>?·！@#￥%……&*（）——+【】,、；‘：“”，。、《》？「『」』\t\n]+")
-        self.rule = re.compile(r"[^-a-zA-Z0-9\u4e00-\u9fa5]")  # 去除所有半角全角符号，只留字母、数字、中文。要保留-符号，以防2014-3-23时间类型出现
+        self.punctuation = re.compile(u"[~!@#$%^&*()_+`=\[\]\\\{\}\"|;':,./<>?·！@#￥%……&*（）——+【】,、；‘：“”，。、《》？「『」』＃\t\n]+")
+        self.rule = re.compile(r"[^-a-zA-Z0-9\u4e00-\u9fa5]")  # 去除所有全角符号，只留字母、数字、中文。要保留-符号，以防2014-3-23时间类型出现
         self.num=re.compile('\d{1,}')#将文本中的数字替换成该标示符
         # self.date=re.compile("((^((1[8-9]\d{2})|([2-9]\d{3}))([-\/\._])(10|12|0?[13578])([-\/\._])(3[01]|[12][0-9]|0?[1-9])$)|(^((1[8-9]\d{2})|([2-9]\d{3}))([-\/\._])(11|0?[469])([-\/\._])(30|[12][0-9]|0?[1-9])$)|(^((1[8-9]\d{2})|([2-9]\d{3}))([-\/\._])(0?2)([-\/\._])(2[0-8]|1[0-9]|0?[1-9])$)|(^([2468][048]00)([-\/\._])(0?2)([-\/\._])(29)$)|(^([3579][26]00)([-\/\._])(0?2)([-\/\._])(29)$)|(^([1][89][0][48])([-\/\._])(0?2)([-\/\._])(29)$)|(^([2-9][0-9][0][48])([-\/\._])(0?2)([-\/\._])(29)$)|(^([1][89][2468][048])([-\/\._])(0?2)([-\/\._])(29)$)|(^([2-9][0-9][2468][048])([-\/\._])(0?2)([-\/\._])(29)$)|(^([1][89][13579][26])([-\/\._])(0?2)([-\/\._])(29)$)|(^([2-9][0-9][13579][26])([-\/\._])(0?2)([-\/\._])(29)$))|(^\d{4}年\d{1,2}月\d{1,2}日$)$")
-        self.date=re.compile("^(^(\d{4}|\d{2})(\-|\/|\.)\d{1,2}(\-|\/|\.)\d{1,2}$)|(^\d{4}年\d{1,2}月\d{1,2}日$)$")
-        self.times=re.compile('\d{1,2}:\d{1,2}|[\d{1,2}点]*[\d{1,2}分]*')
+        self.date=re.compile("((\d{4}|\d{2})(\-|\/|\.)\d{1,2}(\-|\/|\.)\d{1,2})|((\d{4}年)?\d{1,2}月\d{1,2}日)")
+        self.times=re.compile('(\d{1,2}:\d{1,2})|((\d{1,2}点\d{1,2}分)|(\d{1,2}时))')
         self.alpha=re.compile(string.ascii_letters)
 
         self.get_label_content()
@@ -102,22 +102,62 @@ class DealData():
         # 词向量的长度
         self.vector_length=len(self.vocab)
         self.lable_length=len(self.labels)
+        print(self.lable_length)
+        print(self.vector_length)
+        print(len(self.word_freq))
+
+    def strQ2B(self,ustring):
+        """全角转半角"""
+        rstring = ""
+        for uchar in ustring:
+            inside_code = ord(uchar)
+            if inside_code == 12288:  # 全角空格直接转换
+                inside_code = 32
+            elif (inside_code >= 65281 and inside_code <= 65374):  # 全角字符（除空格）根据关系转化
+                inside_code -= 65248
+            rstring += chr(inside_code)
+        return rstring
 
     def read_file(self):
         with open(self.filename,'r') as f:
             data=f.readline()
             while data:
-                host,title, content=data.split('++',2)
-                yield host,content,title
+                label,title, content=data.split('++',2)
+                yield label,content,title
                 data = f.readline()
 
+
+
+
+    def test(self,contens):
+        print(contens[0])
+        return contens
+
     def get_label_content(self):
+        pool_num=cpu_count()-1
+        pool = Pool(processes=2)
+        results=[]
+        j= 0
         for label, content, title in self.read_file():
-            if len(content)==0:
+            if len(content.strip())==0 or j>100:
                 continue
-            self.labels.add(label)
-            line=self.get_vocab(content)
-            self.cont_label.append([line,label])
+            content = self.strQ2B(content)
+            # self.get_vocab(content,label)
+            line_label=pool.apply(self.test,(content,))
+            # results.append(line_label)
+            j+=1
+            print(j)
+            time.sleep(1)
+
+        pool.close()
+        pool.join()
+
+        for r in results:
+            line_label=r.get()
+            print(line_label)
+            # print(json.loads(line_label).keys())
+            # self.callback(one_line,label)
+
 
     def get_vocab(self,line):
         """
@@ -125,10 +165,10 @@ class DealData():
         :param line: 输入的是单个文本
         :return:
         """
+
         one_line=[]
         line=self.alpha.sub('',line)# 去掉字母
         line=self.punctuation.sub('',line)#
-        line=self.rule.sub('',line)
 
         line = self.date.sub(' <DATE> ', line)  # 注意<DATE>前后要留空格，方便后面好分割
         line = self.num.sub(' <NUM> ', line)
@@ -140,10 +180,15 @@ class DealData():
                 one_line.append(one)
             else:
                 one_line.extend(list(one))
-        self.vocab.update(set(one_line))
-        self.word_freq.update(Counter(one_line))
-        if len(one_line)>self.max_sequence_length:
-            self.max_sequence_length=len(one_line)
+
+        # self.vocab.update(set(one_line))
+        # self.word_freq.update(Counter(one_line))
+        # if len(one_line) > self.max_sequence_length:
+        #     self.max_sequence_length = len(one_line)
+        #
+        # self.labels.add(label)
+        # self.cont_label.append([one_line, label])
+        # return json.dumps({label:one_line})
         return one_line
 
     def gene_dict(self):
@@ -153,6 +198,9 @@ class DealData():
         """
         self.word_id=dict(zip(self.vocab,range(len(self.vocab))))
         self.id_word=dict(zip(range(len(self.vocab)),self.vocab))
+
+
+
 
     def single_seq_vector(self,line):
         """
@@ -283,3 +331,4 @@ if __name__ == '__main__':
     x_train, y_train, x_dev_vector, y_dev_array = dealdata.slice_batch(bow_seq='seq')
     # for x_batch, y_batch in dealdata.batch_iter(x_train, y_train, bow_seq='seq'):
     #     print(x_batch.shape,',',y_batch.shape)
+

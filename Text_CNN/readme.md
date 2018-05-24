@@ -33,6 +33,7 @@ bow-CNN模型改善了seq-CNN模型，它直接将相邻几个词的位置写入
 
 对于在词汇表没有的词汇，我们将会用零表示。
 
+由于文本中存在全角数字，而全角数字的Unicode编码范围为：\uff10-\uff19 表示0-9
 
 [1]: images/seq-cnn.jpg
 [2]: images/bow-cnn.jpg

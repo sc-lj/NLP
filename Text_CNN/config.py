@@ -5,7 +5,7 @@ import tensorflow as tf
 def seq_param():
     # 卷积的宽度，在cnn中，卷积的长度为词向量的长度，宽度表示包含多少词
     tf.flags.DEFINE_string('filter_size', '3,4,5    ', 'Comma-separated filter sizes (default: "3,4,5")')
-    
+
     # 每种卷积的个数
     tf.flags.DEFINE_integer('filter_num', 128,  "Number of filters per filter size (default: 128)")
 
@@ -14,19 +14,19 @@ def seq_param():
 
     # 训练多少次后，进行验证
     tf.flags.DEFINE_integer("evaluate_every", 100, "evaluate model on dev set after many step (default: 100)")
-    
+
     # 是否记录设备指派情况
     tf.flags.DEFINE_boolean("log_device_placement",False,"Log placement of ops on devices")
-    
+
     # 是否自动选择运行设备
     tf.flags.DEFINE_boolean("allow_soft_placement",True,"Allow device soft device placement")
-    
+
     # 限制gpu的使用率，如果满负荷运转，会造成其他资源无法调用gpu
     tf.flags.DEFINE_float('per_process_gpu_memory_fraction', 0.6, "limit gpu use,other could use gpu")
-    
+
     # 模型和summary的输出文件夹
     tf.flags.DEFINE_string('out_dir', './', 'Output directory for model and summary')
-    
+
     # 最多保存的中间结果
     tf.flags.DEFINE_integer("num_checkpoints",5,"Number of checkpoints to store (default: 5)")
 
@@ -44,9 +44,45 @@ def seq_param():
 
     FLAGS=tf.flags.FLAGS
     return FLAGS
+
     
-    
 
 
 
+#coding: utf-8
+import multiprocessing
+import time
 
+def func(msg):
+    print("msg:", msg)
+    time.sleep(2)
+    print("end")
+    return "done" + msg
+
+def wait():
+    time.sleep(2)
+
+def gent():
+    for i in range(10):
+        yield i
+
+if __name__ == "__main__":
+    pool = multiprocessing.Pool(processes = 3)
+    results=[]
+    a=time.time()
+    for i in gent():
+        msg = "hello %d" %(i)
+        res=pool.apply_async(func, (msg, ))   #维持执行的进程总数为processes，当一个进程执行完毕后会添加新的进程进去\
+
+        results.append(res)
+
+    print("Mark~ Mark~ Mark~~~~~~~~~~~~~~~~~~~~~~")
+    pool.close()
+    pool.join()   #调用join之前，先调用close函数，否则会出错。执行完close后不会有新的进程加入到pool,join函数等待所有子进程结束
+    print("Sub-process(es) done.")
+
+    for r in results:
+        print(r.get())
+        wait()
+
+    print(time.time()-a)
