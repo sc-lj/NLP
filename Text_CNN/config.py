@@ -45,44 +45,29 @@ def seq_param():
     FLAGS=tf.flags.FLAGS
     return FLAGS
 
-    
+
+import argparse
+def Argparse():
+    parser=argparse.ArgumentParser()
+    parser.add_argument('--filter_size', default=[3,4,5], help='Comma-separated filter sizes (default: "3,4,5")',type=list)
+    parser.add_argument('--filter_num', default=128,  help="Number of filters per filter size (default: 128)",type=int)
+    parser.add_argument("--dropout_prob",default=0.5,help="Dropout keep probability (default: 0.5)",type=float)
+    parser.add_argument("--evaluate_every", default=100, help="evaluate model on dev set after many step (default: 100)",type=int)
+    parser.add_argument("--log_device_placement",default=False,help="Log placement of ops on devices",type=bool)
+    parser.add_argument("--allow_soft_placement",default=True,help="Allow device soft device placement",type=bool)
+    parser.add_argument('--per_process_gpu_memory_fraction', default=0.6, help="limit gpu use,other could use gpu",type=float)
+    parser.add_argument('--out_dir', default='./', help='Output directory for model and summary',type=str)
+    parser.add_argument("--num_checkpoints",default=5,help="Number of checkpoints to store (default: 5)",type=int)
+    parser.add_argument('--batch_size',default=60,help='num of each batch',type=int)
+    parser.add_argument('--num_epochs',default=200,help='Number of training epochs (default: 200)',type=int)
+    parser.add_argument('--dev_sample_percent',default=0.1,help='percentage of the train data to use for evaluate',type=float)
+    parser.add_argument('--corpus_dir',default='../datasets/new_sohu.txt',help='where is corpus',type=str)
+
+    arg=parser.parse_args()
+    return arg
 
 
 
-#coding: utf-8
-import multiprocessing
-import time
 
-def func(msg):
-    print("msg:", msg)
-    time.sleep(2)
-    print("end")
-    return "done" + msg
 
-def wait():
-    time.sleep(2)
 
-def gent():
-    for i in range(10):
-        yield i
-
-if __name__ == "__main__":
-    pool = multiprocessing.Pool(processes = 3)
-    results=[]
-    a=time.time()
-    for i in gent():
-        msg = "hello %d" %(i)
-        res=pool.apply_async(func, (msg, ))   #维持执行的进程总数为processes，当一个进程执行完毕后会添加新的进程进去\
-
-        results.append(res)
-
-    print("Mark~ Mark~ Mark~~~~~~~~~~~~~~~~~~~~~~")
-    pool.close()
-    pool.join()   #调用join之前，先调用close函数，否则会出错。执行完close后不会有新的进程加入到pool,join函数等待所有子进程结束
-    print("Sub-process(es) done.")
-
-    for r in results:
-        print(r.get())
-        wait()
-
-    print(time.time()-a)

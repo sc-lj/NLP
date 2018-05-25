@@ -8,7 +8,7 @@ from Text_CNN.config import *
 import datetime
 from Text_CNN.datasets import *
 
-FLAGS = seq_param()
+FLAGS = Argparse()
 dealdata = DealData(FLAGS)
 class TextCNN():
     def __init__(self,bow_seq='seq'):

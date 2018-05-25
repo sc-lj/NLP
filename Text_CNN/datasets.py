@@ -78,9 +78,9 @@ def write_file(data):
 
 
 class DealData():
-    def __init__(self,FLAGS):
-        self.FLAGS=FLAGS
-        self.filename=self.FLAGS.corpus_dir
+    def __init__(self,arg):
+        self.arg=arg
+        self.filename='/Users/apple/PycharmProjects/tensorflow/NLP/datasets/new_sohu.txt'
         self.max_sequence_length = 0
 
         self.labels=set()# 标签集
@@ -102,9 +102,6 @@ class DealData():
         # 词向量的长度
         self.vector_length=len(self.vocab)
         self.lable_length=len(self.labels)
-        print(self.lable_length)
-        print(self.vector_length)
-        print(len(self.word_freq))
 
     def strQ2B(self,ustring):
         """全角转半角"""
@@ -126,37 +123,32 @@ class DealData():
                 yield label,content,title
                 data = f.readline()
 
+    def callback(self,one_line,label):
+        self.vocab.update(set(one_line))
+        self.word_freq.update(Counter(one_line))
+        if len(one_line) > self.max_sequence_length:
+            self.max_sequence_length = len(one_line)
 
-
-
-    def test(self,contens):
-        print(contens[0])
-        return contens
+        self.labels.add(label)
+        self.cont_label.append([one_line, label])
 
     def get_label_content(self):
         pool_num=cpu_count()-1
-        pool = Pool(processes=2)
+        pool = Pool(processes=pool_num)
         results=[]
-        j= 0
         for label, content, title in self.read_file():
-            if len(content.strip())==0 or j>100:
+            if len(content.strip())==0:
                 continue
-            content = self.strQ2B(content)
             # self.get_vocab(content,label)
-            line_label=pool.apply(self.test,(content,))
-            # results.append(line_label)
-            j+=1
-            print(j)
-            time.sleep(1)
+            line_label=pool.apply_async(self.get_vocab,(content,))
+            results.append([line_label,label])
 
         pool.close()
         pool.join()
 
-        for r in results:
-            line_label=r.get()
-            print(line_label)
-            # print(json.loads(line_label).keys())
-            # self.callback(one_line,label)
+        for r,label in results:
+            line=r.get()
+            self.callback(line,label)
 
 
     def get_vocab(self,line):
@@ -165,8 +157,8 @@ class DealData():
         :param line: 输入的是单个文本
         :return:
         """
-
-        one_line=[]
+        one_line = []
+        line = self.strQ2B(line)
         line=self.alpha.sub('',line)# 去掉字母
         line=self.punctuation.sub('',line)#
 
@@ -188,7 +180,6 @@ class DealData():
         #
         # self.labels.add(label)
         # self.cont_label.append([one_line, label])
-        # return json.dumps({label:one_line})
         return one_line
 
     def gene_dict(self):
@@ -198,9 +189,6 @@ class DealData():
         """
         self.word_id=dict(zip(self.vocab,range(len(self.vocab))))
         self.id_word=dict(zip(range(len(self.vocab)),self.vocab))
-
-
-
 
     def single_seq_vector(self,line):
         """
@@ -284,7 +272,7 @@ class DealData():
         X,Y =np.transpose(data)
 
         # 验证集的大小
-        dev_data_size = -1 * int(self.FLAGS.dev_sample_percent * data_size)
+        dev_data_size = -1 * int(self.arg.dev_sample_percent * data_size)
         x_dev, x_train = X[dev_data_size:],X[:dev_data_size]#验证集和训练集
         print(x_dev)
         y_dev,y_train=Y[dev_data_size:],Y[:dev_data_size]
@@ -302,14 +290,14 @@ class DealData():
         labellist = list(self.labels)
         # 重新计算数据大小
         data_size=len(x_train)
-        for epoch in range(self.FLAGS.num_epochs):
+        for epoch in range(self.arg.num_epochs):
             if shuffle:
                 shuffle_indices = np.random.permutation(np.arange(data_size))
                 x_train = x_train[list(shuffle_indices)]
                 y_train = y_train[list(shuffle_indices)]
 
-            for num in range(0,data_size,self.FLAGS.batch_size):
-                end_index=num+self.FLAGS.batch_size
+            for num in range(0,data_size,self.arg.batch_size):
+                end_index=num+self.arg.batch_size
                 if data_size< end_index:
                     end_index = data_size
                 conts=x_train[num:end_index]
@@ -326,9 +314,9 @@ class DealData():
 
 if __name__ == '__main__':
     from Text_CNN.config import *
-    FLAGS = seq_param()
-    dealdata = DealData(FLAGS)
-    x_train, y_train, x_dev_vector, y_dev_array = dealdata.slice_batch(bow_seq='seq')
+    arg = Argparse()
+    dealdata = DealData(arg)
+    # x_train, y_train, x_dev_vector, y_dev_array = dealdata.slice_batch(bow_seq='seq')
     # for x_batch, y_batch in dealdata.batch_iter(x_train, y_train, bow_seq='seq'):
     #     print(x_batch.shape,',',y_batch.shape)
 
