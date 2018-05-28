@@ -24,7 +24,7 @@ class TextCNN():
         if bow_seq not in ['seq','bow']:
             assert '请选择seq模型或者bow模型中的其中一种'
         self.bow_seq=bow_seq
-        self.filter_sizes=list(map(int,self.FLAGS.filter_size.split(',')))
+        self.filter_sizes=self.FLAGS.filter_size
 
         self.input_x=tf.placeholder(shape=[None,self.max_sequence_length,self.vector_length],name='input_x',dtype=tf.float32)
         self.input_y=tf.placeholder(shape=[None,self.lable_length],name='input_y',dtype=tf.float32)

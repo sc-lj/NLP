@@ -12,8 +12,8 @@ from multiprocessing import cpu_count,Pool
 
 # 根据搜狐新闻的网址的host，将这些划分如下
 dicurl={'media':'传媒','baobao':'母婴','stock':'金融','it':'IT','fund':'金融','bschool':'商业','expo2010':"城市",'auto':"汽车",
-        "cul":"文化","2012":"体育","goabroad":'留学','yule':"娱乐","travel":"旅游","2010":"体育","astro":"星座","sh":"城市",
-        "women":"健康","s":"体育","dm":"动漫","chihe":"美食","2008":"体育","learning":"留学","business":"商业",
+        "cul":"娱乐文化","2012":"体育","goabroad":'教育','yule':"娱乐文化","travel":"旅游","2010":"体育","astro":"星座","sh":"城市",
+        "women":"健康","s":"体育","dm":"动漫","chihe":"美食","2008":"体育","learning":"教育","business":"商业",
         "gongyi":"公益","men":"健康","health":"健康","sports":"体育","money":"金融","green":"美食","gd":"城市"}
 
 # 解压zip文件
@@ -80,7 +80,7 @@ def write_file(data):
 class DealData():
     def __init__(self,arg):
         self.arg=arg
-        self.filename='/Users/apple/PycharmProjects/tensorflow/NLP/datasets/new_sohu.txt'
+        self.filename=self.arg.test_txt
         self.max_sequence_length = 0
 
         self.labels=set()# 标签集
@@ -102,6 +102,7 @@ class DealData():
         # 词向量的长度
         self.vector_length=len(self.vocab)
         self.lable_length=len(self.labels)
+
 
     def strQ2B(self,ustring):
         """全角转半角"""
@@ -172,14 +173,6 @@ class DealData():
                 one_line.append(one)
             else:
                 one_line.extend(list(one))
-
-        # self.vocab.update(set(one_line))
-        # self.word_freq.update(Counter(one_line))
-        # if len(one_line) > self.max_sequence_length:
-        #     self.max_sequence_length = len(one_line)
-        #
-        # self.labels.add(label)
-        # self.cont_label.append([one_line, label])
         return one_line
 
     def gene_dict(self):
@@ -196,7 +189,7 @@ class DealData():
         :param line: 单个文本
         :return:
         """
-        text_vector=np.zeros([self.max_sequence_length,len(self.vocab)],dtype=np.float32)
+        text_vector=np.zeros([self.max_sequence_length,self.vector_length],dtype=np.float32)
         j=0
         # 将没有在词汇表中的字用零代替
         for word in line:
@@ -213,14 +206,13 @@ class DealData():
         :return:
         """
         lines=np.array(text_list)
-        print(lines.shape)
-        if len(lines.shape)==1:
+        if len(lines)==1:
             text_vectors=self.single_seq_vector(lines)
-        elif len(lines.shape)==2:
-            text_vectors=[]
-            text_vectors.append(self.single_seq_vector(line) for line in lines)
         else:
-            raise('要生成seq模型的文本输入的维度不在处理范围内')
+            text_vectors=[]
+            for line in lines:
+                text_vectors.append(self.single_seq_vector(line))
+
         return text_vectors
 
     def single_bow_line(self,line,num):
@@ -249,15 +241,13 @@ class DealData():
         """
         lines=np.array(text_list)
 
-        if len(lines.shape)==1:
+        if len(lines)==1:
             text_vectors=self.single_bow_line(lines,num)
-        elif len(lines.shape)==2:
+        else:
             text_vectors=[]
             for line in lines:
                 text_vector=self.single_bow_line(line,num)
                 text_vectors.append(text_vector)
-        else:
-            raise('要生成bow模型的文本输入的维度不在处理范围内')
         return text_vectors
 
     def slice_batch(self,bow_seq='seq'):
@@ -274,7 +264,7 @@ class DealData():
         # 验证集的大小
         dev_data_size = -1 * int(self.arg.dev_sample_percent * data_size)
         x_dev, x_train = X[dev_data_size:],X[:dev_data_size]#验证集和训练集
-        print(x_dev)
+
         y_dev,y_train=Y[dev_data_size:],Y[:dev_data_size]
 
         if bow_seq=='seq':
@@ -290,6 +280,7 @@ class DealData():
         labellist = list(self.labels)
         # 重新计算数据大小
         data_size=len(x_train)
+
         for epoch in range(self.arg.num_epochs):
             if shuffle:
                 shuffle_indices = np.random.permutation(np.arange(data_size))
@@ -317,6 +308,6 @@ if __name__ == '__main__':
     arg = Argparse()
     dealdata = DealData(arg)
     x_train, y_train, x_dev_vector, y_dev_array = dealdata.slice_batch(bow_seq='seq')
-    # for x_batch, y_batch in dealdata.batch_iter(x_train, y_train, bow_seq='seq'):
-    #     print(x_batch.shape,',',y_batch.shape)
+    for x_batch, y_batch in dealdata.batch_iter(x_train, y_train, bow_seq='seq'):
+        print(x_batch.shape,',',y_batch.shape)
 

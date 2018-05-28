@@ -61,7 +61,8 @@ def Argparse():
     parser.add_argument('--batch_size',default=60,help='num of each batch',type=int)
     parser.add_argument('--num_epochs',default=200,help='Number of training epochs (default: 200)',type=int)
     parser.add_argument('--dev_sample_percent',default=0.1,help='percentage of the train data to use for evaluate',type=float)
-    parser.add_argument('--corpus_dir',default='../datasets/new_sohu.txt',help='where is corpus',type=str)
+    parser.add_argument('--corpus_txt',default='../../datasets/new_sohu.txt',help='where is corpus',type=str)
+    parser.add_argument('--test_txt',default='../../datasets/test.txt',help='where is test corpus',type=str)
 
     arg=parser.parse_args()
     return arg
