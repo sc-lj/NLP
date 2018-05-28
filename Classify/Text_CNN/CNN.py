@@ -163,7 +163,7 @@ def train_model(bow_seq='seq'):
                 _,step,summary,loss,accuracy=sess.run([train_op,global_step,train_summary,cnn.loss,cnn.accuracy],feed_dict)
 
                 time_str=datetime.datetime.now().isoformat()
-                print("{}: step {}, loss {:g}, acc {:g}".format(time_str,step,loss,accuracy))
+                print("{}:train step {}, loss {:g}, acc {:g}".format(time_str,step,loss,accuracy))
                 train_writer.add_summary(summary,step)
 
 
@@ -172,12 +172,11 @@ def train_model(bow_seq='seq'):
                 step,summary,loss,accuracy=sess.run([global_step,dev_summary,cnn.loss,cnn.accuracy],
                                                       feed_dict)
                 time_str=datetime.datetime.now().isoformat()
-                print("{}: step {}, loss {:g}, acc {:g}".format(time_str,step,loss,accuracy))
+                print("{}:dev step {}, loss {:g}, acc {:g}".format(time_str,step,loss,accuracy))
                 if writer:
                     writer.add_summary(summary,step)
 
             x_train, y_train, x_dev_vector, y_dev_array=dealdata.slice_batch(bow_seq=bow_seq)
-            print('a'*100)
             for x_batch, y_batch  in dealdata.batch_iter(x_train,y_train,bow_seq=bow_seq):
                 train_step(x_batch, y_batch)
                 current_step=tf.train.global_step(sess,global_step)

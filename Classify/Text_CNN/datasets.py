@@ -282,6 +282,7 @@ class DealData():
         data_size=len(x_train)
 
         for epoch in range(self.arg.num_epochs):
+            print('epoch',epoch)
             if shuffle:
                 shuffle_indices = np.random.permutation(np.arange(data_size))
                 x_train = x_train[list(shuffle_indices)]
@@ -309,5 +310,5 @@ if __name__ == '__main__':
     dealdata = DealData(arg)
     x_train, y_train, x_dev_vector, y_dev_array = dealdata.slice_batch(bow_seq='seq')
     for x_batch, y_batch in dealdata.batch_iter(x_train, y_train, bow_seq='seq'):
-        print(x_batch.shape,',',y_batch.shape)
+        pass
 
