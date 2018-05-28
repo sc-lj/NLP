@@ -40,7 +40,7 @@ def seq_param():
     tf.flags.DEFINE_float('dev_sample_percent',0.1,'percentage of the train data to use for evaluate')
 
     # 语料库文件存放位置
-    tf.flags.DEFINE_string('corpus_dir','../datasets/new_sohu.txt','where is corpus')
+    tf.flags.DEFINE_string('corpus_dir','../../datasets/new_sohu.txt','where is corpus')
 
     FLAGS=tf.flags.FLAGS
     return FLAGS
