@@ -49,20 +49,49 @@ def seq_param():
 import argparse
 def Argparse():
     parser=argparse.ArgumentParser()
+    # 卷积的宽度，在cnn中，卷积的长度为词向量的长度，宽度表示包含多少词
     parser.add_argument('--filter_size', default=[3,4,5], help='Comma-separated filter sizes (default: "3,4,5")',type=list)
+
+    # 每种卷积的个数
     parser.add_argument('--filter_num', default=128,  help="Number of filters per filter size (default: 128)",type=int)
+
+    # dropout概率
     parser.add_argument("--dropout_prob",default=0.5,help="Dropout keep probability (default: 0.5)",type=float)
+
+    # 训练多少次后，进行验证
     parser.add_argument("--evaluate_every", default=100, help="evaluate model on dev set after many step (default: 100)",type=int)
+
+    # 是否记录设备指派情况
     parser.add_argument("--log_device_placement",default=False,help="Log placement of ops on devices",type=bool)
+
+    # 是否自动选择运行设备
     parser.add_argument("--allow_soft_placement",default=True,help="Allow device soft device placement",type=bool)
+
+    # 限制gpu的使用率，如果满负荷运转，会造成其他资源无法调用gpu
     parser.add_argument('--per_process_gpu_memory_fraction', default=0.6, help="limit gpu use,other could use gpu",type=float)
+
+    # 模型和summary的输出文件夹
     parser.add_argument('--out_dir', default='./', help='Output directory for model and summary',type=str)
+
+    # 最多保存的中间结果
     parser.add_argument("--num_checkpoints",default=5,help="Number of checkpoints to store (default: 5)",type=int)
+
+    # 每块包含的数据量
     parser.add_argument('--batch_size',default=60,help='num of each batch',type=int)
+
+    # 训练轮数
     parser.add_argument('--num_epochs',default=200,help='Number of training epochs (default: 200)',type=int)
+
+    # 验证集的比例
     parser.add_argument('--dev_sample_percent',default=0.1,help='percentage of the train data to use for evaluate',type=float)
+
+    # 语料库文件存放位置
     parser.add_argument('--corpus_txt',default='../../datasets/new_sohu.txt',help='where is corpus',type=str)
+
+    # 测试语料库存放地址
     parser.add_argument('--test_txt',default='../../datasets/test.txt',help='where is test corpus',type=str)
+
+    # 停用词语料库存放地址
     parser.add_argument('--stopfile',default='../../datasets/stopwords/stopwords.txt',help='stop words file',type=str)
 
     arg=parser.parse_args()
