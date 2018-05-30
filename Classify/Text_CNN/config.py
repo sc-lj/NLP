@@ -63,6 +63,7 @@ def Argparse():
     parser.add_argument('--dev_sample_percent',default=0.1,help='percentage of the train data to use for evaluate',type=float)
     parser.add_argument('--corpus_txt',default='../../datasets/new_sohu.txt',help='where is corpus',type=str)
     parser.add_argument('--test_txt',default='../../datasets/test.txt',help='where is test corpus',type=str)
+    parser.add_argument('--stopfile',default='../../datasets/stopwords/stopwords.txt',help='stop words file',type=str)
 
     arg=parser.parse_args()
     return arg

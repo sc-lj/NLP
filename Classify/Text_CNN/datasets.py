@@ -4,7 +4,7 @@ import zipfile
 import chardet,codecs
 from xml.dom import minidom
 from urllib.parse import urlparse
-import string,re,time,json
+import string,re,time,json,os
 import numpy as np
 from collections import Counter
 from multiprocessing import cpu_count,Pool
@@ -22,7 +22,7 @@ def extract_zip(filename):
         for single in files.namelist():
             files.extract(single,'./')
 
-#
+# 检测文本的编码格式
 def detext_souhu_encod(filename):
     f=open(filename,'rb')
     data=f.read()
@@ -30,6 +30,7 @@ def detext_souhu_encod(filename):
     f.close()
     return predict['encoding']
 
+#
 def read_souhu_corpus(filename,encode):
     dometree=[]
     with open(filename,'r',encoding=encode,errors='ignore') as f:
@@ -49,7 +50,6 @@ def map_function(da):
     root=doc.documentElement
     url=root.getElementsByTagName('url')[0].childNodes[0].data
     host=urlparse(url).netloc
-    host=host.split('.')[-3]
     try:
         content=root.getElementsByTagName('content')[0].childNodes[0].data
     except:
@@ -60,27 +60,55 @@ def map_function(da):
         title=''
     return host,content,title
 
+def strQ2B(ustring):
+    """全角转半角"""
+    rstring = ""
+    for uchar in ustring:
+        inside_code = ord(uchar)
+        if inside_code == 12288:  # 全角空格直接转换
+            inside_code = 32
+        elif (inside_code >= 65281 and inside_code <= 65374):  # 全角字符（除空格）根据关系转化
+            inside_code -= 65248
+        rstring += chr(inside_code)
+    return rstring
+
 def write_file(data):
     pool=Pool(3)
     host_content=pool.map(map_function,data)
     pool.close()
     pool.join()
-    with open('./new_sohu.txt','w') as f:
-        for label,content,title in host_content:
+    with open('./new_sohu.txt','a+') as f:
+        for host,content,title in host_content:
             content=content.replace('\n','')
-            if label not in dicurl:
+            for label in host.split('.'):
+                if label in dicurl:
+                    labels=dicurl[label]
+                    break
+                else:
+                    labels=None
+            if labels==None:
                 continue
-            lable=dicurl[label]
-            f.write(lable+"++"+title+"++"+content.strip()+'\n')
 
-# data=read_souhu_corpus('../datasets/news_sohusite_xml.dat','gb2312')
+            cont=labels+"++"+title+"++"+content.strip()
+            cont=strQ2B(cont)
+            f.write(cont+'\n')
+
+def read_dir(dir):
+    for files in os.listdir(dir):
+        path=os.path.join(dir,files)
+        data=read_souhu_corpus(path,'gb2312')
+        write_file(data)
+
+# data=read_souhu_corpus('/Users/apple/Downloads/SogouCA/news.allsites.sports.6307.txt','GB2312')
 # write_file(data)
 
+# read_dir('/Users/apple/Downloads/SogouCS/')
 
 class DealData():
     def __init__(self,arg):
         self.arg=arg
         self.filename=self.arg.test_txt
+        self.stopfile=self.arg.stopfile
         self.max_sequence_length = 0
 
         self.labels=set()# 标签集
@@ -96,25 +124,13 @@ class DealData():
         self.times=re.compile('(\d{1,2}:\d{1,2})|((\d{1,2}点\d{1,2}分)|(\d{1,2}时))')
         self.alpha=re.compile(string.ascii_letters)
 
+        self.readstopword()
         self.get_label_content()
         self.gene_dict()
 
         # 词向量的长度
         self.vector_length=len(self.vocab)
         self.lable_length=len(self.labels)
-
-
-    def strQ2B(self,ustring):
-        """全角转半角"""
-        rstring = ""
-        for uchar in ustring:
-            inside_code = ord(uchar)
-            if inside_code == 12288:  # 全角空格直接转换
-                inside_code = 32
-            elif (inside_code >= 65281 and inside_code <= 65374):  # 全角字符（除空格）根据关系转化
-                inside_code -= 65248
-            rstring += chr(inside_code)
-        return rstring
 
     def read_file(self):
         with open(self.filename,'r') as f:
@@ -151,6 +167,10 @@ class DealData():
             line=r.get()
             self.callback(line,label)
 
+    def readstopword(self):
+        with open(self.stopfile,'r') as f:
+            stopwords=f.read()
+        self.stopword=set(stopwords)
 
     def get_vocab(self,line):
         """
@@ -159,7 +179,6 @@ class DealData():
         :return:
         """
         one_line = []
-        line = self.strQ2B(line)
         line=self.alpha.sub('',line)# 去掉字母
         line=self.punctuation.sub('',line)#
 
@@ -173,6 +192,8 @@ class DealData():
                 one_line.append(one)
             else:
                 one_line.extend(list(one))
+
+        one_line=set(one_line).difference(self.stopword)
         return one_line
 
     def gene_dict(self):
@@ -304,11 +325,11 @@ class DealData():
                 yield x_train_vector,y_train_array
 
 
-if __name__ == '__main__':
-    from Text_CNN.config import *
-    arg = Argparse()
-    dealdata = DealData(arg)
-    x_train, y_train, x_dev_vector, y_dev_array = dealdata.slice_batch(bow_seq='seq')
-    for x_batch, y_batch in dealdata.batch_iter(x_train, y_train, bow_seq='seq'):
-        pass
+# if __name__ == '__main__':
+#     from Text_CNN.config import *
+#     arg = Argparse()
+#     dealdata = DealData(arg)
+#     x_train, y_train, x_dev_vector, y_dev_array = dealdata.slice_batch(bow_seq='seq')
+#     for x_batch, y_batch in dealdata.batch_iter(x_train, y_train, bow_seq='seq'):
+#         pass
 
