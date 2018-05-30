@@ -1,12 +1,12 @@
 # coding:utf-8
 
 import sys,os
-sys.path.append(os.path.abspath(__file__))
+sys.path.append(os.path.dirname(__file__))
 
 import tensorflow as tf
-from Text_CNN.config import *
+from config import *
 import datetime
-from Text_CNN.datasets import *
+from datasets import *
 
 FLAGS = Argparse()
 dealdata = DealData(FLAGS)
