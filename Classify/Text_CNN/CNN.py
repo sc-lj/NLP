@@ -55,7 +55,6 @@ class TextCNN():
                 # in_channels: 图片的深度；在文本处理中深度为1，需要添加的一个1，增加其维度。
                 filtersize=[filter_size,self.vector_length,1,self.FLAGS.filter_num]
                 # 'SAME'模式下的convd的形状是：[1,sequence_length-filter_size+1,1,1]
-
                 convd=tf.nn.conv2d(input_x,self.weights(filtersize),strides=[1,1,1,1],padding='VALID',name='convd')
                 biase_shape=[self.FLAGS.filter_num]
                 convd=tf.nn.relu(tf.nn.bias_add(convd,self.biaseses(biase_shape)),name='relu')
