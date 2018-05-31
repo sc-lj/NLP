@@ -5,6 +5,7 @@ CLSTM 模型是结合了CNN模型对局部特征的捕获能力的优点和LSTM�
 
 ![](images/CLSTM模型结构.png)
 
+
 下面是LSTM模型的函数：主要是三个门和一个记忆单元。
 ![](images/LSTM模型函数.png)
 
