@@ -20,7 +20,6 @@ def argument():
     #
 
 
-
     lstm=parser.add_argument_group('LSTM','About LSTM argument')
     lstm.add_argument('--lstm_dropout',default=0.6)
     arg=parser.parse_args()
