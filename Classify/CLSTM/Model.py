@@ -6,15 +6,16 @@ sys.path.append(os.path.dirname(__file__))
 import tensorflow as tf
 from Config import *
 
+arg=argument()
 class CNN():
     def __init__(self):
-        self.arg=argument()
+        self.arg=arg
         # 要embedding的input必须是int类型
         self.input=tf.placeholder(shape=[None,self.arg.cnn_maxlen],name='input',dtype=tf.int32)
-        self.label=tf.placeholder(shape=[None,],name='label',dtype=tf.float32)
+
+        self.cnn_model()
 
     def embedding_variable(self):
-
         embed=tf.Variable(tf.random_uniform(shape=[1000,self.arg.cnn_embedding],minval=-0.25,maxval=0.25,dtype=tf.float32),name='embedding')
         return tf.nn.embedding_lookup(embed,self.input)
 
@@ -28,8 +29,8 @@ class CNN():
         bias=tf.Variable(tf.constant(0.,dtype=tf.float32,shape=shape),name='bias')
         return bias
 
-    def create_model(self):
-        convds=[]
+    def cnn_model(self):
+        self.convds=[]
         with tf.name_scope('conv'):
             for filt_size in self.arg.cnn_filter_size:
                 # self.embedding_variable()维度是[batch,in_height,in_width]，而我们需要将其转化为[batch,in_height,in_width,in_channels]的形状
@@ -39,20 +40,34 @@ class CNN():
                 convd=tf.nn.conv2d(input_embed,filter=self.weight_variable(filter_shape),strides=(1,1,1,1),padding='VALID')
                 bias_size=[self.arg.cnn_filter_num]
                 convd=tf.nn.relu(tf.nn.bias_add(convd,self.bias_variable(bias_size)),name='bias')
-                convds.append(convd)
-                print(convd.get_shape().as_list())
+                self.convds.append(convd)
 
         regularizer = tf.contrib.layers.l2_regularizer(0.1)
         self.reg=tf.contrib.layers.apply_regularization(regularizer)
 
+class LSTM(CNN):
+    def __init__(self):
+        CNN.__init__(self)
+        self.label = tf.placeholder(shape=[None, ], name='label', dtype=tf.float32)
 
-        # self.new_convd=tf.concat(convds,3)
-        # print(self.new_convd.get_shape().as_list())
 
+    def rnn_cell(self):
+        # BasicLSTMCell类没有实现clipping，projection layer，peep-hole等一些lstm的高级变种，仅作为一个基本的basicline结构存在。
+        # tf.nn.rnn_cell.BasicLSTMCell
+        # LSTMCell类实现了clipping，projection layer，peep-hole。
+        # tf.nn.rnn_cell.LSTMCell
+        return tf.nn.rnn_cell.BasicLSTMCell(self.arg.rnn_hidden_unite)
+
+    def gru_cell(self):
+        return tf.nn.rnn_cell.GRUCell(self.arg.rnn_hidden_unite)
+
+    def bilstm(self):
+        for convd in self.convds:
+            pass
 
 
 if __name__ == '__main__':
     cnn=CNN()
-    cnn.create_model()
+    cnn.cnn_model()
 
 

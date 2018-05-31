@@ -21,7 +21,9 @@ def argument():
 
 
     lstm=parser.add_argument_group('LSTM','About LSTM argument')
-    lstm.add_argument('--lstm_dropout',default=0.6)
+    lstm.add_argument('--rnn_hidden_unite',default=128,type=int,help='hidden state cell number of lSTM model ')
+    lstm.add_argument('--lstm_dropout',default=0.6,type=int,help='dropout prob of LSTM model')
+
     arg=parser.parse_args()
     return arg
 
