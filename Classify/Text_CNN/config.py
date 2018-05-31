@@ -1,8 +1,9 @@
 # coding:utf-8
 
-import tensorflow as tf
+
 
 def seq_param():
+    import tensorflow as tf
     # 卷积的宽度，在cnn中，卷积的长度为词向量的长度，宽度表示包含多少词
     tf.flags.DEFINE_string('filter_size', '3,4,5    ', 'Comma-separated filter sizes (default: "3,4,5")')
 
@@ -98,6 +99,18 @@ def Argparse():
     return arg
 
 
+import logging
+
+def log_config():
+    logger=logging.getLogger(__file__)
+    logger.setLevel(logging.INFO)
+    sh=logging.FileHandler('./log.log')
+    fmt='%(asctime)s %(filename)s %(funcName)s %(lineno)s line %(levelname)s >>%(message)s'
+    dtfmt='%Y %m %d %H:%M:%S'
+    formatter=logging.Formatter(fmt=fmt,datefmt=dtfmt)
+    sh.setFormatter(formatter)
+    logger.addHandler(sh)
+    return logger
 
 
 

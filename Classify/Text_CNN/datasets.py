@@ -105,10 +105,11 @@ def read_dir(dir):
 # read_dir('/Users/apple/Downloads/SogouCS/')
 
 class DealData():
-    def __init__(self,arg):
+    def __init__(self,arg,logger):
         self.arg=arg
-        self.filename=self.arg.test_txt
+        self.filename=self.arg.corpus_txt
         self.stopfile=self.arg.stopfile
+        self.logger=logger
         self.max_sequence_length = 0
 
         self.labels=set()# 标签集
@@ -125,7 +126,9 @@ class DealData():
         self.alpha=re.compile(string.ascii_letters)
 
         self.readstopword()
+
         self.get_label_content()
+
         self.gene_dict()
 
         # 词向量的长度
@@ -150,7 +153,11 @@ class DealData():
         self.cont_label.append([one_line, label])
 
     def get_label_content(self):
-        pool_num=cpu_count()-1
+        """
+        利用多进程方法快速处理文本
+        """
+        self.logger.INFO('开始处理文本内容和标签')
+        pool_num=cpu_count()-2
         pool = Pool(processes=pool_num)
         results=[]
         for label, content, title in self.read_file():
@@ -166,6 +173,7 @@ class DealData():
         for r,label in results:
             line=r.get()
             self.callback(line,label)
+        self.logger.INFO('语料库的文本和标签处理完毕')
 
     def readstopword(self):
         with open(self.stopfile,'r') as f:
