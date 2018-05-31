@@ -9,7 +9,8 @@ import datetime
 from datasets import *
 
 FLAGS = Argparse()
-dealdata = DealData(FLAGS)
+logger=log_config()
+dealdata = DealData(FLAGS,logger)
 class TextCNN():
     def __init__(self,bow_seq='seq'):
         """
