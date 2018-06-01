@@ -41,7 +41,7 @@ def seq_param():
     tf.flags.DEFINE_float('dev_sample_percent',0.1,'percentage of the train data to use for evaluate')
 
     # 语料库文件存放位置
-    tf.flags.DEFINE_string('corpus_dir','../../Datasets/new_sohu.txt','where is corpus')
+    tf.flags.DEFINE_string('corpus_dir','../../Dataset/new_sohu.txt','where is corpus')
 
     FLAGS=tf.flags.FLAGS
     return FLAGS
@@ -90,13 +90,13 @@ def Argparse():
     parser.add_argument('--is_training',default=True,type=bool,help='whether is training this stage(default:True)')
 
     # 语料库文件存放位置
-    parser.add_argument('--corpus_txt',default='../../Datasets/new_sohu.txt',help='where is corpus',type=str)
+    parser.add_argument('--corpus_txt',default='../../Dataset/new_sohu.txt',help='where is corpus',type=str)
 
     # 测试语料库存放地址
-    parser.add_argument('--test_txt',default='../../Datasets/test.txt',help='where is test corpus',type=str)
+    parser.add_argument('--test_txt',default='../../Dataset/test.txt',help='where is test corpus',type=str)
 
     # 停用词语料库存放地址
-    parser.add_argument('--stopfile',default='../../Datasets/stopwords/stopwords.txt',help='stop words file',type=str)
+    parser.add_argument('--stopfile',default='../../Dataset/stopwords/stopwords.txt',help='stop words file',type=str)
 
     arg=parser.parse_args()
     return arg
