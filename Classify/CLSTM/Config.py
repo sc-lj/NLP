@@ -4,6 +4,10 @@ import argparse
 
 def argument():
     parser= argparse.ArgumentParser()
+
+    # 是否处于训练阶段
+    parser.add_argument('--is_training',default=True,type=bool,help='whether is training (default:True)')
+
     cnn_parse=parser.add_argument_group('CNN argument','About CNN argument')
     # cnn模型dropout概率
     cnn_parse.add_argument('--cnn_dropout',default=0.5,help='dropout argument of CNN model')
