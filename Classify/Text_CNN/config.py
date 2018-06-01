@@ -86,6 +86,9 @@ def Argparse():
     # 验证集的比例
     parser.add_argument('--dev_sample_percent',default=0.1,help='percentage of the train data to use for evaluate',type=float)
 
+    # 是否是在训练阶段
+    parser.add_argument('--is_training',default=True,type=bool,help='whether is training this stage(default:True)')
+
     # 语料库文件存放位置
     parser.add_argument('--corpus_txt',default='../../datasets/new_sohu.txt',help='where is corpus',type=str)
 

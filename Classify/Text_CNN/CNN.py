@@ -63,19 +63,20 @@ class TextCNN():
                 pools.append(pooled)
 
         num_filters_total=self.FLAGS.filter_num*len(self.filter_sizes)
-        self.h_pool=tf.concat(pools,3)
+        h_pool=tf.concat(pools,3)
         # pool_flat的shape为：[batch_size,num_filters_total]
-        self.pool_flat=tf.reshape(self.h_pool,[-1,num_filters_total])
+        pool=tf.reshape(h_pool,[-1,num_filters_total])
 
-        # dropout layer随机地选择一些神经元
-        with tf.name_scope('dropout'):
-            dropout_prob=tf.constant(self.FLAGS.dropout_prob,dtype=tf.float32)
-            self.h_drop=tf.nn.dropout(self.pool_flat,dropout_prob)
+        if self.FLAGS.is_training:
+            # dropout layer随机地选择一些神经元
+            with tf.name_scope('dropout'):
+                dropout_prob=tf.constant(self.FLAGS.dropout_prob,dtype=tf.float32)
+                pool=tf.nn.dropout(pool,dropout_prob)
 
         with tf.name_scope('output'):
             W=tf.get_variable('weight',shape=[num_filters_total,self.lable_length],initializer=tf.contrib.layers.xavier_initializer())
             b=self.biaseses([self.lable_length])
-            self.score=tf.nn.xw_plus_b(self.h_drop,W,b,name='score')
+            self.score=tf.nn.xw_plus_b(pool,W,b,name='score')
             self.prediction=tf.argmax(self.score,1,name='prediction')
 
         with tf.name_scope('loss'):
