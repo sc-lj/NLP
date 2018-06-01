@@ -156,7 +156,7 @@ class DealData():
         """
         利用多进程方法快速处理文本
         """
-        self.logger.INFO('开始处理文本内容和标签')
+        self.logger.info('开始处理文本内容和标签')
         pool_num=cpu_count()-2
         pool = Pool(processes=pool_num)
         results=[]
@@ -173,7 +173,7 @@ class DealData():
         for r,label in results:
             line=r.get()
             self.callback(line,label)
-        self.logger.INFO('语料库的文本和标签处理完毕')
+        self.logger.info('语料库的文本和标签处理完毕')
 
     def readstopword(self):
         with open(self.stopfile,'r') as f:
