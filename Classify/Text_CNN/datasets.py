@@ -108,7 +108,7 @@ def read_dir(dir):
 class DealData(object):
     def __init__(self,arg,logger):
         self.arg=arg
-        self.filename=self.arg.test_txt
+        self.filename=self.arg.corpus_txt
         self.stopfile=self.arg.stopfile
         self.logger=logger
         self.max_sequence_length = 0
@@ -174,6 +174,7 @@ class DealData(object):
         return set(stopwords)
 
     # 在类中使用multiprocessing，当multiprocessing需要执行类方法的时候，必须将该类方法装饰成静态方法。
+    # 静态方法是无法调用实例属性的，所以需要将值当作参数。
     @staticmethod
     def get_vocab(line,label,stopword):
         """
