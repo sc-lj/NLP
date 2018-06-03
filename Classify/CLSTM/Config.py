@@ -8,6 +8,15 @@ def argument():
     # 是否处于训练阶段
     parser.add_argument('--is_training',default=True,type=bool,help='whether is training (default:True)')
 
+    # 是否使用lstm模型
+    parser.add_argument('--is_lstm',default=True,type=bool,help='whether is use lstm model (default:True)')
+
+    # 是否使用双向LSTM或者双向GRU模型
+    parser.add_argument('--is_bidirectional',default=True,type=bool,help='whether is use bidirectional RNN model (default:True)')
+
+    # 每轮训练的样本数量
+    parser.add_argument('--batch_size',default=128,type=int,help='the sample size of every batch train')
+
     cnn_parse=parser.add_argument_group('CNN argument','About CNN argument')
     # cnn模型dropout概率
     cnn_parse.add_argument('--cnn_dropout',default=0.5,help='dropout argument of CNN model')
@@ -21,12 +30,15 @@ def argument():
     cnn_parse.add_argument('--cnn_maxlen',default=300,type=int,help='max sequence length of every sequence')
     # cnn模型的学习率
     cnn_parse.add_argument('--cnn_learn_rate',default=0.98,type=int,help='learning rate of cnn model')
-    #
 
 
     lstm=parser.add_argument_group('LSTM','About LSTM argument')
+    # lstm模型每层的隐藏单元数
     lstm.add_argument('--rnn_hidden_unite',default=128,type=int,help='hidden state cell number of lSTM model ')
+    # lstm模型的dropout 概率
     lstm.add_argument('--lstm_dropout',default=0.6,type=int,help='dropout prob of LSTM model')
+    # lstm模型的层数，
+    lstm.add_argument('--lstm_layer_num',default=5,type=int,help='the layer number of lstm ')
 
     arg=parser.parse_args()
     return arg

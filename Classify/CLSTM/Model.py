@@ -30,9 +30,10 @@ class CNN():
         return bias
 
     def cnn_model(self):
-        self.convds=[]
+        convds=[]
         with tf.name_scope('conv'):
-            for filt_size in self.arg.cnn_filter_size:
+            for i,filt_size in enumerate(self.arg.cnn_filter_size):
+
                 # self.embedding_variable()维度是[batch,in_height,in_width]，而我们需要将其转化为[batch,in_height,in_width,in_channels]的形状
                 input_embed=tf.expand_dims(self.embedding_variable(),-1)
                 # filter的shape为[filter_height,filter_width,in_channels,out_channels]
@@ -40,8 +41,21 @@ class CNN():
                 convd=tf.nn.conv2d(input_embed,filter=self.weight_variable(filter_shape),strides=(1,1,1,1),padding='VALID')
                 bias_size=[self.arg.cnn_filter_num]
                 convd=tf.nn.relu(tf.nn.bias_add(convd,self.bias_variable(bias_size)),name='bias')
-                self.convds.append(convd)
+                convds.append(convd)
 
+        self.new_convds=[]
+        max_demen=max([convd.get_shape()[1] for convd in convds])
+        for convd in convds:
+            shape=convd.get_shape()[1]
+            if shape<max_demen:
+                pad_num=int(max_demen-shape)
+                # 将convd shape [None,297,1,128]==>[None,297+pad_num,1,128]
+                convd = tf.pad(convd,paddings=[[0,0],[0,pad_num],[0,0],[0,0]])
+            # [None,297+pad_num,1,128]==>[None,297+pad_num,128]
+            conv = tf.reshape(convd, [-1, int(max_demen), self.arg.cnn_filter_num])
+            self.new_convds.append(conv)
+
+        self.new_convds=tf.concat(self.new_convds,2)
         regularizer = tf.contrib.layers.l2_regularizer(0.1)
         self.reg=tf.contrib.layers.apply_regularization(regularizer)
 
@@ -50,24 +64,43 @@ class LSTM(CNN):
         CNN.__init__(self)
         self.label = tf.placeholder(shape=[None, ], name='label', dtype=tf.float32)
 
+        self.bilstm()
 
     def rnn_cell(self):
         # BasicLSTMCell类没有实现clipping，projection layer，peep-hole等一些lstm的高级变种，仅作为一个基本的basicline结构存在。
         # tf.nn.rnn_cell.BasicLSTMCell
         # LSTMCell类实现了clipping，projection layer，peep-hole。
         # tf.nn.rnn_cell.LSTMCell
-        return tf.nn.rnn_cell.BasicLSTMCell(self.arg.rnn_hidden_unite)
+        return tf.nn.rnn_cell.LSTMCell(self.arg.rnn_hidden_unite)
 
     def gru_cell(self):
         return tf.nn.rnn_cell.GRUCell(self.arg.rnn_hidden_unite)
 
     def bilstm(self):
-        for convd in self.convds:
-            pass
+        if self.arg.is_lstm:
+            cell=self.rnn_cell()
+        else:
+            cell=self.gru_cell()
+        # dropout
+        cell=tf.nn.rnn_cell.DropoutWrapper(cell,input_keep_prob=self.arg.lstm_dropout)
+        # 多层rnn
+        cell=tf.nn.rnn_cell.MultiRNNCell([cell]*self.arg.lstm_layer_num)
+
+        initial_state=cell.zero_state(self.arg.batch_size,dtype=tf.float32)
+
+        inputs=self.new_convds
+        sequence_length=tf.shape(inputs)[1]
+        if self.arg.is_bidirectional:
+            outputs,states=tf.nn.bidirectional_dynamic_rnn(cell,cell,inputs=inputs,sequence_length=sequence_length,initial_state_bw=initial_state,initial_state_fw=initial_state)
+        else:
+            outputs,states=tf.nn.dynamic_rnn(cell,inputs=inputs,sequence_length=sequence_length,initial_state=initial_state,dtype=tf.float32,)
+
+
+
 
 
 if __name__ == '__main__':
-    cnn=CNN()
-    cnn.cnn_model()
+    rnn=LSTM()
+
 
 
