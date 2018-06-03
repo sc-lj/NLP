@@ -84,16 +84,18 @@ class LSTM(CNN):
         # dropout
         cell=tf.nn.rnn_cell.DropoutWrapper(cell,input_keep_prob=self.arg.lstm_dropout)
         # 多层rnn
-        cell=tf.nn.rnn_cell.MultiRNNCell([cell]*self.arg.lstm_layer_num)
+        # cell=tf.nn.rnn_cell.MultiRNNCell([cell]*self.arg.lstm_layer_num)
 
         initial_state=cell.zero_state(self.arg.batch_size,dtype=tf.float32)
 
         inputs=self.new_convds
         sequence_length=tf.shape(inputs)[1]
+        sequence_length = tf.expand_dims(sequence_length, axis=0, name='sequence_length')
+
         if self.arg.is_bidirectional:
-            outputs,states=tf.nn.bidirectional_dynamic_rnn(cell,cell,inputs=inputs,sequence_length=sequence_length,initial_state_bw=initial_state,initial_state_fw=initial_state)
+            outputs,states=tf.nn.bidirectional_dynamic_rnn(cell,cell,inputs=inputs,initial_state_bw=initial_state,initial_state_fw=initial_state)
         else:
-            outputs,states=tf.nn.dynamic_rnn(cell,inputs=inputs,sequence_length=sequence_length,initial_state=initial_state,dtype=tf.float32,)
+            outputs,states=tf.nn.dynamic_rnn(cell,inputs=inputs,initial_state=initial_state,dtype=tf.float32,)
 
 
 
