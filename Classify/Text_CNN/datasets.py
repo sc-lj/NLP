@@ -1,6 +1,6 @@
 # coding:utf-8
 
-import zipfile
+import zipfile,threading
 import chardet,codecs
 from xml.dom import minidom
 from urllib.parse import urlparse
@@ -106,9 +106,10 @@ def read_dir(dir):
 
 
 class DealData(object):
+    queue = Queue()
     def __init__(self,arg,logger):
         self.arg=arg
-        self.filename=self.arg.corpus_txt
+        self.filename=self.arg.test_txt
         self.stopfile=self.arg.stopfile
         self.logger=logger
         self.max_sequence_length = 0
@@ -118,7 +119,7 @@ class DealData(object):
         self.cont_label = []# 文本内容和标签
         self.word_freq=Counter()#词频表,Counter能对key进行累加
 
-        self.get_label_content()
+        self.multi_thread()
 
         self.gene_dict()
 
@@ -134,20 +135,36 @@ class DealData(object):
                 yield label,content,title
                 data = f.readline()
 
-    def callback(self,one_line,label):
-        self.vocab.update(set(one_line))
-        self.word_freq.update(Counter(one_line))
-        if len(one_line) > self.max_sequence_length:
-            self.max_sequence_length = len(one_line)
+    def callback(self):
+        while True:
+            if self.queue.empty():
+                break
+            one_line,label=self.queue.get()
+            self.vocab.update(set(one_line))
+            self.word_freq.update(Counter(one_line))
+            if len(one_line) > self.max_sequence_length:
+                self.max_sequence_length = len(one_line)
 
-        self.labels.add(label)
-        self.cont_label.append([one_line, label])
+            self.labels.add(label)
+            self.cont_label.append([one_line, label])
+
+    def multi_thread(self):
+        self.logger.info('开始处理文本内容和标签')
+        t1=threading.Thread(target=self.get_label_content)
+        t1.start()
+        time.sleep(3)
+        t=threading.Thread(target=self.callback)
+        t.start()
+
+        t1.join()
+        t.join()
+        self.logger.info('语料库的文本和标签处理完毕')
 
     def get_label_content(self):
         """
         利用多进程方法快速处理文本
         """
-        self.logger.info('开始处理文本内容和标签')
+
         stopword=self.readstopword()
         pool_num=cpu_count()-2
         pool = Pool(processes=pool_num)
@@ -157,15 +174,14 @@ class DealData(object):
                 continue
             # self.get_vocab(content,label)
             line_label=pool.apply_async(self.get_vocab,(content,label,stopword,))
-            results.append(line_label)
+            # results.append(line_label)
 
         pool.close()
         pool.join()
 
-        for r in results:
-            line,label=r.get()
-            self.callback(line,label)
-        self.logger.info('语料库的文本和标签处理完毕')
+        # for r in results:
+        #     line,label=r.get()
+        #     self.callback(line,label)
 
 
     def readstopword(self):
@@ -205,7 +221,8 @@ class DealData(object):
                 one_line.extend(list(one))
 
         one_line=set(one_line).difference(stopword)
-        return [one_line,label]
+        DealData.queue.put([one_line,label])
+        # return [one_line,label]
 
     def gene_dict(self):
         """
