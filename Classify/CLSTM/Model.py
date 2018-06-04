@@ -63,8 +63,7 @@ class LSTM(CNN):
     def __init__(self):
         CNN.__init__(self)
         self.label = tf.placeholder(shape=[None, ], name='label', dtype=tf.float32)
-
-        self.lstm()
+        self.train()
 
     def rnn_cell(self):
         # BasicLSTMCell类没有实现clipping，projection layer，peep-hole等一些lstm的高级变种，仅作为一个基本的basicline结构存在。
@@ -110,8 +109,8 @@ class LSTM(CNN):
                 with tf.variable_scope(None, default_name="bidirectional_rnn"):
                     cell_fw, cell_bw, initial_state_fw, initial_state_bw = self.cell()
                     outputs,states=tf.nn.bidirectional_dynamic_rnn(cell_fw,cell_bw,inputs=inputs,initial_state_bw=initial_state_fw,initial_state_fw=initial_state_bw)
-                    print(outputs[0].get_shape().as_list())
                     inputs=tf.concat(outputs,2)
+
             output_state_fw, output_state_bw=states
             final_state_c = tf.concat((output_state_fw.c, output_state_bw.c), 1)
             final_state_h = tf.concat((output_state_fw.h, output_state_bw.h), 1)
@@ -120,6 +119,11 @@ class LSTM(CNN):
             return inputs,outputs_final_state
 
 
+    def train(self):
+        outputs,state=self.lstm()
+        # outputs shape :[batch，cnn_embedding（steps），rnn_hidden_unite*2]
+        # 这是取出最后一个时刻（steps）的outputs
+        h_state=outputs[:,-1,:]
 
 
 if __name__ == '__main__':
