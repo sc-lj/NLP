@@ -35,5 +35,9 @@ bow-CNN模型改善了seq-CNN模型，它直接将相邻几个词的位置写入
 
 由于文本中存在全角数字，而全角数字的Unicode编码范围为：\uff10-\uff19 表示0-9
 
+
+注意：
+该程序还需要优化，这个程序很占内存，特别是在处理数据的时候。不要轻易在电脑上运行corpus文本，运行test文本还是可以的。
+
 [1]: images/seq-cnn.jpg
 [2]: images/bow-cnn.jpg
