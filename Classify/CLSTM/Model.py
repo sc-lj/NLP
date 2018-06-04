@@ -64,7 +64,7 @@ class LSTM(CNN):
         CNN.__init__(self)
         self.label = tf.placeholder(shape=[None, ], name='label', dtype=tf.float32)
 
-        self.bilstm()
+        self.lstm()
 
     def rnn_cell(self):
         # BasicLSTMCell类没有实现clipping，projection layer，peep-hole等一些lstm的高级变种，仅作为一个基本的basicline结构存在。
@@ -76,27 +76,48 @@ class LSTM(CNN):
     def gru_cell(self):
         return tf.nn.rnn_cell.GRUCell(self.arg.rnn_hidden_unite)
 
-    def bilstm(self):
+    def cell(self):
         if self.arg.is_lstm:
-            cell=self.rnn_cell()
+            cell_fw=self.rnn_cell()
+            cell_bw=self.rnn_cell()
         else:
-            cell=self.gru_cell()
+            cell_fw=self.gru_cell()
+            cell_bw=self.gru_cell()
         # dropout
-        cell=tf.nn.rnn_cell.DropoutWrapper(cell,input_keep_prob=self.arg.lstm_dropout)
-        # 多层rnn
-        # cell=tf.nn.rnn_cell.MultiRNNCell([cell]*self.arg.lstm_layer_num)
+        cell_fw=tf.nn.rnn_cell.DropoutWrapper(cell_fw,input_keep_prob=self.arg.lstm_dropout)
+        cell_bw=tf.nn.rnn_cell.DropoutWrapper(cell_bw,input_keep_prob=self.arg.lstm_dropout)
 
-        initial_state=cell.zero_state(self.arg.batch_size,dtype=tf.float32)
+        initial_state_bw=cell_bw.zero_state(self.arg.batch_size,dtype=tf.float32)
+        initial_state_fw = cell_fw.zero_state(self.arg.batch_size, dtype=tf.float32)
+        return cell_fw,cell_bw,initial_state_fw,initial_state_bw
 
+    def lstm(self):
         inputs=self.new_convds
-        sequence_length=tf.shape(inputs)[1]
+        sequence_length=inputs.get_shape()[1]
         sequence_length = tf.expand_dims(sequence_length, axis=0, name='sequence_length')
 
-        if self.arg.is_bidirectional:
-            outputs,states=tf.nn.bidirectional_dynamic_rnn(cell,cell,inputs=inputs,initial_state_bw=initial_state,initial_state_fw=initial_state)
+        if not self.arg.multbilstm:
+            cell_fw, cell_bw, initial_state_fw, initial_state_bw = self.cell()
+            if self.arg.is_bidirectional:
+                outputs,states=tf.nn.bidirectional_dynamic_rnn(cell_fw,cell_bw,inputs=inputs,initial_state_bw=initial_state_fw,initial_state_fw=initial_state_bw)
+                outputs=tf.concat(outputs,2)
+            else:
+                outputs,states=tf.nn.dynamic_rnn(cell_fw,inputs=inputs,initial_state=initial_state_fw,dtype=tf.float32,)
+            return outputs,states
         else:
-            outputs,states=tf.nn.dynamic_rnn(cell,inputs=inputs,initial_state=initial_state,dtype=tf.float32,)
-
+            for i in range(self.arg.lstm_layer_num):
+                # 加这个variable_scope,是因为tf在rnn_cell的__call__中有一个命名空间检查，如果不在这加的话,会报错的.
+                with tf.variable_scope(None, default_name="bidirectional_rnn"):
+                    cell_fw, cell_bw, initial_state_fw, initial_state_bw = self.cell()
+                    outputs,states=tf.nn.bidirectional_dynamic_rnn(cell_fw,cell_bw,inputs=inputs,initial_state_bw=initial_state_fw,initial_state_fw=initial_state_bw)
+                    print(outputs[0].get_shape().as_list())
+                    inputs=tf.concat(outputs,2)
+            output_state_fw, output_state_bw=states
+            final_state_c = tf.concat((output_state_fw.c, output_state_bw.c), 1)
+            final_state_h = tf.concat((output_state_fw.h, output_state_bw.h), 1)
+            outputs_final_state = tf.nn.rnn_cell.LSTMStateTuple(c=final_state_c,
+                                                                h=final_state_h)
+            return inputs,outputs_final_state
 
 
 

@@ -23,7 +23,7 @@ def argument():
     # cnn模型的embedding大小
     cnn_parse.add_argument('--cnn_embedding',default=500,type=int,help='embedding size of cnn model')
     # cnn模型的卷积核数量
-    cnn_parse.add_argument('--cnn_filter_num',default=128,type=int,help='filter num of cnn model')
+    cnn_parse.add_argument('--cnn_filter_num',default=64,type=int,help='filter num of cnn model')
     # cnn模型卷积核大小，给定的list，是多个卷积核的大小
     cnn_parse.add_argument('--cnn_filter_size',default=[3,4,5],type=list,help='Comma-separated filter sizes (default: "3,4,5")')
     # 输入cnn模型的句子最大长度
@@ -39,6 +39,9 @@ def argument():
     lstm.add_argument('--lstm_dropout',default=0.6,type=int,help='dropout prob of LSTM model')
     # lstm模型的层数，
     lstm.add_argument('--lstm_layer_num',default=5,type=int,help='the layer number of lstm ')
+
+    # 是否使用多层双向lstm
+    lstm.add_argument('--multbilstm',default=True,type=bool,help='whether use multiple bilstm (default: False)')
 
     arg=parser.parse_args()
     return arg
