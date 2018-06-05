@@ -138,7 +138,10 @@ class DealData(object):
     def callback(self):
         while True:
             if self.queue.empty():
-                break
+                time.sleep(10)
+                if self.queue.empty():
+                    break
+                else:continue
             one_line,label=self.queue.get()
             self.vocab.update(set(one_line))
             self.word_freq.update(Counter(one_line))
@@ -150,10 +153,10 @@ class DealData(object):
 
     def multi_thread(self):
         self.logger.info('开始处理文本内容和标签')
-        t1=threading.Thread(target=self.get_label_content)
+        t1=Process(target=self.get_label_content)
         t1.start()
         time.sleep(3)
-        t=threading.Thread(target=self.callback)
+        t=Process(target=self.callback)
         t.start()
 
         t1.join()
@@ -166,18 +169,18 @@ class DealData(object):
         """
 
         stopword=self.readstopword()
-        pool_num=cpu_count()-2
-        pool = Pool(processes=pool_num)
-        results=[]
+        # pool_num=cpu_count()-2
+        # pool = Pool(processes=pool_num)
+        # results=[]
         for label, content, title in self.read_file():
             if len(content.strip())==0:
                 continue
-            # self.get_vocab(content,label)
-            line_label=pool.apply_async(self.get_vocab,(content,label,stopword,))
+            self.get_vocab(content,label,stopword)
+            # line_label=pool.apply_async(self.get_vocab,(content,label,stopword,))
             # results.append(line_label)
 
-        pool.close()
-        pool.join()
+        # pool.close()
+        # pool.join()
 
         # for r in results:
         #     line,label=r.get()
