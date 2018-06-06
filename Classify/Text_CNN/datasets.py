@@ -114,10 +114,10 @@ class DealData(object):
         self.logger=logger
         self.max_sequence_length = 0
 
-        self.labels=set()# 标签集
-        self.vocab=set()#词汇表
-        self.cont_label = []# 文本内容和标签
-        self.word_freq=Counter()#词频表,Counter能对key进行累加
+        self.labels = set()  # 标签集
+        self.vocab = set()  # 词汇表
+        self.cont_label = []  # 文本内容和标签
+        self.word_freq = Counter()  # 词频表,Counter能对key进行累加
 
         self.multi_thread()
 
@@ -127,6 +127,7 @@ class DealData(object):
         self.vector_length=len(self.vocab)
         self.lable_length=len(self.labels)
 
+        print(len(self.cont_label))
     def read_file(self):
         with open(self.filename,'r') as f:
             data=f.readline()
@@ -137,9 +138,9 @@ class DealData(object):
 
     def callback(self):
         while True:
-            if self.queue.empty():
+            if DealData.queue.empty():
                 break
-            one_line,label=self.queue.get()
+            one_line,label=DealData.queue.get()
             self.vocab.update(set(one_line))
             self.word_freq.update(Counter(one_line))
             if len(one_line) > self.max_sequence_length:
@@ -147,6 +148,8 @@ class DealData(object):
 
             self.labels.add(label)
             self.cont_label.append([one_line, label])
+
+
 
     def multi_thread(self):
         self.logger.info('开始处理文本内容和标签')
@@ -172,7 +175,7 @@ class DealData(object):
         for label, content, title in self.read_file():
             if len(content.strip())==0:
                 continue
-            # self.get_vocab(content,label)
+            # self.get_vocab(content,label,stopword)
             line_label=pool.apply_async(self.get_vocab,(content,label,stopword,))
             # results.append(line_label)
 
@@ -219,7 +222,6 @@ class DealData(object):
                 one_line.append(one)
             else:
                 one_line.extend(list(one))
-
         one_line=set(one_line).difference(stopword)
         DealData.queue.put([one_line,label])
         # return [one_line,label]
