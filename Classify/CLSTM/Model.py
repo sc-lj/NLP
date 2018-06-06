@@ -60,9 +60,10 @@ class CNN():
         self.reg=tf.contrib.layers.apply_regularization(regularizer)
 
 class LSTM(CNN):
-    def __init__(self):
+    def __init__(self,class_num):
         CNN.__init__(self)
-        self.label = tf.placeholder(shape=[None, ], name='label', dtype=tf.float32)
+        self.class_num=class_num
+        self.label = tf.placeholder(shape=[None, self.class_num], name='label', dtype=tf.float32)
         self.train()
 
     def rnn_cell(self):
@@ -124,10 +125,21 @@ class LSTM(CNN):
         # outputs shape :[batch，cnn_embedding（steps），rnn_hidden_unite*2]
         # 这是取出最后一个时刻（steps）的outputs
         h_state=outputs[:,-1,:]
+        weight=self.weight_variable([self.arg.rnn_hidden_unite*2,self.class_num])
+        bias=self.bias_variable([self.class_num])
+        prediction=tf.nn.softmax(tf.matmul(h_state,weight)+bias)
+
+        cost=tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(self.label,prediction))
+        self.train_op=tf.train.AdamOptimizer(self.arg.learn_rate).minimize(cost)
+
+        correct_prod=tf.equal(tf.argmax(prediction,1),tf.argmax(self.label,1))
+        self.accuracy=tf.reduce_mean(tf.cast(correct_prod,tf.int32))
+
+
 
 
 if __name__ == '__main__':
-    rnn=LSTM()
+    rnn=LSTM(23)
 
 
 
