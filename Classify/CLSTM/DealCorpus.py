@@ -7,8 +7,6 @@ from multiprocessing import cpu_count,Pool,Process
 from queue import Queue
 from Config import *
 
-def callbackfun():
-    pass
 
 class Deal(object):
     queue = Queue(5000)
@@ -38,12 +36,9 @@ class Deal(object):
                 yield label,content,title
                 data = f.readline()
 
-    def args(self):
-        return self.arg.target_file
 
-    @staticmethod
     def callback(self,label,one_line):
-        print(label, len(one_line))
+        print(label,len(one_line))
         with open(self.arg.target_file,'w') as f:
             data=json.dumps({label:one_line})
             f.writelines(data+'\n')
@@ -67,17 +62,17 @@ class Deal(object):
 
         stopword=self.readstopword()
         pool_num=cpu_count()-2
-        pool = Pool(processes=pool_num)
+        # pool = Pool(processes=pool_num)
         # results=[]
         for label, content, title in self.read_file():
             if len(content.strip())==0:
                 continue
-            # self.get_vocab(content,label,stopword)
-            pool.apply_async(self.get_vocab,args=(self,content,label,stopword,),callback=self.callback)
+            self.get_vocab(content,label,stopword)
+            # pool.apply_async(self.get_vocab,(content,label,stopword,))
             # results.append(line_label)
 
-        pool.close()
-        pool.join()
+        # pool.close()
+        # pool.join()
 
     def readstopword(self):
         with open(self.stopfile,'r') as f:
@@ -87,7 +82,7 @@ class Deal(object):
     # 在类中使用multiprocessing，当multiprocessing需要执行类方法的时候，必须将该类方法装饰成静态方法。
     # 静态方法是无法调用实例属性的，所以需要将值当作参数。
     @staticmethod
-    def get_vocab(self,line,label,stopword):
+    def get_vocab(line,label,stopword):
         """
         处理文本，主要是剔除掉一些无意义的字符，并且提取出日期格式用<DATE>字符代替，数字用<NUM>字符代替
         :param line: 输入的是单个文本
@@ -118,8 +113,8 @@ class Deal(object):
         one_line=set(one_line).difference(stopword)
         if Deal.queue.full():
             time.sleep(0.5)
-        # Deal.queue.put([one_line,label])
-        return self,label,list(one_line)
+        Deal.queue.put([one_line,label])
+        # return label,list(one_line)
 
 
 if __name__ == '__main__':
