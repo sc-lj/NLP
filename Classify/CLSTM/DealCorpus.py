@@ -37,11 +37,18 @@ class Deal(object):
                 data = f.readline()
 
 
-    def callback(self,label,one_line):
-        print(label,len(one_line))
-        with open(self.arg.target_file,'w') as f:
+    def callback(self):
+
+        f= open(self.arg.target_file,'w')
+        while True:
+            if Deal.queue.empty():
+                time.sleep(3)
+                if Deal.queue.empty():
+                    break
+            one_line,label=Deal.queue.get()
             data=json.dumps({label:one_line})
             f.writelines(data+'\n')
+        f.close()
 
     def multi_thread(self):
         self.logger.info('开始处理文本内容和标签')
