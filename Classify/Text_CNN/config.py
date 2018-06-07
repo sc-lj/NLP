@@ -98,6 +98,9 @@ def Argparse():
     # 停用词语料库存放地址
     parser.add_argument('--stopfile',default='../../Dataset/stopwords/stopwords.txt',help='stop words file',type=str)
 
+    # 将处理过的文本保存的目标文件
+    parser.add_argument('--target_file',default='../../Dataset/target_file.txt',help='After deal corpus txt ,where is save',type=str)
+
     arg=parser.parse_args()
     return arg
 
