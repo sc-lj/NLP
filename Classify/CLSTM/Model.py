@@ -123,9 +123,10 @@ class LSTM(CNN):
     def train(self):
         outputs,state=self.lstm()
         # outputs shape :[batch，cnn_embedding（steps），rnn_hidden_unite*2]
-        # 这是取出最后一个时刻（steps）的outputs
+        # 这是取出最后一个时刻（steps）的outputs,即shape [batch,rnn_hidden_unite*2]
         h_state=outputs[:,-1,:]
         weight=self.weight_variable([self.arg.rnn_hidden_unite*2,self.class_num])
+
         bias=self.bias_variable([self.class_num])
         prediction=tf.nn.softmax(tf.matmul(h_state,weight)+bias)
 
@@ -135,6 +136,16 @@ class LSTM(CNN):
         correct_prod=tf.equal(tf.argmax(prediction,1),tf.argmax(self.label,1))
         self.accuracy=tf.reduce_mean(tf.cast(correct_prod,tf.int32))
 
+        biase=self.bias_variable([self.class_num])
+        prediction=tf.nn.softmax(tf.matmul(h_state,weight)+biase)
+
+        # 损失和评估函数
+        # cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(self.label, prediction))
+        cross_entropy = -tf.reduce_mean(self.label * tf.log(prediction))
+        self.train_op = tf.train.AdamOptimizer(self.arg.learn_rate).minimize(cross_entropy)
+
+        correct_prediction = tf.equal(tf.argmax(prediction, 1), tf.argmax(self.label, 1))
+        self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
 
 
 
