@@ -1,14 +1,111 @@
 # coding:utf-8
 
-import threading
-import string,re,time,json,os
-from collections import Counter
 from multiprocessing import cpu_count,Pool,Process
 from queue import Queue
 from Config import *
 
-import string,re,time,json,os,threading
 import matplotlib.pyplot as plt
+import zipfile,threading
+import chardet,codecs
+from xml.dom import minidom
+from urllib.parse import urlparse
+import string,re,time,json,os
+
+
+# 根据搜狐新闻的网址的host，将这些划分如下
+dicurl={'media':'传媒','baobao':'母婴','stock':'金融','it':'IT','fund':'金融','bschool':'商业','expo2010':"城市",'auto':"汽车",
+        "cul":"娱乐文化","2012":"体育","goabroad":'教育','yule':"娱乐文化","travel":"旅游","2010":"体育","astro":"星座","sh":"城市",
+        "women":"健康","s":"体育","dm":"动漫","chihe":"美食","2008":"体育","learning":"教育","business":"商业",
+        "gongyi":"公益","men":"健康","health":"健康","sports":"体育","money":"金融","green":"美食","gd":"城市"}
+
+# 解压zip文件
+def extract_zip(filename):
+    with zipfile.ZipFile(filename) as files:
+        for single in files.namelist():
+            files.extract(single,'./')
+
+# 检测文本的编码格式
+def detext_souhu_encod(filename):
+    f=open(filename,'rb')
+    data=f.read()
+    predict=chardet.detect(data)
+    f.close()
+    return predict['encoding']
+
+#
+def read_souhu_corpus(filename,encode):
+    dometree=[]
+    with open(filename,'r',encoding=encode,errors='ignore') as f:
+        for line in f:
+            if '<doc>' in line:
+                line='<docs>\n'
+                dometree=[]
+            dometree.append(line)
+            if '</doc>' in line:
+                lines= ''.join(dometree)
+                lines=lines.replace('</doc>','</docs>')
+                lines=lines.replace('&', '.')# 语料库中要将&替换成.，不然会出错的
+                yield lines.encode('utf-8')
+
+def map_function(da):
+    doc=minidom.parseString(da)
+    root=doc.documentElement
+    url=root.getElementsByTagName('url')[0].childNodes[0].data
+    host=urlparse(url).netloc
+    try:
+        content=root.getElementsByTagName('content')[0].childNodes[0].data
+    except:
+        content=''
+    try:
+        title=root.getElementsByTagName('contenttitle')[0].childNodes[0].data
+    except:
+        title=''
+    return host,content,title
+
+def strQ2B(ustring):
+    """全角转半角"""
+    rstring = ""
+    for uchar in ustring:
+        inside_code = ord(uchar)
+        if inside_code == 12288:  # 全角空格直接转换
+            inside_code = 32
+        elif (inside_code >= 65281 and inside_code <= 65374):  # 全角字符（除空格）根据关系转化
+            inside_code -= 65248
+        rstring += chr(inside_code)
+    return rstring
+
+def write_file(data):
+    pool=Pool(3)
+    host_content=pool.map(map_function,data)
+    pool.close()
+    pool.join()
+    with open('./new_sohu.txt','a+') as f:
+        for host,content,title in host_content:
+            content=content.replace('\n','')
+            for label in host.split('.'):
+                if label in dicurl:
+                    labels=dicurl[label]
+                    break
+                else:
+                    labels=None
+            if labels==None:
+                continue
+
+            cont=labels+"++"+title+"++"+content.strip()
+            cont=strQ2B(cont)
+            f.write(cont+'\n')
+
+def read_dir(dir):
+    for files in os.listdir(dir):
+        path=os.path.join(dir,files)
+        data=read_souhu_corpus(path,'gb2312')
+        write_file(data)
+
+# data=read_souhu_corpus('/Users/apple/Downloads/SogouCA/news.allsites.sports.6307.txt','GB2312')
+# write_file(data)
+
+# read_dir('/Users/apple/Downloads/SogouCS/')
+
 
 class Deal(object):
     queue = Queue()
@@ -42,8 +139,11 @@ class Deal(object):
         t=threading.Thread(target=self.callback)
         t.start()
 
-        t1.join()
-        t.join()
+        ts=[]
+        ts.extend([t1,t])
+        for i in ts:
+            i.join()
+        print('语料库的文本和标签处理完毕')
         self.logger.info('语料库的文本和标签处理完毕')
 
 
