@@ -104,12 +104,13 @@ def read_dir(dir):
 # data=read_souhu_corpus('/Users/apple/Downloads/SogouCA/news.allsites.sports.6307.txt','GB2312')
 # write_file(data)
 
-# read_dir('/Users/apple/Downloads/SogouCS/')
+read_dir('../Dataset/corpus/SogouCA/')
 
 
 class Deal(object):
     queue = Queue()
     def __init__(self,arg,logger):
+        self.punctuation = re.compile(u"[~!@#$%^&*()_+`=\[\]\\\{\}\"|;':,./<>?·！@#￥%……&*（）——+【】,、；‘：“”，。、《》？「『」』＃\t\n]+")
         self.arg=arg
         self.filename=self.arg.corpus_txt
         self.target_file=self.arg.target_file
@@ -161,15 +162,14 @@ class Deal(object):
                 time.sleep(10)
                 if Deal.queue.empty():
                     break
-            one_line,label=Deal.queue.get()
+            one_line,label,title=Deal.queue.get()
             if len(one_line)<10:
                 continue
             if label in self.label_num:
                 self.label_num[label]+=1
             else:
                 self.label_num[label]=1
-            # print(label,len(one_line))
-            data=json.dumps({label:list(one_line)})
+            data=json.dumps({label+title:list(one_line)})
             f.write(data+'\n')
             j+=1
         f.close()
@@ -189,7 +189,7 @@ class Deal(object):
         for label, content, title in self.read_file():
             if len(content.strip())==0:
                 continue
-            self.get_vocab(content,label,stopword)
+            self.get_vocab(self,content,label,stopword,title)
             # pool.apply_async(self.get_vocab,(content,label,stopword,))
             # results.append(line_label)
 
@@ -200,14 +200,14 @@ class Deal(object):
     # 在类中使用multiprocessing，当multiprocessing需要执行类方法的时候，必须将该类方法装饰成静态方法。
     # 静态方法是无法调用实例属性的，所以需要将值当作参数。
     @staticmethod
-    def get_vocab(line,label,stopword):
+    def get_vocab(self,line,label,stopword,title):
         """
         处理文本，主要是剔除掉一些无意义的字符，并且提取出日期格式用<DATE>字符代替，数字用<NUM>字符代替
         :param line: 输入的是单个文本
         :return:
         """
-        punctuation = re.compile(u"[~!@#$%^&*()_+`=\[\]\\\{\}\"|;':,./<>?·！@#￥%……&*（）——+【】,、；‘：“”，。、《》？「『」』＃\t\n]+")
-        rule = re.compile(r"[^-a-zA-Z0-9\u4e00-\u9fa5]")  # 去除所有全角符号，只留字母、数字、中文。要保留-符号，以防2014-3-23时间类型出现
+        print(self.punctuation)
+        rule = re.compile(r"[^-a-zA-Z0-9\u4e00-\u9fa5]")  # 去除所有全角符号，只留字母、数字、中文。要保留-符号，以防2014-3-23时间类型出现,而被删除
         num=re.compile('\d{1,}')#将文本中的数字替换成该标示符
         # date=re.compile("((^((1[8-9]\d{2})|([2-9]\d{3}))([-\/\._])(10|12|0?[13578])([-\/\._])(3[01]|[12][0-9]|0?[1-9])$)|(^((1[8-9]\d{2})|([2-9]\d{3}))([-\/\._])(11|0?[469])([-\/\._])(30|[12][0-9]|0?[1-9])$)|(^((1[8-9]\d{2})|([2-9]\d{3}))([-\/\._])(0?2)([-\/\._])(2[0-8]|1[0-9]|0?[1-9])$)|(^([2468][048]00)([-\/\._])(0?2)([-\/\._])(29)$)|(^([3579][26]00)([-\/\._])(0?2)([-\/\._])(29)$)|(^([1][89][0][48])([-\/\._])(0?2)([-\/\._])(29)$)|(^([2-9][0-9][0][48])([-\/\._])(0?2)([-\/\._])(29)$)|(^([1][89][2468][048])([-\/\._])(0?2)([-\/\._])(29)$)|(^([2-9][0-9][2468][048])([-\/\._])(0?2)([-\/\._])(29)$)|(^([1][89][13579][26])([-\/\._])(0?2)([-\/\._])(29)$)|(^([2-9][0-9][13579][26])([-\/\._])(0?2)([-\/\._])(29)$))|(^\d{4}年\d{1,2}月\d{1,2}日$)$")
         date=re.compile("((\d{4}|\d{2})(\-|\/|\.)\d{1,2}(\-|\/|\.)\d{1,2})|((\d{4}年)?\d{1,2}月\d{1,2}日)")
@@ -215,7 +215,7 @@ class Deal(object):
         alpha=re.compile(string.ascii_letters)
         one_line = []
         line=alpha.sub('',line)# 去掉字母
-        line=punctuation.sub('',line)#
+        line=self.punctuation.sub('',line)#
 
         line = date.sub(' <DATE> ', line)  # 注意<DATE>前后要留空格，方便后面好分割
         line = num.sub(' <NUM> ', line)
@@ -231,7 +231,7 @@ class Deal(object):
         one_line=set(one_line).difference(stopword)
         if Deal.queue.full():
             time.sleep(0.5)
-        Deal.queue.put([one_line,label])
+        Deal.queue.put([one_line,label,title])
         # return label,list(one_line)
 
 
