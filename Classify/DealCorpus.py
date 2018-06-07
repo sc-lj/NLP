@@ -1,5 +1,7 @@
 # coding:utf-8
 
+import os,sys
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from multiprocessing import cpu_count,Pool,Process
 from queue import Queue
 from Config import *
@@ -79,7 +81,7 @@ def write_file(data):
     host_content=pool.map(map_function,data)
     pool.close()
     pool.join()
-    with open('./new_sohu.txt','a+') as f:
+    with open('./new_sohu_utf_8.txt','a+') as f:
         for host,content,title in host_content:
             content=content.replace('\n','')
             for label in host.split('.'):
@@ -98,13 +100,13 @@ def write_file(data):
 def read_dir(dir):
     for files in os.listdir(dir):
         path=os.path.join(dir,files)
-        data=read_souhu_corpus(path,'gb2312')
+        data=read_souhu_corpus(path,'utf-8')
         write_file(data)
 
 # data=read_souhu_corpus('/Users/apple/Downloads/SogouCA/news.allsites.sports.6307.txt','GB2312')
 # write_file(data)
 
-read_dir('../Dataset/corpus/SogouCA/')
+read_dir('../Dataset/corpus/SogouCA')
 
 
 class Deal(object):
@@ -234,10 +236,10 @@ class Deal(object):
         Deal.queue.put([one_line,label,title])
         # return label,list(one_line)
 
-
-if __name__ == '__main__':
-    arg=argument()
-    logger=log_config()
-    deal=Deal(arg,logger)
+#
+# if __name__ == '__main__':
+#     arg=argument()
+#     logger=log_config()
+#     deal=Deal(arg,logger)
 
 
