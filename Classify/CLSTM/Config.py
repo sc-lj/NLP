@@ -5,6 +5,18 @@ import argparse
 def argument():
     parser= argparse.ArgumentParser()
 
+    # 语料库文件存放位置
+    parser.add_argument('--corpus_txt',default='../../Dataset/new_sohu.txt',help='where is corpus',type=str)
+
+    # 测试语料库存放地址
+    parser.add_argument('--test_txt',default='../../Dataset/test.txt',help='where is test corpus',type=str)
+
+    # 停用词语料库存放地址
+    parser.add_argument('--stopfile',default='../../Dataset/stopwords/stopwords.txt',help='stop words file',type=str)
+
+    # 处理文件后，将数据保存下来
+    parser.add_argument('--target_file',default='../../Dataset/test.txt',type=str,help='after deal corpus ,this data would be saved ')
+
     # 是否处于训练阶段
     parser.add_argument('--is_training',default=True,type=bool,help='whether is training (default:True)')
 
@@ -43,8 +55,24 @@ def argument():
     # 是否使用多层双向lstm
     lstm.add_argument('--multbilstm',default=True,type=bool,help='whether use multiple bilstm (default: False)')
 
+    # lstm 模型优化学习率
+    lstm.add_argument('--learn_rate',default=0.9,type=int,help='the learning rate of lstm model')
+
     arg=parser.parse_args()
     return arg
 
+import logging
+
+def log_config():
+    logger=logging.getLogger(__file__)
+    logger.setLevel(logging.INFO)
+    # sh=logging.FileHandler('./log.log')
+    sh=logging.StreamHandler()
+    fmt='%(asctime)s %(filename)s %(funcName)s %(lineno)s line %(levelname)s >>%(message)s'
+    dtfmt='%Y-%m-%d %H:%M:%S'
+    formatter=logging.Formatter(fmt=fmt,datefmt=dtfmt)
+    sh.setFormatter(formatter)
+    logger.addHandler(sh)
+    return logger
 
 
