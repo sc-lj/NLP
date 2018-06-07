@@ -89,17 +89,8 @@ def Argparse():
     # 是否是在训练阶段
     parser.add_argument('--is_training',default=True,type=bool,help='whether is training this stage(default:True)')
 
-    # 语料库文件存放位置
-    parser.add_argument('--corpus_txt',default='../../Dataset/new_sohu.txt',help='where is corpus',type=str)
-
-    # 测试语料库存放地址
-    parser.add_argument('--test_txt',default='../../Dataset/test.txt',help='where is test corpus',type=str)
-
-    # 停用词语料库存放地址
-    parser.add_argument('--stopfile',default='../../Dataset/stopwords/stopwords.txt',help='stop words file',type=str)
-
     # 将处理过的文本保存的目标文件
-    parser.add_argument('--target_file',default='../../Dataset/target_file.txt',help='After deal corpus txt ,where is save',type=str)
+    parser.add_argument('--target_file', default='../../Dataset/target_file.txt',help='After deal corpus txt ,where is save', type=str)
 
     arg=parser.parse_args()
     return arg
@@ -107,8 +98,8 @@ def Argparse():
 
 import logging
 
-def log_config():
-    logger=logging.getLogger(__file__)
+def log_config(name):
+    logger=logging.getLogger(name)
     logger.setLevel(logging.INFO)
     sh=logging.FileHandler('./log.log')
     fmt='%(asctime)s %(filename)s %(funcName)s %(lineno)s line %(levelname)s >>%(message)s'
