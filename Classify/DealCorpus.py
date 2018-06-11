@@ -183,7 +183,6 @@ class Deal(object):
         """
         利用多进程方法快速处理文本
         """
-
         stopword=self.readstopword()
         pool_num=cpu_count()-2
         # pool = Pool(processes=pool_num)
@@ -230,13 +229,26 @@ class Deal(object):
             else:
                 one_line.extend(list(one))
 
-        one_line=set(one_line).difference(stopword)
+        one_line=self.diff(one_line,stopword)
         if Deal.queue.full():
             time.sleep(0.5)
-        Deal.queue.put([one_line,label,title])
-        # return label,list(one_line)
+        # Deal.queue.put([one_line,label,title])
+        return label,list(one_line)
 
-#
+    def diff(self,words,stopwords):
+        """
+        去掉words中包含的停用词，如果用set().difference()会导致得到的词序改变
+        :param words: 文本词汇
+        :param stopwords: 停用词
+        :return:
+        """
+        newwords=[]
+        for word in words:
+            if word not in stopwords:
+                newwords.append(word)
+        return newwords
+
+
 # if __name__ == '__main__':
 #     arg=argument()
 #     logger=log_config()
