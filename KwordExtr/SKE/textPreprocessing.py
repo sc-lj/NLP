@@ -33,7 +33,7 @@ def word_segmentation(fileName, path):
     print('------当前进行分词&词性标注&去重停用词&保留指定词性词语操作------')
     # 加载停用词文件
     # jieba.analyse.set_stop_words('dict_file/stop_words.txt')
-    stopWords = [line.strip().decode('utf-8') for line in open('dict_file/stop_words.txt').readlines()]
+    stopWords = [line.strip().encode('utf-8') for line in open('dict_file/stop_words.txt').readlines()]
 
     # 获取文件数据
     fileData = fileHandle.get_file_data(fileName, path)

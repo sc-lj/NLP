@@ -54,16 +54,16 @@ def main(fileName, path):
                 wordsStatisticsData[key][1]))
         ske[key] = score
 
-    ske = sorted(ske.iteritems(), key=lambda d: d[1], reverse=True)  # 降序排列
+    ske = sorted(ske.items(), key=lambda d: d[1], reverse=True)  # 降序排列
     # print json.dumps(ske, ensure_ascii=False)
     return ske
 
 if __name__ == "__main__":
     # 进行关键词提取的文章
     # curPath = fileHandle.get_cur_path()
-    curPath = 'corpus'
+    curPath = './corpus'
     # fileName = '1351409.txt' # bug调试
-    fileName = '1000005.txt'
+    fileName = '1000001.txt'
 
     print(json.dumps(main(fileName, curPath), ensure_ascii=False))
 
