@@ -15,7 +15,6 @@ def get_file_data(filename, path):
         fileData = fileObject.read()
         return fileData
     except:
-        pass
         return ''
     finally:
         pass
@@ -64,7 +63,7 @@ def write_file(filename, data, mode = 'a+'):
     fileObject = codecs.open(filePath, mode, 'utf-8')
     fileObject.write(str(data))
     fileObject.write('\n\n')
-    # fileObject.close()
+    fileObject.close()
 
 # 获取当前文件路径
 def get_cur_path():
@@ -78,7 +77,6 @@ def get_cur_path():
 
 
 if __name__ == "__main__":
-    pass
     curPath = get_cur_path()
     fileName = 'article.txt'
     fileData = get_file_data(fileName, curPath)

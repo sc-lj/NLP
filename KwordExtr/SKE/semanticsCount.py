@@ -49,7 +49,7 @@ def wordEncoding(word ,data = cilinCodeDatas):
     # 新词检测标记(新词为False,否则为True)
     flag = False
     wordNewEncodingDatas = []
-    for k, v in cilinDatas.iteritems():
+    for k, v in cilinDatas.items():
         # 此处对于《同义词词林》中不存在的单词进行了过滤
         # 对于自定义词库中的标签进行操作
         # 对于新词(存在于自定义标签库中)的处理：将所有编码均赋予它，这样其与其他单词的语义相似度均为1，不会影响其产生
@@ -239,7 +239,7 @@ def intermediaryDegreeDensity(fileName, path):
     max = 6
 
     # 对字典按照键值进行排序(降序)
-    sortedInterval = sorted(interval.iteritems(), key=lambda asd: asd[1], reverse=True)
+    sortedInterval = sorted(interval.items(), key=lambda asd: asd[1], reverse=True)
     # 获取当前居间度密度最大值
     maxratio, intervalDensity = refinementBC(sortedInterval, s)
 
@@ -284,7 +284,7 @@ def refinementBC(sortedInterval, s):
     # 按照居间度平均划分到不同的区间内，区间键为int，键值为单词(中间使用,连接)
     for key in sortedInterval:
         flag = int((key[1] - minIntermediaryDegree) / intervalScore)
-        if intervalDensity.has_key(flag):
+        if intervalDensity.get(flag):
             intervalDensity[flag] = intervalDensity.get(flag) + ',' + key[0]
         else:
             intervalDensity[flag] = key[0]
@@ -302,8 +302,6 @@ def refinementBC(sortedInterval, s):
 
 
 if __name__ == "__main__":
-    pass
-
     curPath = fileHandle.get_cur_path()
     fileName = 'article.txt'
 

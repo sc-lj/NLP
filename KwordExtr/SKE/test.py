@@ -2,7 +2,6 @@
 
 # 解决cmd命令行下输出中文字符乱码问题(必须放置在文本最前面)
 from __future__ import unicode_literals
-import sys
 import json
 import os
 

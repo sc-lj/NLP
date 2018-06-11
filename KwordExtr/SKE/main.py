@@ -60,7 +60,7 @@ def main(fileName, path):
 
 if __name__ == "__main__":
     # 进行关键词提取的文章
-    curPath = fileHandle.get_cur_path()
+    # curPath = fileHandle.get_cur_path()
     curPath = 'corpus'
     # fileName = '1351409.txt' # bug调试
     fileName = '1000005.txt'

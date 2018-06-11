@@ -8,9 +8,6 @@ import os
 import json
 import jieba
 import jieba.posseg as pseg
-import sys
-import string
-from sklearn import feature_extraction
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.feature_extraction.text import CountVectorizer
 
@@ -135,7 +132,7 @@ def Tfidf(segFileNameList, count = 10, segFilePath = 'segFile'):
             # 进行排序输出
             wordDatas[word[j]] = weight[i][j]
             # f.write(word[j] + "    " + str(weight[i][j]) + "\n")
-        sortedWordDatas = sorted(wordDatas.iteritems(), key=lambda d: d[1], reverse=True)  # 降序排列
+        sortedWordDatas = sorted(wordDatas.items(), key=lambda d: d[1], reverse=True)  # 降序排列
 
         # 提取指定个数的关键词
         keywordData = []

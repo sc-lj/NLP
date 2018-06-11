@@ -9,8 +9,6 @@
 from __future__ import unicode_literals
 import os
 import json
-import sys
-
 import jieba
 import jieba.posseg as pseg
 
@@ -65,7 +63,6 @@ def word_segmentation(fileName, path):
     return wordsStatisticsData, wordsData
 
 if __name__ == "__main__":
-    pass
     curPath = fileHandle.get_cur_path()
     fileName = 'article2.txt'
     wordsStatisticsData, wordsData = word_segmentation(fileName, curPath)
