@@ -123,6 +123,7 @@ class Deal(object):
 
         self.multi_thread()
 
+
     def read_file(self):
         with open(self.filename,'r') as f:
             data=f.readline()
@@ -133,6 +134,7 @@ class Deal(object):
                     continue
                 yield label,content,title
                 data = f.readline()
+
 
     def multi_thread(self):
         self.logger.info('开始处理文本内容和标签')
@@ -230,10 +232,12 @@ class Deal(object):
                 one_line.extend(list(one))
 
         one_line=self.diff(one_line,stopword)
+        if len(one_line)<10:
+            return
         if Deal.queue.full():
             time.sleep(0.5)
-        # Deal.queue.put([one_line,label,title])
-        return label,list(one_line)
+        Deal.queue.put([one_line,label,title])
+        # return label,list(one_line)
 
     def diff(self,words,stopwords):
         """
