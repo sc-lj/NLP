@@ -232,11 +232,10 @@ class Deal(object):
                 one_line.extend(list(one))
 
         one_line=self.diff(one_line,stopword)
-        if len(one_line)<10:
-            return
         if Deal.queue.full():
             time.sleep(0.5)
-        Deal.queue.put([one_line,label,title])
+        if len(one_line)>10:
+            Deal.queue.put([one_line,label,title])
         # return label,list(one_line)
 
     def diff(self,words,stopwords):
