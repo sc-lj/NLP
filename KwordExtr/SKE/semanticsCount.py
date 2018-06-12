@@ -196,9 +196,7 @@ def intermediaryDegreeScore(word, shortestDatas):
     Score = 0
     for m in shortestDatas.keys():
         for k in shortestDatas.keys():
-            if m == k:
-                pass
-            else:
+            if m != k:
                 # 计算两个顶点间的最短路径数(此处可能有歧义)
                 try:
                     path = shortestDatas[m][k]['path']
