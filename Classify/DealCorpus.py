@@ -1,10 +1,11 @@
 # coding:utf-8
 
 import os,sys
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from multiprocessing import cpu_count,Pool,Process
 from queue import Queue
-from Config import *
+from GloConfi import *
 
 import matplotlib.pyplot as plt
 import zipfile,threading
@@ -81,7 +82,7 @@ def write_file(data):
     host_content=pool.map(map_function,data)
     pool.close()
     pool.join()
-    with open('./new_sohu_utf_8.txt','a+') as f:
+    with open('../Dataset/new_sohu.txt','a+') as f:
         for host,content,title in host_content:
             content=content.replace('\n','')
             for label in host.split('.'):
@@ -92,7 +93,6 @@ def write_file(data):
                     labels=None
             if labels==None:
                 continue
-
             cont=labels+"++"+title+"++"+content.strip()
             cont=strQ2B(cont)
             f.write(cont+'\n')
@@ -100,13 +100,10 @@ def write_file(data):
 def read_dir(dir):
     for files in os.listdir(dir):
         path=os.path.join(dir,files)
-        data=read_souhu_corpus(path,'utf-8')
+        data=read_souhu_corpus(path,'gb2312')
         write_file(data)
 
-# data=read_souhu_corpus('/Users/apple/Downloads/SogouCA/news.allsites.sports.6307.txt','GB2312')
-# write_file(data)
 
-read_dir('../Dataset/corpus/SogouCA')
 
 
 class Deal(object):
@@ -209,7 +206,6 @@ class Deal(object):
         :param line: 输入的是单个文本
         :return:
         """
-        print(self.punctuation)
         rule = re.compile(r"[^-a-zA-Z0-9\u4e00-\u9fa5]")  # 去除所有全角符号，只留字母、数字、中文。要保留-符号，以防2014-3-23时间类型出现,而被删除
         num=re.compile('\d{1,}')#将文本中的数字替换成该标示符
         # date=re.compile("((^((1[8-9]\d{2})|([2-9]\d{3}))([-\/\._])(10|12|0?[13578])([-\/\._])(3[01]|[12][0-9]|0?[1-9])$)|(^((1[8-9]\d{2})|([2-9]\d{3}))([-\/\._])(11|0?[469])([-\/\._])(30|[12][0-9]|0?[1-9])$)|(^((1[8-9]\d{2})|([2-9]\d{3}))([-\/\._])(0?2)([-\/\._])(2[0-8]|1[0-9]|0?[1-9])$)|(^([2468][048]00)([-\/\._])(0?2)([-\/\._])(29)$)|(^([3579][26]00)([-\/\._])(0?2)([-\/\._])(29)$)|(^([1][89][0][48])([-\/\._])(0?2)([-\/\._])(29)$)|(^([2-9][0-9][0][48])([-\/\._])(0?2)([-\/\._])(29)$)|(^([1][89][2468][048])([-\/\._])(0?2)([-\/\._])(29)$)|(^([2-9][0-9][2468][048])([-\/\._])(0?2)([-\/\._])(29)$)|(^([1][89][13579][26])([-\/\._])(0?2)([-\/\._])(29)$)|(^([2-9][0-9][13579][26])([-\/\._])(0?2)([-\/\._])(29)$))|(^\d{4}年\d{1,2}月\d{1,2}日$)$")
@@ -252,9 +248,12 @@ class Deal(object):
         return newwords
 
 
-# if __name__ == '__main__':
-#     arg=argument()
-#     logger=log_config()
-#     deal=Deal(arg,logger)
+if __name__ == '__main__':
+    # data=read_souhu_corpus('/Users/apple/Downloads/SogouCA/news.allsites.sports.6307.txt','GB2312')
+    # write_file(data)
+    # read_dir('/Users/apple/Downloads/SogouCS')
+    arg=argument()
+    logger=log_config()
+    deal=Deal(arg,logger)
 
 
