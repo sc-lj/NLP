@@ -122,7 +122,7 @@ class Deal(object):
 
 
     def read_file(self):
-        with open(self.filename,'r') as f:
+        with open(self.filename,'r',encoding="utf-8") as f:
             data=f.readline()
             while data:
                 label,title, content=data.split('++',2)
@@ -150,7 +150,7 @@ class Deal(object):
 
 
     def readstopword(self):
-        with open(self.stopfile,'r') as f:
+        with open(self.stopfile,'r',encoding="utf-8") as f:
             stopwords=f.read()
         return set(stopwords)
 
@@ -159,10 +159,13 @@ class Deal(object):
         f=open(self.target_file,'w',encoding='utf-8')
         j=0
         while True:
-            if Deal.queue.empty():
-                time.sleep(10)
+            for _  in range(5):
                 if Deal.queue.empty():
+                    time.sleep(10)
+                else:
                     break
+            if Deal.queue.empty():
+                break
             one_line,label,title=Deal.queue.get()
             if len(one_line)<10:
                 continue
@@ -170,7 +173,7 @@ class Deal(object):
                 self.label_num[label]+=1
             else:
                 self.label_num[label]=1
-            data=json.dumps({label+title:list(one_line)})
+            data=json.dumps({"label":label,"title":title,"content":list(one_line)})
             f.write(data+'\n')
             j+=1
         f.close()
