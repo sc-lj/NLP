@@ -3,8 +3,8 @@
 import os,sys
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from multiprocessing import cpu_count,Pool,Process
-from queue import Queue
+from multiprocessing import cpu_count,Pool,Process,Queue,Value,Manager
+# from queue import Queue
 from GloConfi import *
 
 import matplotlib.pyplot as plt
@@ -103,11 +103,12 @@ def read_dir(dir):
         data=read_souhu_corpus(path,'gb2312')
         write_file(data)
 
-
-
+# 对queue数量进行限制，不然其将占满整个内存空间
+# 特别是对于读取不平衡的情况
+ma=Manager()
+queues  = Queue(100000)
 
 class Deal(object):
-    queue = Queue()
     def __init__(self,arg,logger):
         self.punctuation = re.compile(u"[~!@#$%^&*()_+`=\[\]\\\{\}\"|;':,./<>?·！@#￥%……&*（）——+【】,、；‘：“”，。、《》？「『」』＃\t\n]+")
         self.arg=arg
@@ -135,16 +136,20 @@ class Deal(object):
 
     def multi_thread(self):
         self.logger.info('开始处理文本内容和标签')
-        t1=threading.Thread(target=self.get_label_content)
+        t1=Process(target=self.get_label_content,args=(queues,))
         t1.start()
         time.sleep(3)
-        t=threading.Thread(target=self.callback)
-        t.start()
-
+        value=Value('d',0)
+        f = open(self.target_file, 'a+', encoding='utf-8')
+        t2=Process(target=self.callback,args=(queues,f,value))
+        t2.start()
+        t3 = Process(target=self.callback, args=(queues,f,value))
+        t3.start()
         ts=[]
-        ts.extend([t1,t])
+        ts.extend([t1,t2,t3])
         for i in ts:
             i.join()
+        f.close()
         print('语料库的文本和标签处理完毕')
         self.logger.info('语料库的文本和标签处理完毕')
 
@@ -155,55 +160,39 @@ class Deal(object):
         return set(stopwords)
 
 
-    def callback(self):
-        f=open(self.target_file,'w',encoding='utf-8')
-        j=0
-        while True:
-            for _  in range(5):
-                if Deal.queue.empty():
-                    time.sleep(10)
-                else:
-                    break
-            if Deal.queue.empty():
-                break
-            one_line,label,title=Deal.queue.get()
-            if len(one_line)<10:
-                continue
-            if label in self.label_num:
-                self.label_num[label]+=1
-            else:
-                self.label_num[label]=1
-            data=json.dumps({"label":label,"title":title,"content":list(one_line)})
+    def callback(self,q,f,j):
+        while q.qsize():
+            data=q.get()
             f.write(data+'\n')
-            j+=1
-        f.close()
-        print('had write num', j)
+            j.value+=1
+            if j.value%1000==0:
+                print('A'*7,j.value)
+
+        print('had write num', j.value)
         print('write target file is end')
 
 
-    def get_label_content(self):
+    def get_label_content(self,q):
         """
         利用多进程方法快速处理文本
         """
         stopword=self.readstopword()
-        pool_num=cpu_count()-2
-        # pool = Pool(processes=pool_num)
-        # results=[]
+        j=0
         for label, content, title in self.read_file():
             if len(content.strip())==0:
                 continue
-            self.get_vocab(self,content,label,stopword,title)
-            # pool.apply_async(self.get_vocab,(content,label,stopword,))
-            # results.append(line_label)
+            self.get_vocab(self,content,label,stopword,title,q)
+            j+=1
+            if j%1000==0:
+                print("B"*5,j)
+        print('B'*12)
 
-        # pool.close()
-        # pool.join()
 
 
     # 在类中使用multiprocessing，当multiprocessing需要执行类方法的时候，必须将该类方法装饰成静态方法。
     # 静态方法是无法调用实例属性的，所以需要将值当作参数。
     @staticmethod
-    def get_vocab(self,line,label,stopword,title):
+    def get_vocab(self,line,label,stopword,title,q):
         """
         处理文本，主要是剔除掉一些无意义的字符，并且提取出日期格式用<DATE>字符代替，数字用<NUM>字符代替
         :param line: 输入的是单个文本
@@ -231,11 +220,11 @@ class Deal(object):
                 one_line.extend(list(one))
 
         one_line=self.diff(one_line,stopword)
-        if Deal.queue.full():
+        if q.full():
             time.sleep(0.5)
         if len(one_line)>10:
-            Deal.queue.put([one_line,label,title])
-        # return label,list(one_line)
+            data = json.dumps({"label": label, "title": title, "content": list(one_line)})
+            q.put(data)
 
     def diff(self,words,stopwords):
         """

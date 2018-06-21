@@ -31,7 +31,7 @@ class DealData(object):
             data=f.readline()
             while data:
                 jsdata=json.loads(data)
-                label,one_line=list(jsdata.keys())[0],list(jsdata.values())[0]
+                label,one_line=jsdata['label'],jsdata['content']
                 print(label,one_line)
                 data = f.readline()
 
