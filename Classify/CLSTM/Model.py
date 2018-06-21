@@ -33,7 +33,6 @@ class CNN():
         convds=[]
         with tf.name_scope('conv'):
             for i,filt_size in enumerate(self.arg.cnn_filter_size):
-
                 # self.embedding_variable()维度是[batch,in_height,in_width]，而我们需要将其转化为[batch,in_height,in_width,in_channels]的形状
                 input_embed=tf.expand_dims(self.embedding_variable(),-1)
                 # filter的shape为[filter_height,filter_width,in_channels,out_channels]
@@ -130,14 +129,8 @@ class LSTM(CNN):
         bias=self.bias_variable([self.class_num])
         prediction=tf.nn.softmax(tf.matmul(h_state,weight)+bias)
 
-        cost=tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(self.label,prediction))
-        self.train_op=tf.train.AdamOptimizer(self.arg.learn_rate).minimize(cost)
-
         correct_prod=tf.equal(tf.argmax(prediction,1),tf.argmax(self.label,1))
         self.accuracy=tf.reduce_mean(tf.cast(correct_prod,tf.int32))
-
-        biase=self.bias_variable([self.class_num])
-        prediction=tf.nn.softmax(tf.matmul(h_state,weight)+biase)
 
         # 损失和评估函数
         # cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(self.label, prediction))
@@ -146,6 +139,7 @@ class LSTM(CNN):
 
         correct_prediction = tf.equal(tf.argmax(prediction, 1), tf.argmax(self.label, 1))
         self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
+
 
 
 
