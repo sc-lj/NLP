@@ -38,7 +38,7 @@ def seq_param():
     tf.flags.DEFINE_integer('num_epochs',200,'Number of training epochs (default: 200)')
 
     # 验证集的比例
-    tf.flags.DEFINE_float('dev_sample_percent',0.1,'percentage of the train data to use for evaluate')
+    tf.flags.DEFINE_float('dev_sample_percent',0.01,'percentage of the train data to use for evaluate')
 
     # 语料库文件存放位置
     tf.flags.DEFINE_string('corpus_dir','../../Dataset/new_sohu.txt','where is corpus')

@@ -6,7 +6,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from multiprocessing import cpu_count,Pool,Process,Queue,Value,Manager
 import multiprocessing as mu
 from GloConfi import *
-
+from collections import defaultdict
 import matplotlib.pyplot as plt
 import zipfile,threading
 import chardet,codecs
@@ -116,10 +116,7 @@ class Deal(object):
         self.stopfile=self.arg.stopfile
         self.logger=logger
 
-        self.label_num={}
-
-        self.multi_thread()
-
+        # self.multi_thread()
 
     def read_file(self):
         with open(self.filename,'r',encoding="utf-8") as f:
@@ -251,6 +248,25 @@ class Deal(object):
             if word not in stopwords:
                 newwords.append(word)
         return newwords
+
+    def read_corpus(self):
+        with open(self.arg.target_file,'r') as f:
+            data=f.readline()
+            while data:
+                jsdata=json.loads(data)
+                label,one_line=jsdata['label'],jsdata['content']
+                # self.labels.add(label)
+                # self.vocab.update(set(one_line))
+                # self.cont_label.append([one_line,label])
+                yield label,one_line
+                data = f.readline()
+
+    def Analysis_corpus(self):
+        label_num = defaultdict(int)
+        for label, one_line in self.read_corpus():
+            label_num[label]+=1
+
+
 
 
 if __name__ == '__main__':
