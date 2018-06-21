@@ -4,7 +4,7 @@ import os,sys
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from multiprocessing import cpu_count,Pool,Process,Queue,Value,Manager
-# from queue import Queue
+import multiprocessing as mu
 from GloConfi import *
 
 import matplotlib.pyplot as plt
@@ -13,7 +13,6 @@ import chardet,codecs
 from xml.dom import minidom
 from urllib.parse import urlparse
 import string,re,time,json,os
-
 
 # 根据搜狐新闻的网址的host，将这些划分如下
 dicurl={'media':'传媒','baobao':'母婴','stock':'金融','it':'IT','fund':'金融','bschool':'商业','expo2010':"城市",'auto':"汽车",
@@ -106,7 +105,7 @@ def read_dir(dir):
 # 对queue数量进行限制，不然其将占满整个内存空间
 # 特别是对于读取不平衡的情况
 ma=Manager()
-queues  = Queue(100000)
+queues  = Queue(50000)
 
 class Deal(object):
     def __init__(self,arg,logger):
@@ -141,17 +140,17 @@ class Deal(object):
         time.sleep(3)
         value=Value('d',0)
         f = open(self.target_file, 'a+', encoding='utf-8')
-        t2=Process(target=self.callback,args=(queues,f,value))
+        t2=Process(target=self.callback,args=(queues,f,value),name='t1')
         t2.start()
-        t3 = Process(target=self.callback, args=(queues,f,value))
+        t3 = Process(target=self.callback, args=(queues,f,value),name='t3')
         t3.start()
         ts=[]
         ts.extend([t1,t2,t3])
         for i in ts:
             i.join()
         f.close()
-        print('语料库的文本和标签处理完毕')
-        self.logger.info('语料库的文本和标签处理完毕')
+        print(u'语料库的文本和标签处理完毕')
+        self.logger.info(u'语料库的文本和标签处理完毕')
 
 
     def readstopword(self):
@@ -161,14 +160,30 @@ class Deal(object):
 
 
     def callback(self,q,f,j):
+        """
+        :param q: 队列
+        :param f: 文件对象
+        :param j: 进程间共享变量
+        :return:
+        """
         while q.qsize():
             data=q.get()
+            if data is None:
+                break
             f.write(data+'\n')
             j.value+=1
-            if j.value%1000==0:
-                print('A'*7,j.value)
+            # if j.value%1000==0:
+            #     print(mu.current_process().name,'A'*7,j.value,q.qsize())
+        """
+        join_thread()
+        调用close()方法后可以调用join_thread()方法保证缓冲数据一定会被刷新到管道。
+        默认情况下，如果该进程不是队列的创建者，会自动调用此方法。可以调用cancel_join_thread()使该方法失效。
 
-        print('had write num', j.value)
+        cancel_join_thread()
+        取消join_thread()的作用，不过一般情况下不会使用，因为它会容易造成数据丢失。
+        """
+        # q.cancel_join_thread()
+        print('had write num', j.value,mu.current_process().name)
         print('write target file is end')
 
 
@@ -177,16 +192,14 @@ class Deal(object):
         利用多进程方法快速处理文本
         """
         stopword=self.readstopword()
-        j=0
         for label, content, title in self.read_file():
             if len(content.strip())==0:
                 continue
             self.get_vocab(self,content,label,stopword,title,q)
-            j+=1
-            if j%1000==0:
-                print("B"*5,j)
-        print('B'*12)
-
+        # 生产者需要告知消费者没有更多项目了，消费者可以关闭了。这时需要传递给消费者某个信号，告诉消费者没有更多项目了，可以关闭了。
+        # 注意：每个消费者都需要一个信号，所以有多少个消费者，就需要多少个信号。
+        for i in range(2):
+            q.put(None)
 
 
     # 在类中使用multiprocessing，当multiprocessing需要执行类方法的时候，必须将该类方法装饰成静态方法。
@@ -221,7 +234,7 @@ class Deal(object):
 
         one_line=self.diff(one_line,stopword)
         if q.full():
-            time.sleep(0.5)
+            time.sleep(1)
         if len(one_line)>10:
             data = json.dumps({"label": label, "title": title, "content": list(one_line)})
             q.put(data)
