@@ -20,7 +20,6 @@ class DealData(object):
         self.word_freq = Counter()  # 词频表,Counter能对key进行累加
 
         self.read_corpus()
-        # self.gene_dict()
 
         # 词向量的长度
         self.vector_length=len(self.vocab)
@@ -32,7 +31,10 @@ class DealData(object):
             while data:
                 jsdata=json.loads(data)
                 label,one_line=jsdata['label'],jsdata['content']
-                print(label,one_line)
+                # self.labels.add(label)
+                # self.vocab.update(set(one_line))
+                # self.cont_label.append([one_line,label])
+                yield label,one_line
                 data = f.readline()
 
     def gene_dict(self):
@@ -116,6 +118,8 @@ class DealData(object):
         :param bow_seq:
         :return:
         """
+        for label,one_line in self.read_corpus():
+            pass
         labellist=list(self.labels)
         data_size=len(self.cont_label)
         data=np.array(self.cont_label)
@@ -124,9 +128,7 @@ class DealData(object):
         # 验证集的大小
         dev_data_size = -1 * int(self.arg.dev_sample_percent * data_size)
         x_dev, x_train = X[dev_data_size:],X[:dev_data_size]#验证集和训练集
-
         y_dev,y_train=Y[dev_data_size:],Y[:dev_data_size]
-
         if bow_seq=='seq':
             x_dev_vector=self.seq_vector(x_dev)
         else:
