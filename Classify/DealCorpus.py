@@ -104,8 +104,7 @@ def read_dir(dir):
 
 # 对queue数量进行限制，不然其将占满整个内存空间
 # 特别是对于读取不平衡的情况
-ma=Manager()
-queues  = Queue(50000)
+queues = Queue()
 
 class Deal(object):
     def __init__(self,arg,logger):
@@ -261,13 +260,13 @@ class Deal(object):
                 yield label,one_line
                 data = f.readline()
 
-    def Analysis_corpus(self):
+    def analysis_corpus(self):
         label_num = defaultdict(int)
         for label, one_line in self.read_corpus():
             label_num[label]+=1
 
-
-
+        plt.bar(label_num.keys(),label_num.values())
+        plt.show()
 
 if __name__ == '__main__':
     # data=read_souhu_corpus('/Users/apple/Downloads/SogouCA/news.allsites.sports.6307.txt','GB2312')
@@ -276,6 +275,7 @@ if __name__ == '__main__':
     arg=argument()
     logger=log_config()
     deal=Deal(arg,logger)
+    deal.analysis_corpus()
 
 
 
