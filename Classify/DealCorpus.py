@@ -115,8 +115,6 @@ class Deal(object):
         self.stopfile=self.arg.stopfile
         self.logger=logger
 
-        # self.multi_thread()
-
     def read_file(self):
         with open(self.filename,'r',encoding="utf-8") as f:
             data=f.readline()
@@ -207,12 +205,12 @@ class Deal(object):
         :param line: 输入的是单个文本
         :return:
         """
-        rule = re.compile(r"[^-a-zA-Z0-9\u4e00-\u9fa5]")  # 去除所有全角符号，只留字母、数字、中文。要保留-符号，以防2014-3-23时间类型出现,而被删除
+        rule = re.compile(r"[a-zA-Z0-9\u4e00-\u9fa5]")  # 去除所有全角符号，只留字母、数字、中文。要保留-符号，以防2014-3-23时间类型出现,而被删除
         num=re.compile('\d{1,}')#将文本中的数字替换成该标示符
         # date=re.compile("((^((1[8-9]\d{2})|([2-9]\d{3}))([-\/\._])(10|12|0?[13578])([-\/\._])(3[01]|[12][0-9]|0?[1-9])$)|(^((1[8-9]\d{2})|([2-9]\d{3}))([-\/\._])(11|0?[469])([-\/\._])(30|[12][0-9]|0?[1-9])$)|(^((1[8-9]\d{2})|([2-9]\d{3}))([-\/\._])(0?2)([-\/\._])(2[0-8]|1[0-9]|0?[1-9])$)|(^([2468][048]00)([-\/\._])(0?2)([-\/\._])(29)$)|(^([3579][26]00)([-\/\._])(0?2)([-\/\._])(29)$)|(^([1][89][0][48])([-\/\._])(0?2)([-\/\._])(29)$)|(^([2-9][0-9][0][48])([-\/\._])(0?2)([-\/\._])(29)$)|(^([1][89][2468][048])([-\/\._])(0?2)([-\/\._])(29)$)|(^([2-9][0-9][2468][048])([-\/\._])(0?2)([-\/\._])(29)$)|(^([1][89][13579][26])([-\/\._])(0?2)([-\/\._])(29)$)|(^([2-9][0-9][13579][26])([-\/\._])(0?2)([-\/\._])(29)$))|(^\d{4}年\d{1,2}月\d{1,2}日$)$")
         date=re.compile("((\d{4}|\d{2})(\-|\/|\.)\d{1,2}(\-|\/|\.)\d{1,2})|((\d{4}年)?\d{1,2}月\d{1,2}日)")
         times=re.compile('(\d{1,2}:\d{1,2})|((\d{1,2}点\d{1,2}分)|(\d{1,2}时))')
-        alpha=re.compile(string.ascii_letters)
+        alpha=re.compile(r"[a-zA-Z0-9]")
         one_line = []
         line=alpha.sub('',line)# 去掉字母
         line=self.punctuation.sub('',line)#
@@ -264,8 +262,19 @@ class Deal(object):
         label_num = defaultdict(int)
         for label, one_line in self.read_corpus():
             label_num[label]+=1
+        print(len(label_num))
+        # 设置图形大小
+        # plt.figure(figsize=(10, 6))
+        X=list(label_num.keys())
+        Y=list(label_num.values())
+        # width柱状图宽度，
+        plt.bar(X, Y, width=0.9, align='center', color='blue', alpha=0.8)
+        # rotation是倾斜30度
+        # plt.xticks(X, rotation=30)
+        # 设置数字标签
+        for a, b in zip(X, Y):
+            plt.text(a, b + 0.05, '%.0f' % b, ha='center', va='bottom', fontsize=13)
 
-        plt.bar(label_num.keys(),label_num.values())
         plt.show()
 
 if __name__ == '__main__':
@@ -275,7 +284,8 @@ if __name__ == '__main__':
     arg=argument()
     logger=log_config()
     deal=Deal(arg,logger)
-    deal.analysis_corpus()
+    deal.multi_thread()
+    # deal.analysis_corpus()
 
 
 
