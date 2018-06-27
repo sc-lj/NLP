@@ -20,6 +20,10 @@ def argument():
     # 将处理过的文本保存的目标文件
     parser.add_argument('--target_file',default='../Dataset/target_file.txt',help='After deal corpus txt ,where is save',type=str)
 
+    parser.add_argument('--valid_file',default='../Dataset/test_file.txt',help='this is a validation data file',type=str)
+
+    parser.add_argument('--train_file',default='../Dataset/train_file.txt',help='this is a train data file',type=str)
+
     arg=parser.parse_args()
     return arg
 
@@ -37,3 +41,7 @@ def log_config():
     sh.setFormatter(formatter)
     logger.addHandler(sh)
     return logger
+
+if __name__ == '__main__':
+    arg=argument()
+    print(arg.__dict__)

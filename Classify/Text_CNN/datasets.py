@@ -19,14 +19,12 @@ class DealData(object):
         self.cont_label = []  # 文本内容和标签
         self.word_freq = Counter()  # 词频表,Counter能对key进行累加
 
-        self.read_corpus()
-
         # 词向量的长度
         self.vector_length=len(self.vocab)
         self.lable_length=len(self.labels)
 
-    def read_corpus(self):
-        with open(self.arg.target_file,'r') as f:
+    def read_corpus(self,filename):
+        with open(filename,'r',encoding='utf-8') as f:
             data=f.readline()
             while data:
                 jsdata=json.loads(data)
@@ -119,7 +117,9 @@ class DealData(object):
         :return:
         """
         for label,one_line in self.read_corpus():
-            pass
+            if len(one_line)<=20:
+                continue
+
         labellist=list(self.labels)
         data_size=len(self.cont_label)
         data=np.array(self.cont_label)

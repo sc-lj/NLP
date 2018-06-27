@@ -13,6 +13,7 @@ import chardet,codecs
 from xml.dom import minidom
 from urllib.parse import urlparse
 import string,re,time,json,os
+from itertools import groupby
 
 # 根据搜狐新闻的网址的host，将这些划分如下
 dicurl={'media':'传媒','baobao':'母婴','stock':'金融','it':'IT','fund':'金融','bschool':'商业','expo2010':"城市",'auto':"汽车",
@@ -110,13 +111,10 @@ class Deal(object):
     def __init__(self,arg,logger):
         self.punctuation = re.compile(u"[~!@#$%^&*()_+`=\[\]\\\{\}\"|;':,./<>?·！@#￥%……&*（）——+【】,、；‘：“”，。、《》？「『」』＃\t\n]+")
         self.arg=arg
-        self.filename=self.arg.corpus_txt
-        self.target_file=self.arg.target_file
-        self.stopfile=self.arg.stopfile
         self.logger=logger
 
     def read_file(self):
-        with open(self.filename,'r',encoding="utf-8") as f:
+        with open(self.arg.corpus_txt,'r',encoding="utf-8") as f:
             data=f.readline()
             while data:
                 label,title, content=data.split('++',2)
@@ -133,7 +131,7 @@ class Deal(object):
         t1.start()
         time.sleep(3)
         value=Value('d',0)
-        f = open(self.target_file, 'a+', encoding='utf-8')
+        f = open(self.arg.target_file, 'a+', encoding='utf-8')
         t2=Process(target=self.callback,args=(queues,f,value),name='t1')
         t2.start()
         t3 = Process(target=self.callback, args=(queues,f,value),name='t3')
@@ -143,12 +141,11 @@ class Deal(object):
         for i in ts:
             i.join()
         f.close()
-        print(u'语料库的文本和标签处理完毕')
         self.logger.info(u'语料库的文本和标签处理完毕')
 
 
     def readstopword(self):
-        with open(self.stopfile,'r',encoding="utf-8") as f:
+        with open(self.arg.stopfile,'r',encoding="utf-8") as f:
             stopwords=f.read()
         return set(stopwords)
 
@@ -166,8 +163,8 @@ class Deal(object):
                 break
             f.write(data+'\n')
             j.value+=1
-            # if j.value%1000==0:
-            #     print(mu.current_process().name,'A'*7,j.value,q.qsize())
+            if j.value%1000==0:
+                print(mu.current_process().name,'A'*7,j.value,q.qsize())
         """
         join_thread()
         调用close()方法后可以调用join_thread()方法保证缓冲数据一定会被刷新到管道。
@@ -247,26 +244,53 @@ class Deal(object):
         return newwords
 
     def read_corpus(self):
-        with open(self.arg.target_file,'r') as f:
+        with open(self.arg.target_file,'r',encoding='utf-8') as f:
             data=f.readline()
             while data:
                 jsdata=json.loads(data)
                 label,one_line=jsdata['label'],jsdata['content']
-                # self.labels.add(label)
-                # self.vocab.update(set(one_line))
-                # self.cont_label.append([one_line,label])
-                yield label,one_line
+                yield label,data,one_line
                 data = f.readline()
+
+    def group(self,num,grouplist=[50,200,400]):
+        for i in grouplist:
+            if num<=i:
+                return str(i)
+        return '>%s'%grouplist[-1]
+
 
     def analysis_corpus(self):
         label_num = defaultdict(int)
-        for label, one_line in self.read_corpus():
+        content_len=[]
+        for label, data,one_line in self.read_corpus():
             label_num[label]+=1
-        print(len(label_num))
-        # 设置图形大小
-        # plt.figure(figsize=(10, 6))
+            content_len.append(len(one_line))
+
+        content_len=sorted(content_len)
+
+        newgroup=[(k,list(g)) for k,g in groupby(content_len,key=self.group)]
+        newgroup=[(k,len(g)) for k,g in newgroup]
+        newgroup=dict(newgroup)
+        print(newgroup)
+
+        # 设置图形大小:figsize=(10, 6)
+        plt.figure()
+        #
+        #通过栅格的形式创建布局方式,(2,1)创建2x1的布局形式，(0,0)绘制的位置，0行0列的位置绘制 ;colspan:表示跨几列 rowspan:表示跨几行
+        ax1=plt.subplot2grid([2,1],[0,0])
         X=list(label_num.keys())
         Y=list(label_num.values())
+        # width柱状图宽度，
+        ax1.bar(X, Y, width=0.9, align='center', color='blue', alpha=0.8)
+        # rotation是倾斜30度
+        # plt.xticks(X, rotation=30)
+        # 设置数字标签
+        for a, b in zip(X, Y):
+            plt.text(a, b + 0.05, '%.0f' % b, ha='center', va='bottom', fontsize=13)
+
+        plt.subplot(2, 1, 2)
+        X = list(newgroup.keys())
+        Y = list(newgroup.values())
         # width柱状图宽度，
         plt.bar(X, Y, width=0.9, align='center', color='blue', alpha=0.8)
         # rotation是倾斜30度
@@ -277,6 +301,24 @@ class Deal(object):
 
         plt.show()
 
+    def writefile(self,filename,data):
+        with open(filename,'a+',encoding='utf-8') as f:
+            f.write(data)
+
+    def gen_test_train_corpus(self):
+        """
+        生成测试和训练数据集
+        """
+        threshold=2000
+        lables=defaultdict(int)
+        for label, data,one_line in self.read_corpus():
+            if lables[label]<=threshold:
+                self.writefile(self.arg.test_file,data)
+            else:
+                self.writefile(self.arg.train_file,data)
+            lables[label]+=1
+
+
 if __name__ == '__main__':
     # data=read_souhu_corpus('/Users/apple/Downloads/SogouCA/news.allsites.sports.6307.txt','GB2312')
     # write_file(data)
@@ -284,9 +326,9 @@ if __name__ == '__main__':
     arg=argument()
     logger=log_config()
     deal=Deal(arg,logger)
-    deal.multi_thread()
-    # deal.analysis_corpus()
-
+    # deal.multi_thread()
+    deal.analysis_corpus()
+    # deal.gen_test_train_corpus()
 
 
 

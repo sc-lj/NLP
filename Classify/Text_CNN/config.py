@@ -5,7 +5,7 @@
 def seq_param():
     import tensorflow as tf
     # 卷积的宽度，在cnn中，卷积的长度为词向量的长度，宽度表示包含多少词
-    tf.flags.DEFINE_string('filter_size', '3,4,5    ', 'Comma-separated filter sizes (default: "3,4,5")')
+    tf.flags.DEFINE_string('filter_size', '3,4,5', 'Comma-separated filter sizes (default: "3,4,5")')
 
     # 每种卷积的个数
     tf.flags.DEFINE_integer('filter_num', 128,  "Number of filters per filter size (default: 128)")
@@ -91,6 +91,10 @@ def Argparse():
 
     # 将处理过的文本保存的目标文件
     parser.add_argument('--target_file', default='../../Dataset/target_file.txt',help='After deal corpus txt ,where is save', type=str)
+
+    parser.add_argument('--test_file',default='../Dataset/test_file.txt',help='this is a test data file',type=str)
+
+    parser.add_argument('--train_file',default='../Dataset/train_file.txt',help='this is a train data file',type=str)
 
     arg=parser.parse_args()
     return arg
