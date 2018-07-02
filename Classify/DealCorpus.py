@@ -6,7 +6,6 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from multiprocessing import cpu_count,Pool,Process,Queue,Value,Manager
 import multiprocessing as mu
 from GloConfi import *
-from collections import defaultdict
 import matplotlib.pyplot as plt
 import zipfile,threading
 import chardet,codecs
@@ -14,6 +13,7 @@ from xml.dom import minidom
 from urllib.parse import urlparse
 import string,re,time,json,os
 from itertools import groupby
+from collections import Counter,defaultdict
 
 # 根据搜狐新闻的网址的host，将这些划分如下
 dicurl={'media':'传媒','baobao':'母婴','stock':'金融','it':'IT','fund':'金融','bschool':'商业','expo2010':"城市",'auto':"汽车",
@@ -303,7 +303,14 @@ class Deal(object):
 
     def writefile(self,filename,data):
         with open(filename,'a+',encoding='utf-8') as f:
-            f.write(data)
+            if isinstance(data,str):
+                f.write(data)
+            elif isinstance(data,set) or isinstance(data,list):
+                for da in data:
+                    f.write(da+"\n")
+            elif isinstance(data,dict):
+                for key,value in data.items():
+                    f.write(key+" "+str(value)+"\n")
 
     def gen_test_train_corpus(self):
         """
@@ -311,13 +318,17 @@ class Deal(object):
         """
         threshold=2000
         lables=defaultdict(int)
+        vocab=defaultdict(int)
         for label, data,one_line in self.read_corpus():
             if lables[label]<=threshold:
                 self.writefile(self.arg.test_file,data)
             else:
                 self.writefile(self.arg.train_file,data)
             lables[label]+=1
-
+            for one in one_line:
+                vocab[one]+=1
+        vocab=dict(vocab)
+        self.writefile(self.arg.vocab_file,vocab)
 
 if __name__ == '__main__':
     # data=read_souhu_corpus('/Users/apple/Downloads/SogouCA/news.allsites.sports.6307.txt','GB2312')
@@ -326,9 +337,8 @@ if __name__ == '__main__':
     arg=argument()
     logger=log_config()
     deal=Deal(arg,logger)
-    # deal.multi_thread()
-    deal.analysis_corpus()
-    # deal.gen_test_train_corpus()
-
+    # # deal.multi_thread()
+    # # deal.analysis_corpus()
+    deal.gen_test_train_corpus()
 
 

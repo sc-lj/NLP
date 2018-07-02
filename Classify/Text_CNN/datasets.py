@@ -29,9 +29,9 @@ class DealData(object):
             while data:
                 jsdata=json.loads(data)
                 label,one_line=jsdata['label'],jsdata['content']
-                # self.labels.add(label)
-                # self.vocab.update(set(one_line))
-                # self.cont_label.append([one_line,label])
+                self.labels.add(label)
+                self.vocab.update(set(one_line))
+                self.cont_label.append([one_line,label])
                 yield label,one_line
                 data = f.readline()
 
@@ -116,6 +116,7 @@ class DealData(object):
         :param bow_seq:
         :return:
         """
+
         for label,one_line in self.read_corpus():
             if len(one_line)<=20:
                 continue
