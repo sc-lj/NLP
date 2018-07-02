@@ -9,31 +9,26 @@ from queue import Queue
 
 
 class DealData(object):
-    def __init__(self,arg,logger):
+    def __init__(self,arg,logger,max_sequence_length=None):
         self.arg=arg
         self.logger=logger
-        self.max_sequence_length = 0
+        if max_sequence_length:
+            self.max_sequence_length = max_sequence_length
+        else:self.max_sequence_length=arg.max_sequence_length
 
-        self.labels = set()  # 标签集
-        self.vocab = set()  # 词汇表
-        self.cont_label = []  # 文本内容和标签
-        self.word_freq = Counter()  # 词频表,Counter能对key进行累加
-
-        # 词向量的长度
-        self.vector_length=len(self.vocab)
-        self.lable_length=len(self.labels)
-
-    def read_corpus(self,filename):
+    def read_corpus(self,filename,batch_size=1):
         with open(filename,'r',encoding='utf-8') as f:
-            data=f.readline()
+            data=f.readlines(batch_size)
             while data:
-                jsdata=json.loads(data)
-                label,one_line=jsdata['label'],jsdata['content']
-                self.labels.add(label)
-                self.vocab.update(set(one_line))
-                self.cont_label.append([one_line,label])
-                yield label,one_line
-                data = f.readline()
+                labels=[]
+                content=[]
+                for da in data:
+                    jsdata=json.loads(da)
+                    label,one_line=jsdata['label'],jsdata['content']
+                    labels.append(label)
+                    content.append(one_line)
+                yield labels,content
+                data = f.readlines(batch_size)
 
     def gene_dict(self):
         """
@@ -49,7 +44,7 @@ class DealData(object):
         :param line: 单个文本
         :return:
         """
-        text_vector=np.zeros([self.max_sequence_length,self.vector_length],dtype=np.float32)
+        text_vector=np.zeros([self.max_sequence_length,self.vocab_length],dtype=np.float32)
         j=0
         # 将没有在词汇表中的字用零代替
         for word in line:
@@ -112,58 +107,51 @@ class DealData(object):
 
     def slice_batch(self,bow_seq='seq'):
         """
-        切分数据集
+        读取测试数据集
         :param bow_seq:
         :return:
         """
+        self.vocab = []
+        with open(arg.vocab_file, 'r') as f:
+            da = f.readline()
+            while da:
+                self.vocab.append(da.split(' ')[0])
+                da = f.readline()
+        self.vocab_length=len(self.vocab)
 
-        for label,one_line in self.read_corpus():
-            if len(one_line)<=20:
-                continue
-
-        labellist=list(self.labels)
-        data_size=len(self.cont_label)
-        data=np.array(self.cont_label)
+        self.labels=set() # 标签集
+        valid_cont_label = []  # 文本内容和标签
+        for label,one_line in self.read_corpus(self.arg.valid_file):
+            self.labels.add(label[0])
+            valid_cont_label.append([one_line[0], label[0]])
+        data=np.array(valid_cont_label)
         X,Y =np.transpose(data)
 
-        # 验证集的大小
-        dev_data_size = -1 * int(self.arg.dev_sample_percent * data_size)
-        x_dev, x_train = X[dev_data_size:],X[:dev_data_size]#验证集和训练集
-        y_dev,y_train=Y[dev_data_size:],Y[:dev_data_size]
-        if bow_seq=='seq':
-            x_dev_vector=self.seq_vector(x_dev)
-        else:
-            x_dev_vector=self.bow_vector(x_dev)
-        label_index = list(map(labellist.index, y_dev))
-        dev_y_array = np.zeros([len(y_dev), len(labellist)], dtype=np.float32)
-        dev_y_array[list(range(len(y_dev))), label_index] = 1
-        return x_train,y_train,x_dev_vector,dev_y_array
+        labellist=list(self.labels)
 
-    def batch_iter(self,x_train,y_train,bow_seq,shuffle=True):
+        # 验证集的大小
+        if bow_seq=='seq':
+            x_dev_vector=self.seq_vector(X)
+        else:
+            x_dev_vector=self.bow_vector(X)
+        label_index = list(map(labellist.index, Y))
+        dev_y_array = np.zeros([len(Y), len(labellist)], dtype=np.float32)
+        dev_y_array[list(range(len(Y))), label_index] = 1
+        return x_dev_vector,dev_y_array
+
+    def batch_iter(self,bow_seq):
         labellist = list(self.labels)
-        # 重新计算数据大小
-        data_size=len(x_train)
 
         for epoch in range(self.arg.num_epochs):
             print('epoch',epoch)
-            if shuffle:
-                shuffle_indices = np.random.permutation(np.arange(data_size))
-                x_train = x_train[list(shuffle_indices)]
-                y_train = y_train[list(shuffle_indices)]
-
-            for num in range(0,data_size,self.arg.batch_size):
-                end_index=num+self.arg.batch_size
-                if data_size< end_index:
-                    end_index = data_size
-                conts=x_train[num:end_index]
-                labels=y_train[num:end_index]
+            for label,content in self.read_corpus(self.arg.train_file,self.arg.batch_size):
                 if bow_seq=='seq':
-                    x_train_vector=self.seq_vector(conts)
+                    x_train_vector=self.seq_vector(content)
                 else:
-                    x_train_vector=self.bow_vector(conts)
-                label_index = list(map(labellist.index,labels))
-                y_train_array = np.zeros([len(labels),len(labellist)], dtype=np.float32)
-                y_train_array[list(range(len(labels))),label_index]=1
+                    x_train_vector=self.bow_vector(content)
+                label_index = list(map(labellist.index,label))
+                y_train_array = np.zeros([len(label),len(labellist)], dtype=np.float32)
+                y_train_array[list(range(len(label))),label_index]=1
                 yield x_train_vector,y_train_array
 
 
@@ -172,7 +160,6 @@ if __name__ == '__main__':
     arg = Argparse()
     logger=log_config(__file__)
     dealdata = DealData(arg,logger)
-    # x_train, y_train, x_dev_vector, y_dev_array = dealdata.slice_batch(bow_seq='seq')
+    x_dev_vector, y_dev_array = dealdata.slice_batch(bow_seq='seq')
     # for x_batch, y_batch in dealdata.batch_iter(x_train, y_train, bow_seq='seq'):
     #     print(y_batch)
-

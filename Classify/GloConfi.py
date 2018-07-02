@@ -21,7 +21,7 @@ def argument():
     parser.add_argument('--target_file',default='../Dataset/target_file.txt',help='After deal corpus txt ,where is save',type=str)
 
     # 这是存放验证数据的文件
-    parser.add_argument('--valid_file',default='../Dataset/test_file.txt',help='this is a validation data file',type=str)
+    parser.add_argument('--valid_file',default='../Dataset/valid_file.txt',help='this is a validation data file',type=str)
 
     # 这是存放训练数据的文件
     parser.add_argument('--train_file',default='../Dataset/train_file.txt',help='this is a train data file',type=str)

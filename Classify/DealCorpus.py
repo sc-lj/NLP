@@ -109,7 +109,6 @@ queues = Queue()
 
 class Deal(object):
     def __init__(self,arg,logger):
-        self.punctuation = re.compile(u"[~!@#$%^&*()_+`=\[\]\\\{\}\"|;':,./<>?·！@#￥%……&*（）——+【】,、；‘：“”，。、《》？「『」』＃\t\n]+")
         self.arg=arg
         self.logger=logger
 
@@ -202,19 +201,22 @@ class Deal(object):
         :param line: 输入的是单个文本
         :return:
         """
-        rule = re.compile(r"[a-zA-Z0-9\u4e00-\u9fa5]")  # 去除所有全角符号，只留字母、数字、中文。要保留-符号，以防2014-3-23时间类型出现,而被删除
+        punctuation = re.compile(u"[~!@#$%^&*()_+`=\[\]\\\{\}\"|;':,./<>?·！@#￥%……&*（）——+【】,、；‘：“”，。、《》？「『」』＃\t\n∶┛↓┑┏π]+")
+        rule = re.compile(r"[^<>a-zA-Z0-9\u4e00-\u9fa5]")  # 去除所有全角符号，只留字母、数字、中文。要保留-符号，以防2014-3-23时间类型出现,而被删除
         num=re.compile('\d{1,}')#将文本中的数字替换成该标示符
         # date=re.compile("((^((1[8-9]\d{2})|([2-9]\d{3}))([-\/\._])(10|12|0?[13578])([-\/\._])(3[01]|[12][0-9]|0?[1-9])$)|(^((1[8-9]\d{2})|([2-9]\d{3}))([-\/\._])(11|0?[469])([-\/\._])(30|[12][0-9]|0?[1-9])$)|(^((1[8-9]\d{2})|([2-9]\d{3}))([-\/\._])(0?2)([-\/\._])(2[0-8]|1[0-9]|0?[1-9])$)|(^([2468][048]00)([-\/\._])(0?2)([-\/\._])(29)$)|(^([3579][26]00)([-\/\._])(0?2)([-\/\._])(29)$)|(^([1][89][0][48])([-\/\._])(0?2)([-\/\._])(29)$)|(^([2-9][0-9][0][48])([-\/\._])(0?2)([-\/\._])(29)$)|(^([1][89][2468][048])([-\/\._])(0?2)([-\/\._])(29)$)|(^([2-9][0-9][2468][048])([-\/\._])(0?2)([-\/\._])(29)$)|(^([1][89][13579][26])([-\/\._])(0?2)([-\/\._])(29)$)|(^([2-9][0-9][13579][26])([-\/\._])(0?2)([-\/\._])(29)$))|(^\d{4}年\d{1,2}月\d{1,2}日$)$")
         date=re.compile("((\d{4}|\d{2})(\-|\/|\.)\d{1,2}(\-|\/|\.)\d{1,2})|((\d{4}年)?\d{1,2}月\d{1,2}日)")
         times=re.compile('(\d{1,2}:\d{1,2})|((\d{1,2}点\d{1,2}分)|(\d{1,2}时))')
-        alpha=re.compile(r"[a-zA-Z0-9]")
+        alpha=re.compile(r"[a-z0-9]")
         one_line = []
-        line=alpha.sub('',line)# 去掉字母
-        line=self.punctuation.sub('',line)#
 
+        line=line.lower()
+        line=re.sub('[<>]','',line)
         line = date.sub(' <DATE> ', line)  # 注意<DATE>前后要留空格，方便后面好分割
         line = num.sub(' <NUM> ', line)
         line = times.sub(' <DATE> ', line)
+        line = rule.sub('', line)  #
+        line = alpha.sub('', line)  # 去掉字母
         line = re.sub('-','',line)
         line = line.split(' ')
         for one in line:
@@ -316,19 +318,24 @@ class Deal(object):
         """
         生成测试和训练数据集
         """
-        threshold=2000
+        threshold=5000
         lables=defaultdict(int)
         vocab=defaultdict(int)
         for label, data,one_line in self.read_corpus():
             if lables[label]<=threshold:
-                self.writefile(self.arg.test_file,data)
+                self.writefile(self.arg.valid_file,data)
             else:
                 self.writefile(self.arg.train_file,data)
             lables[label]+=1
             for one in one_line:
                 vocab[one]+=1
+        newvocab={}
         vocab=dict(vocab)
-        self.writefile(self.arg.vocab_file,vocab)
+        for key,value in vocab.items():
+            if value>1000:
+                newvocab[key]=value
+
+        self.writefile(self.arg.vocab_file,newvocab)
 
 if __name__ == '__main__':
     # data=read_souhu_corpus('/Users/apple/Downloads/SogouCA/news.allsites.sports.6307.txt','GB2312')
@@ -337,7 +344,7 @@ if __name__ == '__main__':
     arg=argument()
     logger=log_config()
     deal=Deal(arg,logger)
-    # # deal.multi_thread()
+    deal.multi_thread()
     # # deal.analysis_corpus()
     deal.gen_test_train_corpus()
 
