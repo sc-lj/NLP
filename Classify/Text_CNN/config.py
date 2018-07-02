@@ -83,8 +83,8 @@ def Argparse():
     # 训练轮数
     parser.add_argument('--num_epochs',default=200,help='Number of training epochs (default: 200)',type=int)
 
-    # 验证集的比例
-    parser.add_argument('--dev_sample_percent',default=0.1,help='percentage of the train data to use for evaluate',type=float)
+    # 语句的最大长度
+    parser.add_argument('--max_sequence_length',default=200,help='the max of one sequence',type=float)
 
     # 是否是在训练阶段
     parser.add_argument('--is_training',default=True,type=bool,help='whether is training this stage(default:True)')
@@ -92,9 +92,14 @@ def Argparse():
     # 将处理过的文本保存的目标文件
     parser.add_argument('--target_file', default='../../Dataset/target_file.txt',help='After deal corpus txt ,where is save', type=str)
 
-    parser.add_argument('--test_file',default='../Dataset/test_file.txt',help='this is a test data file',type=str)
+    # 这是存放验证数据的文件
+    parser.add_argument('--valid_file',default='../../Dataset/valid_file.txt',help='this is a validation data file',type=str)
 
-    parser.add_argument('--train_file',default='../Dataset/train_file.txt',help='this is a train data file',type=str)
+    # 这是存放训练数据的文件
+    parser.add_argument('--train_file',default='../../Dataset/train_file.txt',help='this is a train data file',type=str)
+
+    # 存放语料库词汇的文件
+    parser.add_argument('--vocab_file',default='../../Dataset/vocab_file.txt',help='this is a vocabulary file',type=str)
 
     arg=parser.parse_args()
     return arg
