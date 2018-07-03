@@ -34,11 +34,8 @@ n个卷积核filters对每个窗口`!$w_j$`产生的特征映射为`!$W = [c_1;c
 
 将LSTM模型最后一个时刻的隐藏状态作为文本的表示，然后添加softmax层，利用cross-entropy误差函数标出文本属于哪个类。
 
-```mathjax!
-$$
-y^{(i)} ∈ {1,2,··· ,k} 
-$$
-```
+<img src="http://chart.googleapis.com/chart?cht=tx&chl= y^{(i)} \in \{1,2,... ,k\} " style="border:none;">
+
 K表示类别标签的数量。而且其值的为\[0,1]。
 对目标函数采用**随机梯度下降**算法学习模型参数，优化方法是RMSprop。
 
@@ -63,5 +60,9 @@ K表示类别标签的数量。而且其值的为\[0,1]。
 
 ![](images/双向rnn公式.png)
 
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
+$$x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}$$
 
-
+$$
+x \href{why-equal.html}{=} y^2 + 1
+$$

@@ -52,6 +52,7 @@ class DealData(object):
                 index=self.word_id[word]
                 text_vector[j][index] = 1
             j+=1
+        print(text_vector)
         return text_vector
 
     def seq_vector(self,text_list):
@@ -112,12 +113,14 @@ class DealData(object):
         :return:
         """
         self.vocab = []
-        with open(arg.vocab_file, 'r') as f:
+        with open(arg.vocab_file, 'r',encoding='utf-8') as f:
             da = f.readline()
             while da:
                 self.vocab.append(da.split(' ')[0])
                 da = f.readline()
         self.vocab_length=len(self.vocab)
+
+        self.gene_dict()
 
         self.labels=set() # 标签集
         valid_cont_label = []  # 文本内容和标签
