@@ -19,7 +19,7 @@ class TextCNN():
         self.FLAGS = FLAGS
         self.dealdata = dealdata
         self.max_sequence_length=self.dealdata.max_sequence_length#最大句子长度
-        self.vector_length = self.FLAGS.max_sequence_length#向量长度
+        self.vector_length = self.dealdata.vocab_length#向量长度
         self.lable_length = len(self.dealdata.labels)#标签长度
 
         if bow_seq not in ['seq','bow']:
