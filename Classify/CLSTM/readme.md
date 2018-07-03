@@ -17,10 +17,11 @@ CLSTM 模型是结合了CNN模型对局部特征的捕获能力的优点和LSTM�
 `!$w_j = [x_j,x_{j+1},··· ,x_{j+k−1}]$`表示在句子每个j位置，有k个连续词向量组成的窗口向量`!$w_j$`,这些词向量是行向量的并联。
 
 对于窗口向量为k(即k-grams),其特征映射为`!$c ∈ R^{L−k+1}$`。特征映射中的每个元素`!$c_j$`由`!$w_j$`通过下面式子产生的。
-
-<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
-$$c_j =f(w_j ◦m+b)$$
-
+```mathjax!
+$$
+c_j =f(w_j ◦m+b)
+$$
+```
 ◦表示点乘，f表示sigmoid函数或者tanh函数等激活函数，而本文选择ReLU激活函数。
 
 n个卷积核filters对每个窗口`!$w_j$`产生的特征映射为`!$W = [c_1;c_2;··· ;c_n]$`。W是有列向量并联的。`!$c_i$`是由第i个卷积核filter产生的。
@@ -33,7 +34,7 @@ n个卷积核filters对每个窗口`!$w_j$`产生的特征映射为`!$W = [c_1;c
 
 将LSTM模型最后一个时刻的隐藏状态作为文本的表示，然后添加softmax层，利用cross-entropy误差函数标出文本属于哪个类。
 
-<img src="http://chart.googleapis.com/chart?cht=tx&chl= y^{(i)} \in \{1,2,... ,k\} " style="border:none;">
+$$y^{(i)} \in {1,2,... ,k}$$
 
 K表示类别标签的数量。而且其值的为\[0,1]。
 对目标函数采用**随机梯度下降**算法学习模型参数，优化方法是RMSprop。
@@ -59,9 +60,3 @@ K表示类别标签的数量。而且其值的为\[0,1]。
 
 ![](images/双向rnn公式.png)
 
-
-$$x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}$$
-
-$$
-x \href{why-equal.html}{=} y^2 + 1
-$$
