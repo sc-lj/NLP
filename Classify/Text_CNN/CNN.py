@@ -185,12 +185,12 @@ def train_model(bow_seq='seq'):
                     print("\nEvaluation:")
                     for x_dev_vector, y_dev_array in dealdata.read_batch(bow_seq=bow_seq,batch_size=1000):
                         """
-                        总共有16000个测试样本，每次取出1000个测试样本进行测试
+                        总共有40000个测试样本，每次取出1000个测试样本进行测试
                         """
                         j=1
                         if i==j:
                             dev_step(x_dev_vector, y_dev_array, writer=dev_writer)
-                            if i==16:i=1
+                            if i==40:i=1
                             else:i += 1
                         elif j>i:break
                         j += 1
