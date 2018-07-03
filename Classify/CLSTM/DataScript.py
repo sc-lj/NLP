@@ -18,13 +18,21 @@ class Data():
         self.gloconf= GloConfi.argument()
         self.conf= Config.argument()
 
-    def read_corpus(self):
-        with open(self.gloconf.target_file,'r',encoding='utf-8') as f:
-            data=f.readline()
+    def read_corpus(self,filename,batch_size=1):
+        with open(filename,'r',encoding='utf-8') as f:
+            data=f.readlines(batch_size)
             while data:
-                newdata=json.loads(data)
-                label,content=newdata['label'],newdata['content']
-                yield label,content
-                data=f.readline()
+                labels=[]
+                content=[]
+                for da in data:
+                    jsdata=json.loads(da)
+                    label,one_line=jsdata['label'],jsdata['content']
+                    labels.append(label)
+                    content.append(one_line)
+                yield labels,content
+                data = f.readlines(batch_size)
+
+
+
 
 
