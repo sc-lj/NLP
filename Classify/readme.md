@@ -50,4 +50,6 @@ PS:虽然程序上有分成30个类，但是实际上只有这8个。
 
 vocab_file.txt文件是词汇文件，是出现次数在1000以上的单个词汇。
 
+处理后的语料库放在百度云盘上。
 
+链接:https://pan.baidu.com/s/1DkA4kSF4LwVpIN-3fozGOw  密码:7o4d
