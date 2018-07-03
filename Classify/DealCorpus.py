@@ -228,7 +228,7 @@ class Deal(object):
         one_line=self.diff(one_line,stopword)
         if q.full():
             time.sleep(1)
-        if len(one_line)>10:
+        if len(one_line)>50:
             data = json.dumps({"label": label, "title": title, "content": list(one_line)})
             q.put(data)
 

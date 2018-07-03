@@ -1,11 +1,7 @@
 # coding:utf-8
 
-import zipfile,threading
-import string,re,time,json
+import json,time
 import numpy as np
-from collections import Counter
-from multiprocessing import cpu_count,Pool,Process
-from queue import Queue
 
 
 class DealData(object):
@@ -15,26 +11,41 @@ class DealData(object):
         if max_sequence_length:
             self.max_sequence_length = max_sequence_length
         else:self.max_sequence_length=arg.max_sequence_length
+        self.labels=['汽车', '商业', '健康', '体育', 'IT', '旅游', '娱乐文化', '教育']
+        self.gene_dict()
 
     def read_corpus(self,filename,batch_size=1):
         with open(filename,'r',encoding='utf-8') as f:
-            data=f.readlines(batch_size)
+            data=f.readline()
+            j=0
+            labels = []
+            contents = []
             while data:
-                labels=[]
-                content=[]
-                for da in data:
-                    jsdata=json.loads(da)
-                    label,one_line=jsdata['label'],jsdata['content']
-                    labels.append(label)
-                    content.append(one_line)
-                yield labels,content
-                data = f.readlines(batch_size)
+                j+=1
+                jsdata=json.loads(data)
+                label,one_line=jsdata['label'],jsdata['content']
+                labels.append(label)
+                contents.append(one_line)
+                if j==int(batch_size):
+                    yield labels,contents
+                    j = 0
+                    labels = []
+                    contents = []
+                data = f.readline()
 
     def gene_dict(self):
         """
         生成数值和字的映射
         :return:
         """
+        self.vocab = []
+        with open(arg.vocab_file, 'r',encoding='utf-8') as f:
+            da = f.readline()
+            while da:
+                self.vocab.append(da.split(' ')[0])
+                da = f.readline()
+        self.vocab_length=len(self.vocab)
+
         self.word_id=dict(zip(self.vocab,range(len(self.vocab))))
         self.id_word=dict(zip(range(len(self.vocab)),self.vocab))
 
@@ -51,8 +62,9 @@ class DealData(object):
             if word in list(self.vocab):
                 index=self.word_id[word]
                 text_vector[j][index] = 1
-            j+=1
-        print(text_vector)
+                j+=1
+                if j>=self.max_sequence_length:
+                    break
         return text_vector
 
     def seq_vector(self,text_list):
@@ -63,7 +75,7 @@ class DealData(object):
         """
         lines=np.array(text_list)
         if len(lines)==1:
-            text_vectors=self.single_seq_vector(lines)
+            text_vectors=self.single_seq_vector(lines[0])
         else:
             text_vectors=[]
             for line in lines:
@@ -79,13 +91,15 @@ class DealData(object):
         :return:
         """
         line_len = len(line)
-        text_vector = np.zeros([self.max_sequence_length- num + 1, len(self.vocab)], dtype=np.float32)
+        text_vector = np.zeros([self.max_sequence_length, len(self.vocab)], dtype=np.float32)
         # 将没有在词汇表中的字用零代替
-        for i in range(0, line_len - num):
+        for i in range(0, line_len-num):
             for word in line[i:i + num]:
                 if word in self.vocab:
                     index = self.word_id[word]
                     text_vector[i][index] = 1
+            if i+1>= self.max_sequence_length:
+                break
         return text_vector
 
     def bow_vector(self,text_list,num=3):
@@ -96,9 +110,8 @@ class DealData(object):
         :return:
         """
         lines=np.array(text_list)
-
         if len(lines)==1:
-            text_vectors=self.single_bow_line(lines,num)
+            text_vectors=self.single_bow_line(lines[0],num)
         else:
             text_vectors=[]
             for line in lines:
@@ -106,56 +119,31 @@ class DealData(object):
                 text_vectors.append(text_vector)
         return text_vectors
 
-    def slice_batch(self,bow_seq='seq'):
+    def read_batch(self,filename=None,bow_seq='seq',batch_size=100):
         """
-        读取测试数据集
-        :param bow_seq:
+        默认读取测试数据集
+        :param bow_seq:'seq'or 'bow'
         :return:
         """
-        self.vocab = []
-        with open(arg.vocab_file, 'r',encoding='utf-8') as f:
-            da = f.readline()
-            while da:
-                self.vocab.append(da.split(' ')[0])
-                da = f.readline()
-        self.vocab_length=len(self.vocab)
+        if not filename:
+            filename=self.arg.valid_file
 
-        self.gene_dict()
-
-        self.labels=set() # 标签集
-        valid_cont_label = []  # 文本内容和标签
-        for label,one_line in self.read_corpus(self.arg.valid_file):
-            self.labels.add(label[0])
-            valid_cont_label.append([one_line[0], label[0]])
-        data=np.array(valid_cont_label)
-        X,Y =np.transpose(data)
-
-        labellist=list(self.labels)
-
-        # 验证集的大小
-        if bow_seq=='seq':
-            x_dev_vector=self.seq_vector(X)
-        else:
-            x_dev_vector=self.bow_vector(X)
-        label_index = list(map(labellist.index, Y))
-        dev_y_array = np.zeros([len(Y), len(labellist)], dtype=np.float32)
-        dev_y_array[list(range(len(Y))), label_index] = 1
-        return x_dev_vector,dev_y_array
+        for label,one_line in self.read_corpus(filename=filename,batch_size=batch_size):
+            # # 验证集的大小
+            if bow_seq=='seq':
+                x_vector=self.seq_vector(one_line)
+            else:
+                x_vector=self.bow_vector(one_line)
+            label_index = list(map(self.labels.index, label))
+            y_array = np.zeros([len(label), len(self.labels)], dtype=np.float32)
+            y_array[list(range(len(label))), label_index] = 1
+            yield x_vector,y_array
 
     def batch_iter(self,bow_seq):
-        labellist = list(self.labels)
-
         for epoch in range(self.arg.num_epochs):
             print('epoch',epoch)
-            for label,content in self.read_corpus(self.arg.train_file,self.arg.batch_size):
-                if bow_seq=='seq':
-                    x_train_vector=self.seq_vector(content)
-                else:
-                    x_train_vector=self.bow_vector(content)
-                label_index = list(map(labellist.index,label))
-                y_train_array = np.zeros([len(label),len(labellist)], dtype=np.float32)
-                y_train_array[list(range(len(label))),label_index]=1
-                yield x_train_vector,y_train_array
+            for x_vector, y_array in self.read_batch(self.arg.train_file,batch_size=self.arg.batch_size,bow_seq=bow_seq):
+                yield x_vector, y_array
 
 
 if __name__ == '__main__':
@@ -163,6 +151,8 @@ if __name__ == '__main__':
     arg = Argparse()
     logger=log_config(__file__)
     dealdata = DealData(arg,logger)
-    x_dev_vector, y_dev_array = dealdata.slice_batch(bow_seq='seq')
-    # for x_batch, y_batch in dealdata.batch_iter(x_train, y_train, bow_seq='seq'):
+    for x_dev_vector, y_dev_array in dealdata.read_batch(filename=arg.valid_file,bow_seq='seq',batch_size=1000):
+        print(y_dev_array)
+    #     time.sleep(5)
+    # for x_batch, y_batch in dealdata.batch_iter(bow_seq='bow'):
     #     print(y_batch)

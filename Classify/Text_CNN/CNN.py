@@ -9,7 +9,7 @@ import datetime
 from datasets import *
 
 FLAGS = Argparse()
-logger=log_config()
+logger=log_config(__file__)
 dealdata = DealData(FLAGS,logger)
 class TextCNN():
     def __init__(self,bow_seq='seq'):
@@ -19,8 +19,8 @@ class TextCNN():
         self.FLAGS = FLAGS
         self.dealdata = dealdata
         self.max_sequence_length=self.dealdata.max_sequence_length#最大句子长度
-        self.vector_length = self.dealdata.vector_length#向量长度
-        self.lable_length = self.dealdata.lable_length#标签长度
+        self.vector_length = self.FLAGS.max_sequence_length#向量长度
+        self.lable_length = len(self.dealdata.labels)#标签长度
 
         if bow_seq not in ['seq','bow']:
             assert '请选择seq模型或者bow模型中的其中一种'
@@ -177,13 +177,24 @@ def train_model(bow_seq='seq'):
                 if writer:
                     writer.add_summary(summary,step)
 
-            x_train, y_train, x_dev_vector, y_dev_array=dealdata.slice_batch(bow_seq=bow_seq)
-            for x_batch, y_batch  in dealdata.batch_iter(x_train,y_train,bow_seq=bow_seq):
+            i=1
+            for x_batch, y_batch  in dealdata.batch_iter(bow_seq=bow_seq):
                 train_step(x_batch, y_batch)
                 current_step=tf.train.global_step(sess,global_step)
                 if current_step % FLAGS.evaluate_every==0:
                     print("\nEvaluation:")
-                    dev_step(x_dev_vector, y_dev_array, writer=dev_writer)
+                    for x_dev_vector, y_dev_array in dealdata.read_batch(bow_seq=bow_seq,batch_size=1000):
+                        """
+                        总共有16000个测试样本，每次取出1000个测试样本进行测试
+                        """
+                        j=1
+                        if i==j:
+                            dev_step(x_dev_vector, y_dev_array, writer=dev_writer)
+                            if i==16:i=1
+                            else:i += 1
+                        elif j>i:break
+                        j += 1
+
                     path=saver.save(sess,save_path=checkpoint_prefix,global_step=current_step)
                     print("Saved model checkpoint to {}\n".format(path))
 

@@ -78,7 +78,7 @@ def Argparse():
     parser.add_argument("--num_checkpoints",default=5,help="Number of checkpoints to store (default: 5)",type=int)
 
     # 每块包含的数据量
-    parser.add_argument('--batch_size',default=60,help='num of each batch',type=int)
+    parser.add_argument('--batch_size',default=1000,help='num of each batch',type=int)
 
     # 训练轮数
     parser.add_argument('--num_epochs',default=200,help='Number of training epochs (default: 200)',type=int)
