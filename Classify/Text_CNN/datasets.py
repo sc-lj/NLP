@@ -39,7 +39,7 @@ class DealData(object):
         :return:
         """
         self.vocab = []
-        with open(arg.vocab_file, 'r',encoding='utf-8') as f:
+        with open(self.arg.vocab_file, 'r',encoding='utf-8') as f:
             da = f.readline()
             while da:
                 self.vocab.append(da.split(' ')[0])
