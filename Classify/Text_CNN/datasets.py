@@ -1,7 +1,8 @@
 # coding:utf-8
 
-import json,time
+import json,time,random
 import numpy as np
+import datetime
 
 
 class DealData(object):
@@ -127,7 +128,6 @@ class DealData(object):
         """
         if not filename:
             filename=self.arg.valid_file
-
         for label,one_line in self.read_corpus(filename=filename,batch_size=batch_size):
             # # 验证集的大小
             if bow_seq=='seq':
@@ -139,9 +139,23 @@ class DealData(object):
             y_array[list(range(len(label))), label_index] = 1
             yield x_vector,y_array
 
+    def shuffle(self,filename):
+        f1 = open(filename, 'r',encoding='utf-8')
+        data = f1.readlines()
+        f1.close()
+        length = len(data)
+        index = list(range(length))
+        random.shuffle(index)
+        f = open(filename, 'w',encoding='utf-8')
+        for i in index:
+            f.write(data[i])
+        f.close()
+
     def batch_iter(self,bow_seq):
         for epoch in range(self.arg.num_epochs):
-            print('epoch',epoch)
+            self.shuffle(self.arg.train_file)
+            time_str = datetime.datetime.now().isoformat()
+            print("{}: epoch {}".format(time_str,epoch ))
             for x_vector, y_array in self.read_batch(self.arg.train_file,batch_size=self.arg.batch_size,bow_seq=bow_seq):
                 yield x_vector, y_array
 
