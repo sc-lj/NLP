@@ -182,21 +182,22 @@ def train_model(bow_seq='seq'):
                 train_step(x_batch, y_batch)
                 current_step=tf.train.global_step(sess,global_step)
                 if current_step % FLAGS.evaluate_every==0:
-                    print("\nEvaluation:")
                     for x_dev_vector, y_dev_array in dealdata.read_batch(bow_seq=bow_seq,batch_size=1000):
                         """
                         总共有40000个测试样本，每次取出1000个测试样本进行测试
                         """
                         j=1
                         if i==j:
+                            print("\nEvaluation:")
                             dev_step(x_dev_vector, y_dev_array, writer=dev_writer)
+                            path = saver.save(sess, save_path=checkpoint_prefix, global_step=current_step)
+                            print("Saved model checkpoint to {}\n".format(path))
                             if i==40:i=1
                             else:i += 1
                         elif j>i:break
                         j += 1
 
-                    path=saver.save(sess,save_path=checkpoint_prefix,global_step=current_step)
-                    print("Saved model checkpoint to {}\n".format(path))
+
 
 
 if __name__ == '__main__':
