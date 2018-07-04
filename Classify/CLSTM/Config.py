@@ -17,6 +17,18 @@ def argument():
     # 每轮训练的样本数量
     parser.add_argument('--batch_size',default=128,type=int,help='the sample size of every batch train')
 
+    # 训练数据集
+    parser.add_argument('--train_file',default='../../Dataset/train_file.txt',type=str,help='This file is used to save the data that is trained model.')
+
+    # 验证数据集
+    parser.add_argument('--valid_file',default='../../Dataset/valid_file.txt',type=str,help='This file is used to save the data that is valided model')
+
+    # 字汇表
+    parser.add_argument('--vocab_file',default='../../Dataset/vocab_file.txt',type=str,help='This file is used to save the data that is vocabulary word')
+
+
+    parser.add_argument('--max_sequence_length',default=200,type=int,help='the maximum length of a sentence')
+
     cnn_parse=parser.add_argument_group('CNN argument','About CNN argument')
     # cnn模型dropout概率
     cnn_parse.add_argument('--cnn_dropout',default=0.5,help='dropout argument of CNN model')

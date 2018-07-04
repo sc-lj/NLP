@@ -10,8 +10,10 @@ while True:
     except:
         syspath=os.path.dirname(syspath)
 
-import Config
-import json
+from Config import *
+import json,random
+import numpy as np
+import time
 
 class Data():
     def __init__(self, arg, logger, max_sequence_length=None):
@@ -41,7 +43,7 @@ class Data():
         self.id_word=dict(zip(range(len(self.vocab)),self.vocab))
 
 
-    def read_corpus(self, filename, batch_size=1):
+    def read_corpus(self, filename, batch_size=2):
         with open(filename, 'r', encoding='utf-8') as f:
             data = f.readline()
             j = 0
@@ -60,10 +62,39 @@ class Data():
                     contents = []
                 data = f.readline()
 
+    def shuffle(self,filename):
+        f1 = open(filename, 'r')
+        data = f1.readlines()
+        f1.close()
+        length = len(data)
+        index = list(range(length))
+        random.shuffle(index)
+        f = open(filename, 'w')
+        for i in index:
+            f.write(data[i])
+        f.close()
 
-    def gen_batch(self):
-        for labels, contents in self.read_corpus(''):
+    def gen_batch(self,filename):
+        for labels, contents in self.read_corpus(filename):
+            label_index = list(map(self.labels.index, labels))
+            y_array = np.zeros([len(labels), len(self.labels)], dtype=np.float32)
+            y_array[list(range(len(labels))), label_index] = 1
+            contents_index=[]
+            print(contents)
+            # for con in contents:
+            #     if con in self.vocab:
+            #         pass
 
-            pass
+
+
+
+
+if __name__ == '__main__':
+    arg=argument()
+    log=log_config()
+    data=Data(arg,log)
+    data.gen_batch(arg.valid_file)
+
+
 
 
