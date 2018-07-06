@@ -1,0 +1,12 @@
+Dataset/.DS_Store
+Dataset/new_sohu.txt
+Dataset/target_file.txt
+Dataset/train.txt
+Dataset/train_file.txt
+Dataset/valid.txt
+.DS_Store
+Dataset/valid_file.txt
+Dataset/vocab_file.txt
+*/__pycache__/
+*/*/__pycache__/
+
