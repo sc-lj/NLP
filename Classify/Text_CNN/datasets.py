@@ -176,3 +176,5 @@ if __name__ == '__main__':
     x_dev_vector, y_dev_array = valid_data.__next__()
     print(y_dev_array)
 
+
+
