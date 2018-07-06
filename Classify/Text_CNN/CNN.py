@@ -7,6 +7,7 @@ import tensorflow as tf
 from config import *
 import datetime
 from datasets import *
+import gc
 
 FLAGS = Argparse()
 logger=log_config(__file__)
@@ -177,25 +178,22 @@ def train_model(bow_seq='seq'):
                 if writer:
                     writer.add_summary(summary,step)
 
-            i=1
             for x_batch, y_batch  in dealdata.batch_iter(bow_seq=bow_seq):
                 train_step(x_batch, y_batch)
                 current_step=tf.train.global_step(sess,global_step)
                 if current_step % FLAGS.evaluate_every==0:
-                    for x_dev_vector, y_dev_array in dealdata.read_batch(bow_seq=bow_seq,batch_size=1000):
-                        """
-                        总共有40000个测试样本，每次取出1000个测试样本进行测试
-                        """
-                        j=1
-                        if i==j:
-                            print("\nEvaluation:")
-                            dev_step(x_dev_vector, y_dev_array, writer=dev_writer)
-                            path = saver.save(sess, save_path=checkpoint_prefix, global_step=current_step)
-                            print("Saved model checkpoint to {}\n".format(path))
-                            if i==40:i=1
-                            else:i += 1
-                        elif j>i:break
-                        j += 1
+                    valid_data=dealdata.read_batch(bow_seq=bow_seq,batch_size=1000)
+                    x_dev_vector, y_dev_array=valid_data.__next__()
+                    """
+                    总共有40000个测试样本，每次取出1000个测试样本进行测试
+                    """
+                    print("\nEvaluation:")
+                    dev_step(x_dev_vector, y_dev_array, writer=dev_writer)
+                    path = saver.save(sess, save_path=checkpoint_prefix, global_step=current_step)
+                    print("Saved model checkpoint to {}\n".format(path))
+                    del valid_data
+                    gc.collect()
+
 
 
 

@@ -128,6 +128,8 @@ class DealData(object):
         """
         if not filename:
             filename=self.arg.valid_file
+            if random.randint(0,6)==0:
+                self.shuffle(filename)
         for label,one_line in self.read_corpus(filename=filename,batch_size=batch_size):
             # # 验证集的大小
             if bow_seq=='seq':
@@ -165,8 +167,11 @@ if __name__ == '__main__':
     arg = Argparse()
     logger=log_config(__file__)
     dealdata = DealData(arg,logger)
-    for x_dev_vector, y_dev_array in dealdata.read_batch(filename=arg.valid_file,bow_seq='seq',batch_size=1000):
-        print(y_dev_array)
+    # for x_dev_vector, y_dev_array in dealdata.read_batch(filename=arg.valid_file,bow_seq='seq',batch_size=1000):
+    #     print(y_dev_array)
     #     time.sleep(5)
     # for x_batch, y_batch in dealdata.batch_iter(bow_seq='bow'):
     #     print(y_batch)
+    valid_data = dealdata.read_batch(bow_seq='seq', batch_size=1000)
+    x_dev_vector, y_dev_array = valid_data.__next__()
+    print(y_dev_array)
