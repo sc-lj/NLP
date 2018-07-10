@@ -15,7 +15,7 @@ def argument():
     parser.add_argument('--is_bidirectional',default=True,type=bool,help='whether is use bidirectional RNN model (default:True)')
 
     # 每轮训练的样本数量
-    parser.add_argument('--batch_size',default=128,type=int,help='the sample size of every batch train')
+    parser.add_argument('--batch_size',default=2000,type=int,help='the sample size of every batch train')
 
     # 训练数据集
     parser.add_argument('--train_file',default='../../Dataset/train_file.txt',type=str,help='This file is used to save the data that is trained model.')
@@ -26,8 +26,17 @@ def argument():
     # 字汇表
     parser.add_argument('--vocab_file',default='../../Dataset/vocab_file.txt',type=str,help='This file is used to save the data that is vocabulary word')
 
+    # 最大文本长度
+    parser.add_argument('--max_sequence_length',default=300,type=int,help='the maximum length of a sentence')
 
-    parser.add_argument('--max_sequence_length',default=200,type=int,help='the maximum length of a sentence')
+    # num_epochs，循环次数
+    parser.add_argument('--num_epochs',default=50,type=int,help='the Maximum number of epochs')
+
+    parser.add_argument('--num_checkpoints',default=3,type=int,help='保存模型结果的数量')
+
+    parser.add_argument('--out_dir',default='./',type=str,help='模型参数保存的路径')
+
+    parser.add_argument('--evaluate_every',default=100,type=int,help='训练多少次后， 进行验证')
 
     cnn_parse=parser.add_argument_group('CNN argument','About CNN argument')
     # cnn模型dropout概率
@@ -38,10 +47,8 @@ def argument():
     cnn_parse.add_argument('--cnn_filter_num',default=64,type=int,help='filter num of cnn model')
     # cnn模型卷积核大小，给定的list，是多个卷积核的大小
     cnn_parse.add_argument('--cnn_filter_size',default=[3,4,5],type=list,help='Comma-separated filter sizes (default: "3,4,5")')
-    # 输入cnn模型的句子最大长度
-    cnn_parse.add_argument('--cnn_maxlen',default=300,type=int,help='max sequence length of every sequence')
     # cnn模型的学习率
-    cnn_parse.add_argument('--cnn_learn_rate',default=0.98,type=int,help='learning rate of cnn model')
+    cnn_parse.add_argument('--learn_rate',default=0.98,type=int,help='learning rate of cnn model')
 
 
     lstm=parser.add_argument_group('LSTM','About LSTM argument')
