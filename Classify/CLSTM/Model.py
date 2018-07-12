@@ -188,12 +188,16 @@ def train_model(num_class):
         init=tf.global_variables_initializer()
         sess.run(init)
 
+        valid_data = data.gen_batch(filename=arg.valid_file, batch_size=arg.batch_size)
         for x_batch, y_batch in data.batch_iter():
             train_step(x_batch,y_batch)
             current_step = tf.train.global_step(sess, global_step)
             if current_step % arg.evaluate_every== 0:
-                valid_data = data.gen_batch(filename=arg.valid_file,batch_size=arg.batch_size)
-                x_dev_vector, y_dev_array = valid_data.__next__()
+                try:
+                    x_dev_vector, y_dev_array = valid_data.__next__()
+                except:
+                    valid_data = data.gen_batch(filename=arg.valid_file, batch_size=arg.batch_size)
+                    x_dev_vector, y_dev_array = valid_data.__next__()
                 """
                 总共有40000个测试样本，每次取出1000个测试样本进行测试
                 """
@@ -201,9 +205,8 @@ def train_model(num_class):
                 dev_step(x_dev_vector, y_dev_array, writer=dev_writer)
                 path = saver.save(sess, save_path=checkpoint_prefix, global_step=current_step)
                 print("Saved model checkpoint to {}\n".format(path))
-                del valid_data
-                gc.collect()
-
+            del x_batch,y_batch
+            gc.collect()
 
 if __name__ == '__main__':
     arg=argument()
