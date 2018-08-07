@@ -7,8 +7,6 @@ Dataset/valid.txt
 .DS_Store
 Dataset/valid_file.txt
 Dataset/vocab_file.txt
-Dataset/test.txt
-Dataset/news_sohusite_xml.dat
 */__pycache__/
 */*/__pycache__/
 

@@ -5,18 +5,19 @@ sys.path.append(os.path.dirname(__file__))
 
 import tensorflow as tf
 from Config import *
+from DataScript import *
+import gc
 
-arg=argument()
 class CNN():
     def __init__(self):
         self.arg=arg
         # 要embedding的input必须是int类型
-        self.input=tf.placeholder(shape=[None,self.arg.cnn_maxlen],name='input',dtype=tf.int32)
+        self.input=tf.placeholder(shape=[None,self.arg.max_sequence_length],name='input',dtype=tf.int32)
 
         self.cnn_model()
 
     def embedding_variable(self):
-        embed=tf.Variable(tf.random_uniform(shape=[1000,self.arg.cnn_embedding],minval=-0.25,maxval=0.25,dtype=tf.float32),name='embedding')
+        embed=tf.Variable(tf.random_uniform(shape=[data.vocab_length,self.arg.cnn_embedding],minval=-0.25,maxval=0.25,dtype=tf.float32),name='embedding')
         return tf.nn.embedding_lookup(embed,self.input)
 
     def weight_variable(self,shape):
@@ -133,19 +134,86 @@ class LSTM(CNN):
         self.accuracy=tf.reduce_mean(tf.cast(correct_prod,tf.int32))
 
         # 损失和评估函数
-        # cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(self.label, prediction))
-        cross_entropy = -tf.reduce_mean(self.label * tf.log(prediction))
-        self.train_op = tf.train.AdamOptimizer(self.arg.learn_rate).minimize(cross_entropy)
-
-        correct_prediction = tf.equal(tf.argmax(prediction, 1), tf.argmax(self.label, 1))
-        self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
+        self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=self.label, logits=prediction))
+        # self.loss = -tf.reduce_mean(self.label * tf.log(prediction))
 
 
+def train_model(num_class):
+    rnn = LSTM(num_class)
+    with tf.Session() as sess:
+        global_step=tf.Variable(0,name='global_step',trainable=False)
+        # 记录loss和accuracy变化情况
+        loss_summary = tf.summary.scalar('loss',rnn.loss)
+        accuracy_summary = tf.summary.scalar('accuracy', rnn.accuracy)
 
+        out_dir = arg.out_dir
+        if not os.path.exists(out_dir):
+            os.makedirs(out_dir)
+
+        checkpoint_dir = os.path.abspath(os.path.join(out_dir, 'checkpoints'))
+        checkpoint_prefix = os.path.join(checkpoint_dir, 'model')
+        if not os.path.exists(checkpoint_dir):
+            os.makedirs(checkpoint_dir)
+
+        # 训练的summary
+        train_summary = tf.summary.merge([loss_summary, accuracy_summary])
+        train_summary_dir = os.path.join(out_dir, 'summary', 'train')
+        train_writer = tf.summary.FileWriter(train_summary_dir, sess.graph)
+
+        # 测试的summary
+        dev_summary = tf.summary.merge([loss_summary, accuracy_summary])
+        dev_summary_dir = os.path.join(out_dir, 'summary', 'dev')
+        dev_writer = tf.summary.FileWriter(dev_summary_dir, sess.graph)
+
+        saver=tf.train.Saver(tf.global_variables(),max_to_keep=arg.num_checkpoints)
+
+        train_op = tf.train.AdamOptimizer(arg.learn_rate).minimize(rnn.loss, global_step=global_step)
+
+        def train_step(x_batch, y_batch):
+            feed_dict = {rnn.input: x_batch, rnn.label: y_batch}
+            _, step, summary, loss, accuracy = sess.run([train_op, global_step, train_summary, rnn.loss, rnn.accuracy],feed_dict)
+
+            time_str = datetime.datetime.now().isoformat()
+            print("{}:train step {}, loss {:g}, acc {:g}".format(time_str, step, loss, accuracy))
+            train_writer.add_summary(summary, step)
+
+        def dev_step(x_batch, y_batch, writer=None):
+            feed_dict = {rnn.input: x_batch, rnn.label: y_batch}
+            step, summary, loss, accuracy = sess.run([global_step, dev_summary, rnn.loss, rnn.accuracy],feed_dict)
+            time_str = datetime.datetime.now().isoformat()
+            print("{}:dev step {}, loss {:g}, acc {:g}".format(time_str, step, loss, accuracy))
+            if writer:
+                writer.add_summary(summary, step)
+
+        init=tf.global_variables_initializer()
+        sess.run(init)
+
+        valid_data = data.gen_batch(filename=arg.valid_file, batch_size=arg.batch_size)
+        for x_batch, y_batch in data.batch_iter():
+            train_step(x_batch,y_batch)
+            current_step = tf.train.global_step(sess, global_step)
+            if current_step % arg.evaluate_every== 0:
+                try:
+                    x_dev_vector, y_dev_array = valid_data.__next__()
+                except:
+                    valid_data = data.gen_batch(filename=arg.valid_file, batch_size=arg.batch_size)
+                    x_dev_vector, y_dev_array = valid_data.__next__()
+                """
+                总共有40000个测试样本，每次取出1000个测试样本进行测试
+                """
+                print("\nEvaluation:")
+                dev_step(x_dev_vector, y_dev_array, writer=dev_writer)
+                path = saver.save(sess, save_path=checkpoint_prefix, global_step=current_step)
+                print("Saved model checkpoint to {}\n".format(path))
+            del x_batch,y_batch
+            gc.collect()
 
 if __name__ == '__main__':
-    rnn=LSTM(23)
-
+    arg=argument()
+    log=log_config()
+    data=Data(arg,log)
+    # rnn=LSTM(23)
+    train_model(8)
 
 
 
