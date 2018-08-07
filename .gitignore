@@ -7,6 +7,7 @@ Dataset/valid.txt
 .DS_Store
 Dataset/valid_file.txt
 Dataset/vocab_file.txt
+
 */__pycache__/
 */*/__pycache__/
 
