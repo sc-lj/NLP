@@ -13,7 +13,7 @@ import src.file_handle as file_handle
 import src.excel_handle as excel_handle
 import src.seg_handle as seg_handle
 import textRank
-import main
+import main_master
 
 # 《界面》文章标签的抓取
 tagDatas = []
@@ -72,7 +72,7 @@ while flag <= 1400000:
         textrankKeywords = keywords
 
         # SKE算法统计
-        ske = main.main(fileName, path)
+        ske = main_master.main(fileName, path)
         print(json.dumps(ske, ensure_ascii=False))
         # 进行ske关键词的数据处理
         skeKeywordsData = ske[0:9]  #top10
