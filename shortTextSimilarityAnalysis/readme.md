@@ -6,22 +6,8 @@
 而且该算法适用于对话领域。
 
 ### 算法理论
-假如有两个句子，![](https://latex.codecogs.com/png.latex?\fn_jvn&space;T_1=\\{w_{11}&space;w_{12}...w_{1m_1}\\}&space;T_2=\\{w_{21}&space;w_{22}...w_{2m_1}\\})
+假如有两个句子，
 
-```html
-<img src="http://yuml.me/diagram/scruffy/class/[User|+Forename+;Surname;+HashedPassword;-Salt|+Login();+Logout()]" >
 
-```
-
-# 机器学习-如何在github上写数学公式
-
-<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
-居中格式: $$xxx$$
-$$x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}$$
-靠左格式: \\(xxx\\)
-\\(x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}\\)
-测试
-$$\frac{7x+5}{1+y^2}$$
-\\(l(x_i) = - \log_2 P(x_i)\\)
 
 
