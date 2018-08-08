@@ -6,8 +6,12 @@
 而且该算法适用于对话领域。
 
 ### 算法理论
-假如有两个句子，T={w_{11} w "w },T={w w "w }
-1 11 12 1m1 2 21 22 2m2
+假如有两个句子，
+```javascript
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
+
+```
 
 
 
