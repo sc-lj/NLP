@@ -7,12 +7,6 @@
 
 ### 算法理论
 假如有两个句子，
-```javascript
-
-<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
-
-```
-
 
 
 
