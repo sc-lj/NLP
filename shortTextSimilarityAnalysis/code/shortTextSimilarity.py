@@ -62,9 +62,15 @@ def wordSimilarity(word1,word2):
     if len(word1Encode)==0 or len(word2Encode)==0:
         return 0
 
+    length=0
+    depth=0
     for code1 in word1Encode:
         for code2 in word2Encode:
-            pass
+            if code1.find(code2)==0:
+                length=0
+                depth=len(code1)
+            else:
+                pass
 
 
 
