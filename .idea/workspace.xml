@@ -1,0 +1,811 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="72486719-31ea-4c2c-988c-0fcc4166aa46" name="Default" comment="">
+      <change afterPath="$PROJECT_DIR$/Dataset/contentcorpus.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Dataset/revertunicode.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Dataset/synonym/readme.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Dataset/synonym/哈工大社会计算与信息检索研究中心同义词词林扩展版/同义词词林扩展版说明.pdf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Dataset/synonym/哈工大社会计算与信息检索研究中心同义词词林扩展版/哈工大社会计算与信息检索研究中心同义词词林扩展版.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Dataset/synonym/哈工大社会计算与信息检索研究中心同义词词林扩展版/词义标注语料的说明.pdf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Dataset/synonym/哈工大社会计算与信息检索研究中心同义词词林扩展版/词性-词义_合并结果.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Dataset/synonym/最全6w伪原创近义词库、同义词库(含英文).doc" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Dataset/titlecorpus.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/shortTextSimilarityAnalysis/code/TextProcess.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/shortTextSimilarityAnalysis/code/Utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/shortTextSimilarityAnalysis/code/shortTextSimilarity.py" beforeDir="false" afterPath="$PROJECT_DIR$/shortTextSimilarityAnalysis/code/shortTextSimilarity.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/shortTextSimilarityAnalysis/document/A Method for Measuring Sentence Similarity and its Application to Conversational Agents.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/shortTextSimilarityAnalysis/document/A Method for Measuring Sentence Similarity and its Application to Conversational Agents.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/shortTextSimilarityAnalysis/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/shortTextSimilarityAnalysis/readme.md" afterDir="false" />
+    </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="TRACKING_ENABLED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CoverageDataManager">
+    <SUITE FILE_PATH="coverage/NLP$datasets__1_.coverage" NAME="datasets (1) Coverage Results" MODIFIED="1528123726894" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Classify/Text_CNN" />
+    <SUITE FILE_PATH="coverage/NLP$Model.coverage" NAME="Model Coverage Results" MODIFIED="1528298678192" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Classify/CLSTM" />
+    <SUITE FILE_PATH="coverage/NLP$DealCorpus.coverage" NAME="DealCorpus Coverage Results" MODIFIED="1528301971755" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Classify/CLSTM" />
+    <SUITE FILE_PATH="coverage/NLP$datasets.coverage" NAME="datasets Coverage Results" MODIFIED="1527001065464" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Text_CNN" />
+    <SUITE FILE_PATH="coverage/NLP$CNN.coverage" NAME="CNN Coverage Results" MODIFIED="1530706330901" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Classify/Text_CNN" />
+    <SUITE FILE_PATH="coverage/NLP$config.coverage" NAME="config Coverage Results" MODIFIED="1527001221349" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Text_CNN" />
+    <SUITE FILE_PATH="coverage/NLP$DealCorpus__1_.coverage" NAME="DealCorpus (1) Coverage Results" MODIFIED="1528732254629" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Classify" />
+    <SUITE FILE_PATH="coverage/NLP$main.coverage" NAME="main Coverage Results" MODIFIED="1530706314733" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/KwordExtr/SKE" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file leaf-file-name="readme.md" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/shortTextSimilarityAnalysis/readme.md">
+          <provider selected="true" editor-type-id="split-provider[text-editor;MarkdownPreviewEditor]">
+            <state split_layout="SPLIT">
+              <first_editor relative-caret-position="270">
+                <caret line="15" lean-forward="true" selection-start-line="15" selection-end-line="15" />
+              </first_editor>
+              <second_editor>
+                <markdownNavigatorState>
+                  <previewPanelState version="2.5.4">
+                    <jsState>{&quot;onLoadScroll&quot;:{&quot;x&quot;:0,&quot;y&quot;:501}}</jsState>
+                  </previewPanelState>
+                </markdownNavigatorState>
+              </second_editor>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="shortTextSimilarity.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/shortTextSimilarityAnalysis/code/shortTextSimilarity.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="828">
+              <caret line="47" column="6" selection-start-line="47" selection-start-column="6" selection-end-line="47" selection-end-column="6" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name=".gitignore" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/.gitignore">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="180">
+              <caret line="10" column="5" selection-start-line="10" selection-start-column="5" selection-end-line="10" selection-end-column="5" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/shortTextSimilarityAnalysis/code/shortTextSimilarity.py" />
+        <option value="$PROJECT_DIR$/shortTextSimilarityAnalysis/readme.md" />
+      </list>
+    </option>
+  </component>
+  <component name="JsBuildToolGruntFileManager" detection-done="true" sorting="DEFINITION_ORDER" />
+  <component name="JsBuildToolPackageJson" detection-done="true" sorting="DEFINITION_ORDER" />
+  <component name="JsGulpfileManager">
+    <detection-done>true</detection-done>
+    <sorting>DEFINITION_ORDER</sorting>
+  </component>
+  <component name="ProjectFrameBounds">
+    <option name="y" value="23" />
+    <option name="width" value="1280" />
+    <option name="height" value="693" />
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectView">
+    <navigator currentView="Scope" currentSubView="Project Files" proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="NLP" type="b2602c69:ProjectViewProjectNode" />
+              <item name="NLP" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+      <pane id="Scope">
+        <subPane subId="Project Files">
+          <expand>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="NLP" type="cbb8eebc:String" user="NLP" />
+            </path>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="NLP" type="cbb8eebc:String" user="NLP" />
+              <item name="Dataset" type="cbb8eebc:String" user="Dataset" />
+            </path>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="NLP" type="cbb8eebc:String" user="NLP" />
+              <item name="Dataset" type="cbb8eebc:String" user="Dataset" />
+              <item name="synonym" type="cbb8eebc:String" user="synonym" />
+            </path>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="NLP" type="cbb8eebc:String" user="NLP" />
+              <item name="shortTextSimilarityAnalysis" type="cbb8eebc:String" user="shortTextSimilarityAnalysis" />
+            </path>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="NLP" type="cbb8eebc:String" user="NLP" />
+              <item name="shortTextSimilarityAnalysis" type="cbb8eebc:String" user="shortTextSimilarityAnalysis" />
+              <item name="code" type="cbb8eebc:String" user="code" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="WebServerToolWindowFactoryState" value="true" />
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="72486719-31ea-4c2c-988c-0fcc4166aa46" name="Default" comment="" />
+      <created>1526693862507</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1526693862507</updated>
+    </task>
+    <task id="LOCAL-00015" summary="cnn 文本分类算法">
+      <created>1527263447135</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1527263447135</updated>
+    </task>
+    <task id="LOCAL-00016" summary="CLSTM 文本分类算法">
+      <created>1527325456794</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1527325456794</updated>
+    </task>
+    <task id="LOCAL-00017" summary="cnn 文本分类算法">
+      <created>1527390924218</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1527390924218</updated>
+    </task>
+    <task id="LOCAL-00018" summary="分词">
+      <created>1527506864465</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1527506864465</updated>
+    </task>
+    <task id="LOCAL-00019" summary="CLSTM 文本分类算法">
+      <created>1527508075365</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1527508075365</updated>
+    </task>
+    <task id="LOCAL-00020" summary="cnn文本分类参考文献">
+      <created>1527680135370</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1527680135370</updated>
+    </task>
+    <task id="LOCAL-00021" summary="CLSTM 文本分类参考文献">
+      <created>1527680209386</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1527680209386</updated>
+    </task>
+    <task id="LOCAL-00022" summary="CLSTM 文本分类算法">
+      <created>1527684085619</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1527684085622</updated>
+    </task>
+    <task id="LOCAL-00023" summary="CLSTM 文本分类算法">
+      <created>1527688143792</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1527688143792</updated>
+    </task>
+    <task id="LOCAL-00024" summary="CLSTM 文本分类算法">
+      <created>1527693183865</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1527693183865</updated>
+    </task>
+    <task id="LOCAL-00025" summary="CLSTM 文本分类算法">
+      <created>1527782451428</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1527782451428</updated>
+    </task>
+    <task id="LOCAL-00026" summary="cnn 文本分类算法">
+      <created>1527916666331</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1527916666331</updated>
+    </task>
+    <task id="LOCAL-00027" summary="cnn 文本分类算法">
+      <created>1527917224642</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1527917224642</updated>
+    </task>
+    <task id="LOCAL-00028" summary="CLSTM 文本分类算法">
+      <created>1528030962344</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1528030962344</updated>
+    </task>
+    <task id="LOCAL-00029" summary="CLSTM 文本分类算法">
+      <created>1528036372257</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1528036372258</updated>
+    </task>
+    <task id="LOCAL-00030" summary="cnn 文本分类算法">
+      <created>1528114254711</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1528114254711</updated>
+    </task>
+    <task id="LOCAL-00031" summary="CLSTM 文本分类算法">
+      <created>1528126783884</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1528126783884</updated>
+    </task>
+    <task id="LOCAL-00032" summary="CLSTM 文本分类算法">
+      <created>1528129098389</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1528129098389</updated>
+    </task>
+    <task id="LOCAL-00033" summary="CLSTM 文本分类算法">
+      <created>1528300505127</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1528300505128</updated>
+    </task>
+    <task id="LOCAL-00034" summary="CLSTM 文本分类算法">
+      <created>1528301818533</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1528301818533</updated>
+    </task>
+    <task id="LOCAL-00035" summary="CLSTM 文本分类算法">
+      <created>1528302108325</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1528302108325</updated>
+    </task>
+    <task id="LOCAL-00036" summary="CLSTM 文本分类算法">
+      <created>1528302218222</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1528302218222</updated>
+    </task>
+    <task id="LOCAL-00037" summary="语料库处理">
+      <created>1528379931613</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1528379931613</updated>
+    </task>
+    <task id="LOCAL-00038" summary="CLSTM 文本分类算法">
+      <created>1528385727063</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1528385727064</updated>
+    </task>
+    <task id="LOCAL-00039" summary="关键字提取">
+      <created>1528649128290</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1528649128290</updated>
+    </task>
+    <task id="LOCAL-00040" summary="数据处理">
+      <created>1528718352821</created>
+      <option name="number" value="00040" />
+      <option name="presentableId" value="LOCAL-00040" />
+      <option name="project" value="LOCAL" />
+      <updated>1528718352821</updated>
+    </task>
+    <task id="LOCAL-00041" summary="关键字提取论文">
+      <created>1528718386254</created>
+      <option name="number" value="00041" />
+      <option name="presentableId" value="LOCAL-00041" />
+      <option name="project" value="LOCAL" />
+      <updated>1528718386254</updated>
+    </task>
+    <task id="LOCAL-00042" summary="数据处理">
+      <created>1528719618555</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1528719618555</updated>
+    </task>
+    <task id="LOCAL-00043" summary="数据处理">
+      <created>1528719682975</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1528719682975</updated>
+    </task>
+    <task id="LOCAL-00044" summary="关键词提取">
+      <created>1528720225560</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1528720225560</updated>
+    </task>
+    <task id="LOCAL-00045" summary="SKE 关键字提取">
+      <created>1528726912866</created>
+      <option name="number" value="00045" />
+      <option name="presentableId" value="LOCAL-00045" />
+      <option name="project" value="LOCAL" />
+      <updated>1528726912866</updated>
+    </task>
+    <task id="LOCAL-00046" summary="SKE 关键字提取">
+      <created>1528731224966</created>
+      <option name="number" value="00046" />
+      <option name="presentableId" value="LOCAL-00046" />
+      <option name="project" value="LOCAL" />
+      <updated>1528731224966</updated>
+    </task>
+    <task id="LOCAL-00047" summary="SKE 关键字提取">
+      <created>1528732895107</created>
+      <option name="number" value="00047" />
+      <option name="presentableId" value="LOCAL-00047" />
+      <option name="project" value="LOCAL" />
+      <updated>1528732895107</updated>
+    </task>
+    <task id="LOCAL-00048" summary="SKE 关键字提取">
+      <created>1528733358134</created>
+      <option name="number" value="00048" />
+      <option name="presentableId" value="LOCAL-00048" />
+      <option name="project" value="LOCAL" />
+      <updated>1528733358134</updated>
+    </task>
+    <task id="LOCAL-00049" summary="SKE 关键字提取">
+      <created>1528816164424</created>
+      <option name="number" value="00049" />
+      <option name="presentableId" value="LOCAL-00049" />
+      <option name="project" value="LOCAL" />
+      <updated>1528816164425</updated>
+    </task>
+    <task id="LOCAL-00050" summary="SKE 关键字提取">
+      <created>1529407112230</created>
+      <option name="number" value="00050" />
+      <option name="presentableId" value="LOCAL-00050" />
+      <option name="project" value="LOCAL" />
+      <updated>1529407112231</updated>
+    </task>
+    <task id="LOCAL-00051" summary="微博情绪分析数据">
+      <created>1529408174887</created>
+      <option name="number" value="00051" />
+      <option name="presentableId" value="LOCAL-00051" />
+      <option name="project" value="LOCAL" />
+      <updated>1529408174887</updated>
+    </task>
+    <task id="LOCAL-00052" summary="微博情绪分析数据">
+      <created>1529418720670</created>
+      <option name="number" value="00052" />
+      <option name="presentableId" value="LOCAL-00052" />
+      <option name="project" value="LOCAL" />
+      <updated>1529418720670</updated>
+    </task>
+    <task id="LOCAL-00053" summary="微博情绪分析数据">
+      <created>1529727420436</created>
+      <option name="number" value="00053" />
+      <option name="presentableId" value="LOCAL-00053" />
+      <option name="project" value="LOCAL" />
+      <updated>1529727420438</updated>
+    </task>
+    <task id="LOCAL-00054" summary="微博情绪分析数据">
+      <created>1531138642181</created>
+      <option name="number" value="00054" />
+      <option name="presentableId" value="LOCAL-00054" />
+      <option name="project" value="LOCAL" />
+      <updated>1531138642183</updated>
+    </task>
+    <task id="LOCAL-00055" summary="停用词">
+      <created>1531138694966</created>
+      <option name="number" value="00055" />
+      <option name="presentableId" value="LOCAL-00055" />
+      <option name="project" value="LOCAL" />
+      <updated>1531138694966</updated>
+    </task>
+    <task id="LOCAL-00056" summary="init">
+      <created>1533643773384</created>
+      <option name="number" value="00056" />
+      <option name="presentableId" value="LOCAL-00056" />
+      <option name="project" value="LOCAL" />
+      <updated>1533643773385</updated>
+    </task>
+    <task id="LOCAL-00057" summary="init">
+      <created>1533659362939</created>
+      <option name="number" value="00057" />
+      <option name="presentableId" value="LOCAL-00057" />
+      <option name="project" value="LOCAL" />
+      <updated>1533659362939</updated>
+    </task>
+    <task id="LOCAL-00058" summary="init">
+      <created>1533659406276</created>
+      <option name="number" value="00058" />
+      <option name="presentableId" value="LOCAL-00058" />
+      <option name="project" value="LOCAL" />
+      <updated>1533659406276</updated>
+    </task>
+    <task id="LOCAL-00059" summary="init">
+      <created>1533736358347</created>
+      <option name="number" value="00059" />
+      <option name="presentableId" value="LOCAL-00059" />
+      <option name="project" value="LOCAL" />
+      <updated>1533736358348</updated>
+    </task>
+    <task id="LOCAL-00060" summary="init">
+      <created>1533738026052</created>
+      <option name="number" value="00060" />
+      <option name="presentableId" value="LOCAL-00060" />
+      <option name="project" value="LOCAL" />
+      <updated>1533738026052</updated>
+    </task>
+    <task id="LOCAL-00061" summary="init">
+      <created>1533738145957</created>
+      <option name="number" value="00061" />
+      <option name="presentableId" value="LOCAL-00061" />
+      <option name="project" value="LOCAL" />
+      <updated>1533738145957</updated>
+    </task>
+    <task id="LOCAL-00062" summary="init">
+      <created>1533745188417</created>
+      <option name="number" value="00062" />
+      <option name="presentableId" value="LOCAL-00062" />
+      <option name="project" value="LOCAL" />
+      <updated>1533745188417</updated>
+    </task>
+    <task id="LOCAL-00063" summary="init">
+      <created>1533874343996</created>
+      <option name="number" value="00063" />
+      <option name="presentableId" value="LOCAL-00063" />
+      <option name="project" value="LOCAL" />
+      <updated>1533874343996</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="0" y="23" width="1280" height="693" extended-state="0" />
+    <layout>
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Event Log" order="7" sideWeight="0.5056543" side_tool="true" weight="0.38319087" />
+      <window_info anchor="bottom" id="Database Changes" order="7" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4983845" weight="0.083769634" />
+      <window_info anchor="bottom" id="Version Control" order="7" sideWeight="0.49434572" weight="0.38319087" />
+      <window_info anchor="bottom" id="Python Console" order="7" sideWeight="0.49919224" weight="0.25925925" />
+      <window_info anchor="right" id="Mongo Explorer" order="3" />
+      <window_info anchor="bottom" id="Terminal" order="7" sideWeight="0.49919224" visible="true" weight="0.41535777" />
+      <window_info anchor="right" id="Remote Host" order="3" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.21486267" />
+      <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
+      <window_info anchor="right" id="Database" order="3" />
+      <window_info anchor="right" id="SciView" order="3" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="right" id="Commander" order="0" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="bottom" id="Messages" order="7" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Find" order="1" />
+    </layout>
+    <layout-to-restore>
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Run" order="2" />
+      <window_info anchor="right" id="Remote Host" order="3" />
+      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.24959612" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info anchor="right" id="Commander" order="0" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Version Control" order="11" weight="0.32905984" />
+      <window_info anchor="right" id="Mongo Explorer" order="6" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="right" id="Database" order="5" />
+      <window_info anchor="bottom" id="Terminal" order="12" weight="0.058404557" />
+      <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
+      <window_info anchor="bottom" id="Database Changes" order="8" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="right" id="SciView" order="4" />
+      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info anchor="bottom" id="Messages" order="9" />
+      <window_info active="true" anchor="bottom" id="Python Console" order="13" visible="true" weight="0.32621083" />
+    </layout-to-restore>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="VcsContentAnnotationSettings">
+    <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="分词" />
+    <MESSAGE value="cnn文本分类参考文献" />
+    <MESSAGE value="CLSTM 文本分类参考文献" />
+    <MESSAGE value="cnn 文本分类算法" />
+    <MESSAGE value="语料库处理" />
+    <MESSAGE value="CLSTM 文本分类算法" />
+    <MESSAGE value="关键字提取" />
+    <MESSAGE value="关键字提取论文" />
+    <MESSAGE value="数据处理" />
+    <MESSAGE value="关键词提取" />
+    <MESSAGE value="SKE 关键字提取" />
+    <MESSAGE value="微博情绪分析数据" />
+    <MESSAGE value="停用词" />
+    <MESSAGE value="init" />
+    <MESSAGE value="Merge branch 'master' of https://github.com/sc-lj/NLP&#10;&#10;# Conflicts:&#10;#&#9;shortTextSimilarityAnalysis/code/shortTextSimilarity.py&#10;#&#9;shortTextSimilarityAnalysis/document/A Method for Measuring Sentence Similarity and its Application to Conversational Agents.pdf&#10;#&#9;shortTextSimilarityAnalysis/readme.md" />
+    <option name="LAST_COMMIT_MESSAGE" value="Merge branch 'master' of https://github.com/sc-lj/NLP&#10;&#10;# Conflicts:&#10;#&#9;shortTextSimilarityAnalysis/code/shortTextSimilarity.py&#10;#&#9;shortTextSimilarityAnalysis/document/A Method for Measuring Sentence Similarity and its Application to Conversational Agents.pdf&#10;#&#9;shortTextSimilarityAnalysis/readme.md" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <option name="time" value="2" />
+    </breakpoint-manager>
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/shortTextSimilarityAnalysis/readme.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;MarkdownPreviewEditor]">
+        <state split_layout="SPLIT">
+          <first_editor relative-caret-position="216">
+            <caret line="12" selection-start-line="12" selection-end-line="12" />
+          </first_editor>
+          <second_editor>
+            <markdownNavigatorState>
+              <previewPanelState version="2.5.4">
+                <jsState>{&quot;onLoadScroll&quot;:{&quot;x&quot;:0,&quot;y&quot;:501}}</jsState>
+              </previewPanelState>
+            </markdownNavigatorState>
+          </second_editor>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="180">
+          <caret line="10" column="5" selection-start-line="10" selection-start-column="5" selection-end-line="10" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/KwordExtr/SKE/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-344">
+          <caret line="25" column="42" selection-start-line="25" selection-start-column="42" selection-end-line="25" selection-end-column="42" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/KwordExtr/SKE/statisticsCount.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="139">
+          <caret line="34" column="10" lean-forward="true" selection-start-line="34" selection-start-column="10" selection-end-line="34" selection-end-column="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/KwordExtr/SKE/dataClean.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="382">
+          <caret line="63" column="19" selection-start-line="63" selection-start-column="19" selection-end-line="63" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/KwordExtr/SKE/textRank.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="169">
+          <caret line="11" column="7" selection-start-line="11" selection-start-column="7" selection-end-line="11" selection-end-column="7" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/KwordExtr/SKE/semanticsCount.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="93">
+          <caret line="221" column="17" selection-start-line="221" selection-start-column="17" selection-end-line="221" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/KwordExtr/SKE/fileHandle.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="382">
+          <caret line="35" column="4" selection-start-line="35" selection-start-column="4" selection-end-line="35" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/自然语言处理项目的相关干货整理.md" />
+    <entry file="file://$PROJECT_DIR$/Dataset/sentiment/WeiboEmotion/2014微博情绪分析数据.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-69" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Classify/DealCorpus.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="18">
+          <caret line="202" column="14" selection-start-line="202" selection-start-column="14" selection-end-line="202" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Dataset/sentiment/WeiboEmotion/句子级的情绪分析结果.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="54">
+          <caret line="3" selection-start-line="3" selection-end-line="5" selection-end-column="15" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Dataset/sentiment/WeiboEmotion/微博情绪标注语料.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-4601" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Sentiment/DAM/readme.md" />
+    <entry file="file://$PROJECT_DIR$/Classify/Text_CNN/config.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1962">
+          <caret line="109" selection-start-line="109" selection-end-line="118" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Classify/Text_CNN/datasets.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-253">
+          <caret line="139" column="30" selection-start-line="139" selection-start-column="30" selection-end-line="139" selection-end-column="30" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Classify/Text_CNN/CNN.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="183">
+          <caret line="179" lean-forward="true" selection-start-line="179" selection-end-line="179" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Dataset/sentiment/hownet/程度级别词语（英文）.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1802" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Dataset/sentiment/hownet/程度级别词语（中文）.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-2223" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Dataset/sentiment/advdegree/negative.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-6058" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;MarkdownPreviewEditor]">
+        <state split_layout="SPLIT">
+          <first_editor relative-caret-position="-39" />
+          <second_editor>
+            <markdownNavigatorState />
+          </second_editor>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/KwordExtr/readme.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;MarkdownPreviewEditor]">
+        <state split_layout="SPLIT">
+          <first_editor relative-caret-position="-1086">
+            <caret line="33" column="12" selection-start-line="33" selection-start-column="12" selection-end-line="33" selection-end-column="12" />
+          </first_editor>
+          <second_editor>
+            <markdownNavigatorState />
+          </second_editor>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Classify/CLSTM/Model.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2340">
+          <caret line="130" column="54" selection-start-line="130" selection-start-column="54" selection-end-line="130" selection-end-column="54" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Dataset/synonym/readme.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;MarkdownPreviewEditor]">
+        <state split_layout="SPLIT">
+          <first_editor />
+          <second_editor>
+            <markdownNavigatorState />
+          </second_editor>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/KwordExtr/SKE/cmp.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="486">
+          <caret line="27" column="20" selection-start-line="27" selection-start-column="20" selection-end-line="27" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="180">
+          <caret line="10" column="5" selection-start-line="10" selection-start-column="5" selection-end-line="10" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/shortTextSimilarityAnalysis/code/shortTextSimilarity.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="828">
+          <caret line="47" column="6" selection-start-line="47" selection-start-column="6" selection-end-line="47" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/shortTextSimilarityAnalysis/readme.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;MarkdownPreviewEditor]">
+        <state split_layout="SPLIT">
+          <first_editor relative-caret-position="270">
+            <caret line="15" lean-forward="true" selection-start-line="15" selection-end-line="15" />
+          </first_editor>
+          <second_editor>
+            <markdownNavigatorState>
+              <previewPanelState version="2.5.4">
+                <jsState>{&quot;onLoadScroll&quot;:{&quot;x&quot;:0,&quot;y&quot;:501}}</jsState>
+              </previewPanelState>
+            </markdownNavigatorState>
+          </second_editor>
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>
