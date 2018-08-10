@@ -77,6 +77,7 @@ def wordSimilarity(word1,word2):
 
 
 
+
 def wordOrderSimilarity(order1,order2):
     """
     计算语句中词序的相似度,该值对语句对长度很敏感，句子长度越长，该值会越大；
