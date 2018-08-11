@@ -18,7 +18,9 @@ def readcorpus():
 corpus=readcorpus()
 
 def wordPro(word):
-    allNum = corpus['allword']
+    if "allword" in corpus:
+        allNum = corpus['allword']
+    else:allNum=sum(corpus.values())
     if word in corpus:
         num=corpus[word]
         wordpro=float(num)/float(allNum)
