@@ -115,6 +115,8 @@ def genCorpus():
     contentcorpus=defaultdict(int)
     db=login_sql()
     cursor=db.cursor()
+    titlecorpusNum=0
+    contentcorpusNum=0
     for dbase in ["crawldata","main"]:
         sql="select title,content from %s where 1"%dbase
         cursor.execute(sql)
@@ -125,16 +127,22 @@ def genCorpus():
             contents=cutWords(content)
             for con in contents:
                 contentcorpus[con]+=1
+                contentcorpusNum+=1
 
             words=cutWords(title)
             for word in words:
                 titlecorpus[word]+=1
+                titlecorpusNum+=1
 
-    corpus=json.dumps(titlecorpus)
+    titlecorpus["allword"]=titlecorpusNum
+    titlecorpus=json.dumps(titlecorpus)
     with open('../script/titlecorpus.json','w') as f:
-        f.write(corpus)
+        f.write(titlecorpus)
+
+    contentcorpus['allword']=contentcorpusNum
+    contentcorpus=json.dumps(contentcorpus)
     with open('../script/contentcorpus.json','w') as f:
-        f.write(corpus)
+        f.write(contentcorpus)
 
 def processHtml(html):
     """

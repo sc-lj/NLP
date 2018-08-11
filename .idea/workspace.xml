@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="72486719-31ea-4c2c-988c-0fcc4166aa46" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/shortTextSimilarityAnalysis/document/Structural Sentence Similarity Estimation for Short Texts.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/shortTextSimilarityAnalysis/document/Structural Sentence Similarity Estimation for Short Texts.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/shortTextSimilarityAnalysis/code/TextProcess.py" beforeDir="false" afterPath="$PROJECT_DIR$/shortTextSimilarityAnalysis/code/TextProcess.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/shortTextSimilarityAnalysis/code/shortTextSimilarity.py" beforeDir="false" afterPath="$PROJECT_DIR$/shortTextSimilarityAnalysis/code/shortTextSimilarity.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -54,11 +54,20 @@
       <file leaf-file-name="shortTextSimilarity.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/shortTextSimilarityAnalysis/code/shortTextSimilarity.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1668">
-              <caret line="6" selection-start-line="6" selection-end-line="6" />
+            <state relative-caret-position="426">
+              <caret line="67" column="18" lean-forward="true" selection-start-line="67" selection-start-column="18" selection-end-line="67" selection-end-column="18" />
               <folding>
-                <element signature="e#130#148#0" expanded="true" />
+                <element signature="e#130#153#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="TextProcess.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/shortTextSimilarityAnalysis/code/TextProcess.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="225">
+              <caret line="141" column="19" lean-forward="true" selection-start-line="141" selection-start-column="19" selection-end-line="141" selection-end-column="26" />
             </state>
           </provider>
         </entry>
@@ -71,8 +80,9 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/shortTextSimilarityAnalysis/code/shortTextSimilarity.py" />
         <option value="$PROJECT_DIR$/shortTextSimilarityAnalysis/readme.md" />
+        <option value="$PROJECT_DIR$/shortTextSimilarityAnalysis/code/TextProcess.py" />
+        <option value="$PROJECT_DIR$/shortTextSimilarityAnalysis/code/shortTextSimilarity.py" />
       </list>
     </option>
   </component>
@@ -82,7 +92,7 @@
     <detection-done>true</detection-done>
     <sorting>DEFINITION_ORDER</sorting>
   </component>
-  <component name="ProjectFrameBounds">
+  <component name="ProjectFrameBounds" fullScreen="true">
     <option name="y" value="23" />
     <option name="width" value="1280" />
     <option name="height" value="693" />
@@ -103,7 +113,18 @@
             <path>
               <item name="Root" type="cbb8eebc:String" user="Root" />
               <item name="NLP" type="cbb8eebc:String" user="NLP" />
+              <item name="Dataset" type="cbb8eebc:String" user="Dataset" />
+            </path>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="NLP" type="cbb8eebc:String" user="NLP" />
               <item name="shortTextSimilarityAnalysis" type="cbb8eebc:String" user="shortTextSimilarityAnalysis" />
+            </path>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="NLP" type="cbb8eebc:String" user="NLP" />
+              <item name="shortTextSimilarityAnalysis" type="cbb8eebc:String" user="shortTextSimilarityAnalysis" />
+              <item name="code" type="cbb8eebc:String" user="code" />
             </path>
             <path>
               <item name="Root" type="cbb8eebc:String" user="Root" />
@@ -500,16 +521,17 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="23" width="1280" height="693" extended-state="0" />
+    <frame x="0" y="0" width="1280" height="800" extended-state="0" />
+    <editor active="true" />
     <layout>
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Event Log" order="7" sideWeight="0.5056543" side_tool="true" weight="0.38319087" />
       <window_info anchor="bottom" id="Database Changes" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4983845" weight="0.083769634" />
       <window_info anchor="bottom" id="Version Control" order="7" sideWeight="0.49434572" weight="0.38319087" />
-      <window_info anchor="bottom" id="Python Console" order="7" sideWeight="0.49919224" weight="0.25925925" />
+      <window_info anchor="bottom" id="Python Console" order="7" sideWeight="0.49919224" visible="true" weight="0.25925925" />
       <window_info anchor="right" id="Mongo Explorer" order="3" />
-      <window_info anchor="bottom" id="Terminal" order="7" sideWeight="0.49919224" visible="true" weight="0.04712042" />
+      <window_info anchor="bottom" id="Terminal" order="7" sideWeight="0.49919224" weight="0.2962963" />
       <window_info anchor="right" id="Remote Host" order="3" />
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.21486267" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
@@ -596,7 +618,7 @@
         <state relative-caret-position="108">
           <caret line="6" selection-start-line="6" selection-end-line="6" />
           <folding>
-            <element signature="e#130#148#0" expanded="true" />
+            <element signature="e#130#153#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -629,7 +651,7 @@
         <state relative-caret-position="108">
           <caret line="6" selection-start-line="6" selection-end-line="6" />
           <folding>
-            <element signature="e#130#148#0" expanded="true" />
+            <element signature="e#130#153#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -864,12 +886,19 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/shortTextSimilarityAnalysis/code/TextProcess.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="225">
+          <caret line="141" column="19" lean-forward="true" selection-start-line="141" selection-start-column="19" selection-end-line="141" selection-end-column="26" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/shortTextSimilarityAnalysis/code/shortTextSimilarity.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1668">
-          <caret line="6" selection-start-line="6" selection-end-line="6" />
+        <state relative-caret-position="426">
+          <caret line="67" column="18" lean-forward="true" selection-start-line="67" selection-start-column="18" selection-end-line="67" selection-end-column="18" />
           <folding>
-            <element signature="e#130#148#0" expanded="true" />
+            <element signature="e#130#153#0" expanded="true" />
           </folding>
         </state>
       </provider>

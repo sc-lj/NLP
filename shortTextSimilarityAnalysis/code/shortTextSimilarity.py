@@ -4,9 +4,27 @@
 基于论文A Method for Measuring Sentence Similarity and its Application to Conversational Agents中的方法计算短文本的相似度
 """
 
-import os,re,jieba
+import os,re,jieba,json
 import numpy as np
 from TextProcess import *
+
+def readcorpus():
+    f=open('../../Dataset/titlecorpus.json','r')
+    data=f.read()
+    f.close()
+    data=json.loads(data)
+    return data
+
+corpus=readcorpus()
+
+def wordPro(word):
+    allNum = corpus['allword']
+    if word in corpus:
+        num=corpus[word]
+        wordpro=float(num)/float(allNum)
+    else:
+        wordpro=0
+    return wordpro
 
 
 def semanticSimilarity(sentence1,sentence2,sentenceSet):
@@ -14,15 +32,45 @@ def semanticSimilarity(sentence1,sentence2,sentenceSet):
     计算语句的语义相似度
     :param sentence1:
     :param sentence2:
+    :param sentenceSet:
     :return:
     """
-    sentence1=cutWords(sentence1)
-    sentence2=cutWords(sentence2)
-    sentenset=list(set(sentence1).union(set(sentence2)))
     sentence1vector=[]
     sentence2vector=[]
+    semanticSimThreshold=0.2
 
-    return
+    for i,word in enumerate(sentenceSet):
+        wordpro = wordPro(word)
+        if word in sentence1:
+            sentence1vector.append(wordpro)
+        else:
+            maxSemanticSim=0
+            maxSemanticWord=0
+            for wor in sentence1:
+                wordSim=wordSimilarity(word,wor)
+                if wordSim>=semanticSimThreshold and wordSim>=maxSemanticSim:
+                    maxSemanticSim=wordSim
+                    maxSemanticWord=wor
+            worpro=wordPro(maxSemanticWord)
+            maxSemanticSim=maxSemanticSim*wordpro*worpro
+            sentence1vector.append(maxSemanticSim)
+
+        if word in sentence2:
+            sentence2vector.append(1)
+        else:
+            maxSemanticSim1=0
+            maxSemanticWord1=0
+            for wor in sentence2:
+                wordSims=wordSimilarity(word,wor)
+                if wordSims>=semanticSimThreshold and wordSims>=maxSemanticSim1:
+                    maxSemanticSim1=wordSims
+                    maxSemanticWord1=wor
+            worpro=wordPro(maxSemanticWord1)
+            maxSemanticSim1=maxSemanticSim1*wordpro*worpro
+            sentence2vector.append(maxSemanticSim1)
+
+    Ss=np.array(sentence1vector)*np.array(sentence2vector)/(np.linalg.norm(sentence1vector,2)*np.linalg.norm(sentence2vector,2))
+    return Ss
 
 # 返回格式{code: '文字字符串', }
 def cilin():
@@ -101,14 +149,40 @@ def cmp(code1,code2):
 def wordOrderSimilarity(sentence1,sentence2,sentenceSet):
     """
     计算语句中词序的相似度,该值对语句对长度很敏感，句子长度越长，该值会越大；
+    词序向量是在sentenceSet中的是否出现在sentence1或sentence2中，如果出现，就填写词在sentence1或2中的index。
+    否则计算该词在sentence1或者2中最相似词的index。
     :param sentence1:
     :param sentence2:
     :param sentenceSet:
     :return:
     """
-
     order1=[]
     order2=[]
+    wordOrderThrehold=0.4
+    for index,word in enumerate(sentenceSet):
+        if word in sentence1:
+            order1.append(sentence1.index(word)+1)
+        else:
+            maxWordOrder1=0
+            maxWordOrderIndex1=0
+            for ind,wor in enumerate(sentence1):
+                wordOrderSim=wordSimilarity(word,wor)
+                if wordOrderSim>=wordOrderThrehold and wordOrderSim>=maxWordOrder1:
+                    maxWordOrder1=wordOrderSim
+                    maxWordOrderIndex1=ind
+            order1.append(maxWordOrderIndex1)
+        if word in sentence2:
+            order2.append(sentence2.index(word)+1)
+        else:
+            maxWordOrder2=0
+            maxWordOrderIndex2=0
+            for ind,wor in enumerate(sentence1):
+                wordOrderSim=wordSimilarity(word,wor)
+                if wordOrderSim>=wordOrderThrehold and wordOrderSim>=maxWordOrder2:
+                    maxWordOrder2=wordOrderSim
+                    maxWordOrderIndex2=ind
+            order2.append(maxWordOrderIndex2)
+
     assert len(order1)==len(order2),u"两个句子的词序长度不相等"
     order1=np.array(order1)
     order2=np.array(order2)
