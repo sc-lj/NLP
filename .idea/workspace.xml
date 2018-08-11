@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="72486719-31ea-4c2c-988c-0fcc4166aa46" name="Default" comment="" />
+    <list default="true" id="72486719-31ea-4c2c-988c-0fcc4166aa46" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/shortTextSimilarityAnalysis/document/Structural Sentence Similarity Estimation for Short Texts.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/shortTextSimilarityAnalysis/document/Structural Sentence Similarity Estimation for Short Texts.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/shortTextSimilarityAnalysis/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/shortTextSimilarityAnalysis/readme.md" afterDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -30,17 +33,17 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="readme.md" pinned="false" current-in-tab="false">
+      <file leaf-file-name="readme.md" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/shortTextSimilarityAnalysis/readme.md">
           <provider selected="true" editor-type-id="split-provider[text-editor;MarkdownPreviewEditor]">
             <state split_layout="SPLIT">
-              <first_editor relative-caret-position="281">
-                <caret line="66" selection-start-line="66" selection-end-line="66" />
+              <first_editor relative-caret-position="353">
+                <caret line="70" column="9" selection-start-line="70" selection-start-column="9" selection-end-line="70" selection-end-column="9" />
               </first_editor>
               <second_editor>
                 <markdownNavigatorState>
                   <previewPanelState version="2.5.4">
-                    <jsState>{&quot;onLoadScroll&quot;:{&quot;x&quot;:0,&quot;y&quot;:3018.00001008}}</jsState>
+                    <jsState>{&quot;onLoadScroll&quot;:{&quot;x&quot;:0,&quot;y&quot;:2968.5000032}}</jsState>
                   </previewPanelState>
                 </markdownNavigatorState>
               </second_editor>
@@ -48,11 +51,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="shortTextSimilarity.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="shortTextSimilarity.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/shortTextSimilarityAnalysis/code/shortTextSimilarity.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="424">
-              <caret line="177" column="32" lean-forward="true" selection-start-line="177" selection-start-column="32" selection-end-line="177" selection-end-column="32" />
+            <state relative-caret-position="259">
+              <caret line="22" column="12" selection-start-line="22" selection-start-column="12" selection-end-line="22" selection-end-column="12" />
               <folding>
                 <element signature="e#130#153#0" expanded="true" />
               </folding>
@@ -64,7 +67,7 @@
         <entry file="file://$PROJECT_DIR$/shortTextSimilarityAnalysis/code/TextProcess.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="225">
-              <caret line="141" column="19" lean-forward="true" selection-start-line="141" selection-start-column="19" selection-end-line="141" selection-end-column="26" />
+              <caret line="141" column="19" selection-start-line="141" selection-start-column="19" selection-end-line="141" selection-end-column="26" />
             </state>
           </provider>
         </entry>
@@ -77,9 +80,9 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/shortTextSimilarityAnalysis/readme.md" />
         <option value="$PROJECT_DIR$/shortTextSimilarityAnalysis/code/TextProcess.py" />
         <option value="$PROJECT_DIR$/shortTextSimilarityAnalysis/code/shortTextSimilarity.py" />
+        <option value="$PROJECT_DIR$/shortTextSimilarityAnalysis/readme.md" />
       </list>
     </option>
   </component>
@@ -528,9 +531,9 @@
       <window_info anchor="bottom" id="Version Control" order="7" sideWeight="0.49434572" weight="0.38319087" />
       <window_info anchor="bottom" id="Python Console" order="7" sideWeight="0.49919224" weight="0.25925925" />
       <window_info anchor="right" id="Mongo Explorer" order="3" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="7" sideWeight="0.49919224" visible="true" weight="0.2962963" />
+      <window_info anchor="bottom" id="Terminal" order="7" sideWeight="0.49919224" visible="true" weight="0.2962963" />
       <window_info anchor="right" id="Remote Host" order="3" />
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.21486267" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.21486267" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="right" id="Database" order="3" />
       <window_info anchor="right" id="SciView" order="3" />
@@ -629,7 +632,7 @@
           <second_editor>
             <markdownNavigatorState>
               <previewPanelState version="2.5.4">
-                <jsState>{&quot;onLoadScroll&quot;:{&quot;x&quot;:0,&quot;y&quot;:3018.00001008}}</jsState>
+                <jsState>{&quot;onLoadScroll&quot;:{&quot;x&quot;:0,&quot;y&quot;:2968.5000032}}</jsState>
               </previewPanelState>
             </markdownNavigatorState>
           </second_editor>
@@ -867,36 +870,36 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/shortTextSimilarityAnalysis/readme.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;MarkdownPreviewEditor]">
-        <state split_layout="SPLIT">
-          <first_editor relative-caret-position="281">
-            <caret line="66" selection-start-line="66" selection-end-line="66" />
-          </first_editor>
-          <second_editor>
-            <markdownNavigatorState>
-              <previewPanelState version="2.5.4">
-                <jsState>{&quot;onLoadScroll&quot;:{&quot;x&quot;:0,&quot;y&quot;:3018.00001008}}</jsState>
-              </previewPanelState>
-            </markdownNavigatorState>
-          </second_editor>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/shortTextSimilarityAnalysis/code/TextProcess.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="225">
-          <caret line="141" column="19" lean-forward="true" selection-start-line="141" selection-start-column="19" selection-end-line="141" selection-end-column="26" />
+          <caret line="141" column="19" selection-start-line="141" selection-start-column="19" selection-end-line="141" selection-end-column="26" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/shortTextSimilarityAnalysis/code/shortTextSimilarity.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="424">
-          <caret line="177" column="32" lean-forward="true" selection-start-line="177" selection-start-column="32" selection-end-line="177" selection-end-column="32" />
+        <state relative-caret-position="259">
+          <caret line="22" column="12" selection-start-line="22" selection-start-column="12" selection-end-line="22" selection-end-column="12" />
           <folding>
             <element signature="e#130#153#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/shortTextSimilarityAnalysis/readme.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;MarkdownPreviewEditor]">
+        <state split_layout="SPLIT">
+          <first_editor relative-caret-position="353">
+            <caret line="70" column="9" selection-start-line="70" selection-start-column="9" selection-end-line="70" selection-end-column="9" />
+          </first_editor>
+          <second_editor>
+            <markdownNavigatorState>
+              <previewPanelState version="2.5.4">
+                <jsState>{&quot;onLoadScroll&quot;:{&quot;x&quot;:0,&quot;y&quot;:2968.5000032}}</jsState>
+              </previewPanelState>
+            </markdownNavigatorState>
+          </second_editor>
         </state>
       </provider>
     </entry>
