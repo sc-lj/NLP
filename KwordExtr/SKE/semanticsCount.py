@@ -58,23 +58,6 @@ def wordEncoding(word ,data = cilinCodeDatas):
             flag = True
             wordEncodingDatas.append(k)
     return wordEncodingDatas
-    # if flag:
-    #     return wordEncodingDatas
-    # else:
-        # 对于是否存在于自定义标签库中，进行检测
-        # userdictFilePath = 'dict_file/user_dict.txt'
-        # userdictFileObject = open(userdictFilePath, 'r')  # 进行分词文件的读取
-        # 存在True，否则为False
-        # tagFlag = False
-        # for line in userdictFileObject:
-        #     data = line.strip('\n')  # 去除换行符
-        #     if str(word) in data:
-        #         tagFlag = True
-        #         break
-        # if tagFlag:
-        #     return wordNewEncodingDatas
-        # else:
-        #     return wordEncodingDatas
 
 
 # 进行词语间语义相似度计算
