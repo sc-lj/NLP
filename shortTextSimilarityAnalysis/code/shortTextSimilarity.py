@@ -28,6 +28,32 @@ def wordPro(word):
         wordpro=0
     return wordpro
 
+def genSemanticSim(sentence,sentenceSet,semanticSimThreshold=0.2):
+    """
+    产生句子的语义向量
+    :param sentence: 其中一个句子的词集
+    :param sentenceSet: 要比较的两个句子的组成的词集
+    :param semanticSimThreshold: 产生词相似度的阈值
+    :return:
+    """
+    sentencevector=[]
+    for i, word in enumerate(sentenceSet):
+        wordpro = wordPro(word)
+        if word in sentence:
+            sentencevector.append(wordpro)
+        else:
+            maxSemanticSim1 = 0
+            maxSemanticWord1 = 0
+            for wor in sentence:
+                wordSims = wordSimilarity(word, wor)
+                if wordSims >= semanticSimThreshold and wordSims >= maxSemanticSim1:
+                    maxSemanticSim1 = wordSims
+                    maxSemanticWord1 = wor
+            worpro = wordPro(maxSemanticWord1)
+            maxSemanticSim1 = maxSemanticSim1 * wordpro * worpro
+            sentencevector.append(maxSemanticSim1)
+    return sentencevector
+
 
 def semanticSimilarity(sentence1,sentence2,sentenceSet):
     """
@@ -37,39 +63,9 @@ def semanticSimilarity(sentence1,sentence2,sentenceSet):
     :param sentenceSet:
     :return:
     """
-    sentence1vector=[]
-    sentence2vector=[]
-    semanticSimThreshold=0.2
-
-    for i,word in enumerate(sentenceSet):
-        wordpro = wordPro(word)
-        if word in sentence1:
-            sentence1vector.append(wordpro)
-        else:
-            maxSemanticSim=0
-            maxSemanticWord=0
-            for wor in sentence1:
-                wordSim=wordSimilarity(word,wor)
-                if wordSim>=semanticSimThreshold and wordSim>=maxSemanticSim:
-                    maxSemanticSim=wordSim
-                    maxSemanticWord=wor
-            worpro=wordPro(maxSemanticWord)
-            maxSemanticSim=maxSemanticSim*wordpro*worpro
-            sentence1vector.append(maxSemanticSim)
-
-        if word in sentence2:
-            sentence2vector.append(1)
-        else:
-            maxSemanticSim1=0
-            maxSemanticWord1=0
-            for wor in sentence2:
-                wordSims=wordSimilarity(word,wor)
-                if wordSims>=semanticSimThreshold and wordSims>=maxSemanticSim1:
-                    maxSemanticSim1=wordSims
-                    maxSemanticWord1=wor
-            worpro=wordPro(maxSemanticWord1)
-            maxSemanticSim1=maxSemanticSim1*wordpro*worpro
-            sentence2vector.append(maxSemanticSim1)
+    semanticSimThreshold = 0.2
+    sentence1vector=genSemanticSim(sentence1,sentenceSet,semanticSimThreshold)
+    sentence2vector=genSemanticSim(sentence2,sentenceSet,semanticSimThreshold)
 
     Ss=np.array(sentence1vector)*np.array(sentence2vector)/(np.linalg.norm(sentence1vector,2)*np.linalg.norm(sentence2vector,2))
     return Ss
@@ -147,6 +143,28 @@ def cmp(code1,code2):
         if code2[i]!=code1[i]:
             return i
 
+def genWordOrder(sentence,sentenceSet,wordOrderThrehold=0.4):
+    """
+    计算词序向量
+    :param sentence:
+    :param sentenceSet:
+    :param wordOrderThrehold:
+    :return:
+    """
+    order = []
+    for index, word in enumerate(sentenceSet):
+        if word in sentence:
+            order.append(sentence.index(word) + 1)
+        else:
+            maxWordOrder2 = 0
+            maxWordOrderIndex2 = 0
+            for ind, wor in enumerate(sentence):
+                wordOrderSim = wordSimilarity(word, wor)
+                if wordOrderSim >= wordOrderThrehold and wordOrderSim >= maxWordOrder2:
+                    maxWordOrder2 = wordOrderSim
+                    maxWordOrderIndex2 = ind
+            order.append(maxWordOrderIndex2)
+    return order
 
 def wordOrderSimilarity(sentence1,sentence2,sentenceSet):
     """
@@ -158,32 +176,9 @@ def wordOrderSimilarity(sentence1,sentence2,sentenceSet):
     :param sentenceSet:
     :return:
     """
-    order1=[]
-    order2=[]
-    wordOrderThrehold=0.4
-    for index,word in enumerate(sentenceSet):
-        if word in sentence1:
-            order1.append(sentence1.index(word)+1)
-        else:
-            maxWordOrder1=0
-            maxWordOrderIndex1=0
-            for ind,wor in enumerate(sentence1):
-                wordOrderSim=wordSimilarity(word,wor)
-                if wordOrderSim>=wordOrderThrehold and wordOrderSim>=maxWordOrder1:
-                    maxWordOrder1=wordOrderSim
-                    maxWordOrderIndex1=ind
-            order1.append(maxWordOrderIndex1)
-        if word in sentence2:
-            order2.append(sentence2.index(word)+1)
-        else:
-            maxWordOrder2=0
-            maxWordOrderIndex2=0
-            for ind,wor in enumerate(sentence1):
-                wordOrderSim=wordSimilarity(word,wor)
-                if wordOrderSim>=wordOrderThrehold and wordOrderSim>=maxWordOrder2:
-                    maxWordOrder2=wordOrderSim
-                    maxWordOrderIndex2=ind
-            order2.append(maxWordOrderIndex2)
+    wordOrderThrehold = 0.4
+    order1=genWordOrder(sentence1,sentenceSet,wordOrderThrehold)
+    order2=genWordOrder(sentence2,sentenceSet,wordOrderThrehold)
 
     assert len(order1)==len(order2),u"两个句子的词序长度不相等"
     order1=np.array(order1)
