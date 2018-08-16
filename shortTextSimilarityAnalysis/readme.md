@@ -51,7 +51,7 @@ S_r表示了两个句子的共享词对的词序；S_r对单词对的两个单�
 
 语义相似度代表了词汇的相似度，词序相似性代表了词的相关性。
 
-sigma 的取值范围为[0,1]，本文设置的默认值为0.85。
+sigma 的取值范围为\[0,1\]，本文设置的默认值为0.85。
 
 
 
@@ -59,7 +59,7 @@ sigma 的取值范围为[0,1]，本文设置的默认值为0.85。
 
 本文提出了一个新的方法：Structural Similarity。它摒弃了同义词或者语法等特征，比如路径或词性标签等。
 
-结构相似性不考虑句子的实际意义，而是更多地强调句子结构的相似性，以便发现目的或情感层面的相似性。
+结构相似性不考虑句子的实际意义上的相似性，而是更多地强调句子结构的相似性，以便发现目的或情感层面的相似性。
 为了消除词意上的歧义，本文还提出了Word2Vec的变体来表示词汇。
 
 提出该算法是基于人们总是喜欢用相似的语言结构表达相似的意思。
@@ -70,9 +70,27 @@ sigma 的取值范围为[0,1]，本文设置的默认值为0.85。
 本文提出的Structural Similarity过多的强调语义分析。而且该算法能与其他算法结合起来解决其他问题，
 该算法选取的特征能应用到其他短文本分析中。
 
+结构句子相似性和语义相似性之间的区别有：\
+1、结构句子相似性没有提取句子的语法规则，而是提取句子的结构\
+2、词语的词义不适用于结构句子相似性，而上下文则适用于结构句子相似性
 
+但是，结构相似性很难辨别句子的实际含义，特别是主体-对象的差异。比如："A cat chases a mouse"与"A mouse is chased by a cat"，
+而不是"A mouse chases a cat"。然而，结构相似性更加倾向于后者，毕竟"cat"和"mouse"有更加频繁的类似的上下文。
 
+结构相似性算法很容易与语义分析或者情感分析相结合，一起使用。
 
+词向量的选择：
+现在主流的词向量表示方法有：Word2Vec模型(CBOW 模型)和SkipThought模型。但是本文选择是的SkipGram模型。
+
+- 如果是用一个词语作为输入，来预测它周围的上下文，那这个模型叫做『Skip-gram 模型』
+- 而如果是拿一个词语的上下文作为输入，来预测这个词语本身，则是 『CBOW 模型』
+
+The main drawback of the Word2Vec model is that since each word in SkipGram model has only one vector, it is hard to differentiate different meanings of a word. Moreover, pre- ceding and following contexts are not distinguished in the Word2Vec model, which are important in determining the borders of a phrase.
+
+以前，我们主要依靠词的相似性来计算句子的相似性，这是基于每个词序列在段落中表达相同的含义这样的假定。
+我们却忽略了短语对句子相似性计算的重要性。本文试图找到一个好的方法切分句子，通过对如下特征给予不同的分数；
+这些特征有：word-level similarities(词水平的相似性), phrase formation possibilities(短语形成的可能性),
+word adjacencies and sum distances(单词邻接和总距离), phrase length and existence reward with entropy and reorder penalties(短语长度和存在奖励与熵和重新排序处罚).
 
 
 
