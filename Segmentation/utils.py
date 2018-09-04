@@ -5,8 +5,8 @@ import codecs,re
 
 re_han_default = re.compile("([\u4E00-\u9FD5]+)", re.U)
 re_skip_default = re.compile("(\r\n|\s)", re.U)
-# 中文utf编码格式区间
-re_han = re.compile("([^a-zA-Z0-9\u4E00-\u9FD5\r\n\s]+)", re.U)
+# 中文utf编码格式区间,还排除了8.7类似的格式
+re_han = re.compile("([^a-zA-Z0-9\u4E00-\u9FD5\r\n\s]+[^(\d+.\d+)])", re.U)
 
 # 用该标示符来标记在中文中具有天然的分割符号，如""、《》。等，并将其分割标示为O
 PAD="PAD"
@@ -37,13 +37,14 @@ def corpus(infiles,outfile):
     lines=f.readlines()
     for line in lines:
         line=strQ2B(line)
+        line=re.sub("·",".",line)
         pad=0
         sentence=re_han.sub(PAD,line)
         for words in re.split(" |\u0020",sentence):
             if len(words.strip())==0:
                 continue
             if len(words)==1 or words=="PAD":
-                # 这是预防连续出现两个PAD字符
+                # 这是预防连续出现多个PAD字符，只写入一个PAD字符
                 if words==PAD and pad==0:
                     outdata.write(words+"\tO\n")
                     pad+=1
@@ -55,10 +56,14 @@ def corpus(infiles,outfile):
                 for word in words:
                     if len(word.strip()) == 0:
                         continue
-                    outdata.write(word[0]+"\tB\n")
-                    for i in range(1,len(word)-1):
-                        outdata.write(word[i] + "\tM\n")
-                    outdata.write(word[-1]+"\tE\n")
+                    if not re_han_default.match(word):
+                        # 匹配非汉字
+                        outdata.write(word.lower() + "\tS\n")
+                    else:
+                        outdata.write(word[0]+"\tB\n")
+                        for i in range(1,len(word)-1):
+                            outdata.write(word[i] + "\tM\n")
+                        outdata.write(word[-1]+"\tE\n")
         outdata.write("\n")
 
     f.close()
