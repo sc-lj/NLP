@@ -3,7 +3,6 @@
 import re,os
 import tensorflow as tf
 
-_buckets=[(2,5),(6,10),(11,15),(16)]
 
 class DPCWS():
     def __init__(self):
@@ -11,9 +10,8 @@ class DPCWS():
         self.window=5 #窗口大小
         self.CFDimension=50 # 字符特征的维度
         self.unit=300 # 隐藏层大小
-        self.X=tf.placeholder(shape=[None,50],name="X",dtype=tf.float32)
+        self.X=tf.placeholder(shape=[None,200],name="X",dtype=tf.float32)
         self.Y=tf.placeholder(shape=[None,])
-
 
     def weight(self,shape):
         return tf.Variable(tf.truncated_normal(shape,0,0.2),name="weight",dtype=tf.float32)
