@@ -1,5 +1,6 @@
+#coding:utf-8
+
 from __future__ import absolute_import
-__author__ = 'a_medelyan'
 import os
 import io
 

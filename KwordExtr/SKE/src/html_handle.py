@@ -33,12 +33,6 @@ def get_article_data(html_data):
     else:
         return ''
 
-    # 直接进行数据筛选
-    # if file_type.get(type):
-    #     pass
-    # else:
-    #     return ''
-
     # 获取标题、副标题数据
     title_datas = soup.find_all("div", class_="article-header")
     if len(title_datas) > 0:

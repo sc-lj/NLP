@@ -1,7 +1,6 @@
-from __future__ import absolute_import
-from __future__ import print_function
+#coding:utf-8
+
 import six
-__author__ = 'a_medelyan'
 
 import rake
 import operator
