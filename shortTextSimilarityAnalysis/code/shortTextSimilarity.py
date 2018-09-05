@@ -9,7 +9,7 @@ import numpy as np
 from TextProcess import *
 
 def readcorpus():
-    f=open('../../Dataset/titlecorpus.json','r')
+    f=open('./titlecorpus.json','r')
     data=f.read()
     f.close()
     data=json.loads(data)

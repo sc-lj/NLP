@@ -7,7 +7,8 @@ import os
 import sys
 
 import codecs
-from textrank4zh import TextRank4Keyword, TextRank4Sentence
+from TextRank.TextRankKeyword import TextRankKeyword
+from TextRank.TextRankSentence import TextRankSentence
 
 def details(fileName, path):
     filePath = os.path.join(path, fileName)
@@ -21,7 +22,7 @@ def details(fileName, path):
     ALLOW_SPEECH_TAGS = ['a', 'ad', 'an', 'i', 'j', 'l', 'v', 'vg', 'vd', 'vn', 'n']
 
     # 关键词处理
-    tr4w = TextRank4Keyword(None, ALLOW_SPEECH_TAGS)
+    tr4w = TextRankKeyword(None, ALLOW_SPEECH_TAGS)
     tr4w.analyze(text=text, lower=True, window=2)  # py2中text必须是utf8编码的str或者unicode对象，py3中必须是utf8编码的bytes或者str对象
     keyWords = []
     keywords = ''
@@ -39,7 +40,7 @@ def details(fileName, path):
     keypharses = ('\\').join(keyPhrases)
 
     # 文本摘要处理
-    tr4s = TextRank4Sentence()
+    tr4s = TextRankSentence()
     tr4s.analyze(text=text, lower=True, source='all_filters')
 
     # 文本摘要提取
