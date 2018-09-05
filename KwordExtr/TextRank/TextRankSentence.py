@@ -1,9 +1,6 @@
 #-*- encoding:utf-8 -*-
-"""
-@author:   letian
-@homepage: http://www.letiantian.me
-@github:   https://github.com/someus/
-"""
+
+
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 
