@@ -18,7 +18,6 @@ allow_speech_tags = ['an', 'i', 'j', 'l', 'n', 'nr', 'nrfg', 'ns', 'nt', 'nz', '
 
 text_type    = str
 string_types = (str,)
-xrange       = range
 
 def as_text(v):  ## 生成unicode字符串
     if v is None:
@@ -50,7 +49,7 @@ def combine(word_list, window = 2):
     windows    --  int, 窗口大小。
     """
     if window < 2: window = 2
-    for x in xrange(1, window):
+    for x in range(1, window):
         if x >= len(word_list):
             break
         word_list2 = word_list[x:]
@@ -68,7 +67,7 @@ def get_similarity(word_list1, word_list2):
     vector1 = [float(word_list1.count(word)) for word in words]
     vector2 = [float(word_list2.count(word)) for word in words]
     
-    vector3 = [vector1[x]*vector2[x]  for x in xrange(len(vector1))]
+    vector3 = [vector1[x]*vector2[x]  for x in range(len(vector1))]
     vector4 = [1 for num in vector3 if num > 0.]
     co_occur_num = sum(vector4)
 
@@ -81,6 +80,8 @@ def get_similarity(word_list1, word_list2):
         return 0.
     
     return co_occur_num / denominator
+
+
 
 def sort_words(vertex_source, edge_source, window = 2, pagerank_config = {'alpha': 0.85,}):
     """将单词按关键程度从大到小排序
@@ -137,8 +138,8 @@ def sort_sentences(sentences, words, sim_func = get_similarity, pagerank_config 
     sentences_num = len(_source)        
     graph = np.zeros((sentences_num, sentences_num))
     
-    for x in xrange(sentences_num):
-        for y in xrange(x, sentences_num):
+    for x in range(sentences_num):
+        for y in range(x, sentences_num):
             similarity = sim_func( _source[x], _source[y] )
             graph[x, y] = similarity
             graph[y, x] = similarity
