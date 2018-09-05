@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="72486719-31ea-4c2c-988c-0fcc4166aa46" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/shortTextSimilarityAnalysis/document/Structural Sentence Similarity Estimation for Short Texts.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/shortTextSimilarityAnalysis/document/Structural Sentence Similarity Estimation for Short Texts.pdf" afterDir="false" />
+    <list default="true" id="72486719-31ea-4c2c-988c-0fcc4166aa46" name="Default" comment="中文分词">
+      <change afterPath="$PROJECT_DIR$/.idea/markdown-history.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Segmentation/pku_corpus.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Segmentation/pku_corpus.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Segmentation/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/Segmentation/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/shortTextSimilarityAnalysis/code/StructuralSimilarity.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/shortTextSimilarityAnalysis/document/Short Text Similarity with Word Embeddings.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/shortTextSimilarityAnalysis/document/Short Text Similarity with Word Embeddings.pdf" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/shortTextSimilarityAnalysis/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/shortTextSimilarityAnalysis/readme.md" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -17,62 +22,84 @@
     <SUITE FILE_PATH="coverage/NLP$Model.coverage" NAME="Model Coverage Results" MODIFIED="1528298678192" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Classify/CLSTM" />
     <SUITE FILE_PATH="coverage/NLP$DealCorpus.coverage" NAME="DealCorpus Coverage Results" MODIFIED="1528301971755" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Classify/CLSTM" />
     <SUITE FILE_PATH="coverage/NLP$datasets.coverage" NAME="datasets Coverage Results" MODIFIED="1527001065464" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Text_CNN" />
+    <SUITE FILE_PATH="coverage/NLP$utils.coverage" NAME="utils Coverage Results" MODIFIED="1536069617022" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Segmentation" />
     <SUITE FILE_PATH="coverage/NLP$CNN.coverage" NAME="CNN Coverage Results" MODIFIED="1530706330901" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Classify/Text_CNN" />
+    <SUITE FILE_PATH="coverage/NLP$SegCRFs.coverage" NAME="SegCRFs Coverage Results" MODIFIED="1535634937322" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Segmentation" />
     <SUITE FILE_PATH="coverage/NLP$config.coverage" NAME="config Coverage Results" MODIFIED="1527001221349" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Text_CNN" />
     <SUITE FILE_PATH="coverage/NLP$DealCorpus__1_.coverage" NAME="DealCorpus (1) Coverage Results" MODIFIED="1528732254629" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Classify" />
     <SUITE FILE_PATH="coverage/NLP$main.coverage" NAME="main Coverage Results" MODIFIED="1530706314733" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/KwordExtr/SKE" />
   </component>
+  <component name="FavoritesManager">
+    <favorites_list name="NLP" />
+  </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name=".gitignore" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/.gitignore">
+      <file leaf-file-name="DPCWS.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/Segmentation/DPCWS.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="180">
-              <caret line="10" column="5" selection-start-line="10" selection-start-column="5" selection-end-line="10" selection-end-column="5" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="readme.md" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/shortTextSimilarityAnalysis/readme.md">
-          <provider selected="true" editor-type-id="split-provider[text-editor;MarkdownPreviewEditor]">
-            <state split_layout="SPLIT">
-              <first_editor relative-caret-position="353">
-                <caret line="70" column="9" selection-start-line="70" selection-start-column="9" selection-end-line="70" selection-end-column="9" />
-              </first_editor>
-              <second_editor>
-                <markdownNavigatorState>
-                  <previewPanelState version="2.5.4">
-                    <jsState>{&quot;onLoadScroll&quot;:{&quot;x&quot;:0,&quot;y&quot;:2968.5000032}}</jsState>
-                  </previewPanelState>
-                </markdownNavigatorState>
-              </second_editor>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="shortTextSimilarity.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/shortTextSimilarityAnalysis/code/shortTextSimilarity.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="259">
-              <caret line="22" column="12" selection-start-line="22" selection-start-column="12" selection-end-line="22" selection-end-column="12" />
+            <state relative-caret-position="370">
+              <caret line="41" column="17" selection-start-line="41" selection-start-column="17" selection-end-line="41" selection-end-column="17" />
               <folding>
-                <element signature="e#130#153#0" expanded="true" />
+                <element signature="e#16#28#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="TextProcess.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/shortTextSimilarityAnalysis/code/TextProcess.py">
+      <file leaf-file-name="utils.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Segmentation/utils.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="225">
-              <caret line="141" column="19" selection-start-line="141" selection-start-column="19" selection-end-line="141" selection-end-column="26" />
+            <state relative-caret-position="-494">
+              <caret line="31" column="19" selection-start-line="31" selection-start-column="19" selection-end-line="31" selection-end-column="19" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="pku_corpus.txt" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Segmentation/pku_corpus.txt">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+      <file leaf-file-name="Model.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Classify/CLSTM/Model.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="324">
+              <caret line="18" column="16" selection-start-line="18" selection-start-column="16" selection-end-line="18" selection-end-column="16" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="pku_test.txt" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Dataset/segment/testing/pku_test.txt">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="54">
+              <caret line="3" column="14" selection-start-line="3" selection-start-column="14" selection-end-line="3" selection-end-column="14" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="DealCorpus.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Classify/DealCorpus.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1206">
+              <caret line="67" selection-start-line="67" selection-end-line="77" selection-end-column="18" />
             </state>
           </provider>
         </entry>
       </file>
     </leaf>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>30</find>
+    </findStrings>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -83,6 +110,12 @@
         <option value="$PROJECT_DIR$/shortTextSimilarityAnalysis/code/TextProcess.py" />
         <option value="$PROJECT_DIR$/shortTextSimilarityAnalysis/code/shortTextSimilarity.py" />
         <option value="$PROJECT_DIR$/shortTextSimilarityAnalysis/readme.md" />
+        <option value="$USER_HOME$/anaconda/envs/anaconda3/lib/python3.6/site-packages/jieba/__init__.py" />
+        <option value="$USER_HOME$/anaconda/envs/anaconda3/lib/python3.6/site-packages/jieba/finalseg/__init__.py" />
+        <option value="$PROJECT_DIR$/Segmentation/SegCRFs.py" />
+        <option value="$PROJECT_DIR$/Segmentation/readme.md" />
+        <option value="$PROJECT_DIR$/Segmentation/DPCWS.py" />
+        <option value="$PROJECT_DIR$/Segmentation/utils.py" />
       </list>
     </option>
   </component>
@@ -93,9 +126,8 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds" fullScreen="true">
-    <option name="y" value="23" />
     <option name="width" value="1280" />
-    <option name="height" value="693" />
+    <option name="height" value="800" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -103,39 +135,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope">
-        <subPane subId="Project Files">
-          <expand>
-            <path>
-              <item name="Root" type="cbb8eebc:String" user="Root" />
-              <item name="NLP" type="cbb8eebc:String" user="NLP" />
-            </path>
-            <path>
-              <item name="Root" type="cbb8eebc:String" user="Root" />
-              <item name="NLP" type="cbb8eebc:String" user="NLP" />
-              <item name="Dataset" type="cbb8eebc:String" user="Dataset" />
-            </path>
-            <path>
-              <item name="Root" type="cbb8eebc:String" user="Root" />
-              <item name="NLP" type="cbb8eebc:String" user="NLP" />
-              <item name="shortTextSimilarityAnalysis" type="cbb8eebc:String" user="shortTextSimilarityAnalysis" />
-            </path>
-            <path>
-              <item name="Root" type="cbb8eebc:String" user="Root" />
-              <item name="NLP" type="cbb8eebc:String" user="NLP" />
-              <item name="shortTextSimilarityAnalysis" type="cbb8eebc:String" user="shortTextSimilarityAnalysis" />
-              <item name="code" type="cbb8eebc:String" user="code" />
-            </path>
-            <path>
-              <item name="Root" type="cbb8eebc:String" user="Root" />
-              <item name="NLP" type="cbb8eebc:String" user="NLP" />
-              <item name="shortTextSimilarityAnalysis" type="cbb8eebc:String" user="shortTextSimilarityAnalysis" />
-              <item name="document" type="cbb8eebc:String" user="document" />
-            </path>
-          </expand>
-          <select />
-        </subPane>
-      </pane>
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -147,10 +146,42 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope">
+        <subPane subId="Project Files">
+          <expand>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="NLP" type="cbb8eebc:String" user="NLP" />
+            </path>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="NLP" type="cbb8eebc:String" user="NLP" />
+              <item name="Classify" type="cbb8eebc:String" user="Classify" />
+            </path>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="NLP" type="cbb8eebc:String" user="NLP" />
+              <item name="Classify" type="cbb8eebc:String" user="Classify" />
+              <item name="CLSTM" type="cbb8eebc:String" user="CLSTM" />
+            </path>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="NLP" type="cbb8eebc:String" user="NLP" />
+              <item name="Segmentation" type="cbb8eebc:String" user="Segmentation" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="true" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/Segmentation" />
+    </key>
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -164,6 +195,56 @@
       </list>
     </option>
   </component>
+  <component name="RunManager" selected="Python.utils">
+    <configuration name="SegCRFs" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="NLP" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Segmentation" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Segmentation/SegCRFs.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
+    <configuration name="utils" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="NLP" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Segmentation" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Segmentation/utils.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
+    <list>
+      <item itemvalue="Python.SegCRFs" />
+      <item itemvalue="Python.utils" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.utils" />
+        <item itemvalue="Python.SegCRFs" />
+      </list>
+    </recent_temporary>
+  </component>
   <component name="SvnConfiguration">
     <configuration />
   </component>
@@ -174,48 +255,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1526693862507</updated>
-    </task>
-    <task id="LOCAL-00015" summary="cnn 文本分类算法">
-      <created>1527263447135</created>
-      <option name="number" value="00015" />
-      <option name="presentableId" value="LOCAL-00015" />
-      <option name="project" value="LOCAL" />
-      <updated>1527263447135</updated>
-    </task>
-    <task id="LOCAL-00016" summary="CLSTM 文本分类算法">
-      <created>1527325456794</created>
-      <option name="number" value="00016" />
-      <option name="presentableId" value="LOCAL-00016" />
-      <option name="project" value="LOCAL" />
-      <updated>1527325456794</updated>
-    </task>
-    <task id="LOCAL-00017" summary="cnn 文本分类算法">
-      <created>1527390924218</created>
-      <option name="number" value="00017" />
-      <option name="presentableId" value="LOCAL-00017" />
-      <option name="project" value="LOCAL" />
-      <updated>1527390924218</updated>
-    </task>
-    <task id="LOCAL-00018" summary="分词">
-      <created>1527506864465</created>
-      <option name="number" value="00018" />
-      <option name="presentableId" value="LOCAL-00018" />
-      <option name="project" value="LOCAL" />
-      <updated>1527506864465</updated>
-    </task>
-    <task id="LOCAL-00019" summary="CLSTM 文本分类算法">
-      <created>1527508075365</created>
-      <option name="number" value="00019" />
-      <option name="presentableId" value="LOCAL-00019" />
-      <option name="project" value="LOCAL" />
-      <updated>1527508075365</updated>
-    </task>
-    <task id="LOCAL-00020" summary="cnn文本分类参考文献">
-      <created>1527680135370</created>
-      <option name="number" value="00020" />
-      <option name="presentableId" value="LOCAL-00020" />
-      <option name="project" value="LOCAL" />
-      <updated>1527680135370</updated>
     </task>
     <task id="LOCAL-00021" summary="CLSTM 文本分类参考文献">
       <created>1527680209386</created>
@@ -518,28 +557,79 @@
       <option name="project" value="LOCAL" />
       <updated>1533874343996</updated>
     </task>
+    <task id="LOCAL-00001" summary="短文本相似性">
+      <created>1534685463697</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1534685463699</updated>
+    </task>
+    <task id="LOCAL-00002" summary="中文分词">
+      <created>1535626390868</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1535626390871</updated>
+    </task>
+    <task id="LOCAL-00003" summary="中文分词">
+      <created>1535635054716</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1535635054716</updated>
+    </task>
+    <task id="LOCAL-00004" summary="中文分词">
+      <created>1535635179415</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1535635179415</updated>
+    </task>
+    <task id="LOCAL-00005" summary="中文分词">
+      <created>1535974857463</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1535974857464</updated>
+    </task>
+    <task id="LOCAL-00006" summary="中文分词">
+      <created>1535989944020</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1535989944020</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
+  </component>
+  <component name="TodoView">
+    <todo-panel id="selected-file">
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+    <todo-panel id="all">
+      <are-packages-shown value="true" />
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1280" height="800" extended-state="0" />
-    <editor active="true" />
     <layout>
-      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="TODO" order="6" weight="0.32905984" />
       <window_info anchor="bottom" id="Event Log" order="7" sideWeight="0.5056543" side_tool="true" weight="0.38319087" />
       <window_info anchor="bottom" id="Database Changes" order="7" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4983845" weight="0.083769634" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4983845" weight="0.18945868" />
       <window_info anchor="bottom" id="Version Control" order="7" sideWeight="0.49434572" weight="0.38319087" />
-      <window_info anchor="bottom" id="Python Console" order="7" sideWeight="0.49919224" weight="0.25925925" />
+      <window_info anchor="bottom" id="Python Console" order="7" sideWeight="0.49919224" weight="0.22649573" />
       <window_info anchor="right" id="Mongo Explorer" order="3" />
-      <window_info anchor="bottom" id="Terminal" order="7" sideWeight="0.49919224" visible="true" weight="0.2962963" />
+      <window_info anchor="bottom" id="Terminal" order="7" sideWeight="0.49919224" visible="true" weight="0.24786325" />
       <window_info anchor="right" id="Remote Host" order="3" />
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.21486267" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.4973822" visible="true" weight="0.13327949" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="right" id="Database" order="3" />
       <window_info anchor="right" id="SciView" order="3" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
-      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info id="Favorites" order="2" sideWeight="0.5026178" side_tool="true" weight="0.3279483" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
@@ -550,30 +640,30 @@
       <window_info anchor="bottom" id="Find" order="1" />
     </layout>
     <layout-to-restore>
-      <window_info active="true" anchor="bottom" id="Python Console" order="13" visible="true" weight="0.32621083" />
+      <window_info anchor="bottom" id="Find" order="1" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="Version Control" order="11" weight="0.32905984" />
       <window_info anchor="right" id="Remote Host" order="3" />
+      <window_info id="Favorites" order="2" side_tool="true" />
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.24959612" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Run" order="2" />
-      <window_info anchor="right" id="Mongo Explorer" order="6" />
-      <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="right" id="Database" order="5" />
-      <window_info anchor="bottom" id="Messages" order="9" />
       <window_info anchor="bottom" id="Terminal" order="12" weight="0.058404557" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Messages" order="9" />
+      <window_info anchor="right" id="Mongo Explorer" order="6" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
       <window_info anchor="bottom" id="Database Changes" order="8" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Version Control" order="11" weight="0.32905984" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="right" id="SciView" order="4" />
       <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
-      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="right" id="Database" order="5" />
+      <window_info active="true" anchor="bottom" id="Python Console" order="13" visible="true" weight="0.32621083" />
     </layout-to-restore>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -598,28 +688,29 @@
     <MESSAGE value="停用词" />
     <MESSAGE value="init" />
     <MESSAGE value="Merge branch 'master' of https://github.com/sc-lj/NLP&#10;&#10;# Conflicts:&#10;#&#9;shortTextSimilarityAnalysis/code/shortTextSimilarity.py&#10;#&#9;shortTextSimilarityAnalysis/document/A Method for Measuring Sentence Similarity and its Application to Conversational Agents.pdf&#10;#&#9;shortTextSimilarityAnalysis/readme.md" />
-    <option name="LAST_COMMIT_MESSAGE" value="Merge branch 'master' of https://github.com/sc-lj/NLP&#10;&#10;# Conflicts:&#10;#&#9;shortTextSimilarityAnalysis/code/shortTextSimilarity.py&#10;#&#9;shortTextSimilarityAnalysis/document/A Method for Measuring Sentence Similarity and its Application to Conversational Agents.pdf&#10;#&#9;shortTextSimilarityAnalysis/readme.md" />
+    <MESSAGE value="短文本相似性" />
+    <MESSAGE value="中文分词" />
+    <option name="LAST_COMMIT_MESSAGE" value="中文分词" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <option name="time" value="2" />
     </breakpoint-manager>
   </component>
+  <component name="debuggerHistoryManager">
+    <expressions id="setValue">
+      <expression>
+        <expression-string>'本报  讯  记者  梅  洪如  从  中国  人民  保险  (  集团  )  公司  获悉  ,  1997年  该  公司  积极  开拓  市场  ,  努力  防范  经营  风险  ,  实现  保费  收入  788亿  元  ,  比  上年  同期  增长  36%  。  其中  财产险  保费  收入  380亿  元  ,  同比  增长  8%  ;  人身险  保费  收入  389亿  元  ,  同比  增长  81%  ;  再  保险  保费  收入  105亿  元  ,  同比  增长  33%  。  '</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+    </expressions>
+  </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/.gitignore">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="180">
-          <caret line="10" column="5" selection-start-line="10" selection-start-column="5" selection-end-line="10" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/shortTextSimilarityAnalysis/code/shortTextSimilarity.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="108">
           <caret line="6" selection-start-line="6" selection-end-line="6" />
-          <folding>
-            <element signature="e#130#153#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -630,11 +721,7 @@
             <caret line="66" selection-start-line="66" selection-end-line="66" />
           </first_editor>
           <second_editor>
-            <markdownNavigatorState>
-              <previewPanelState version="2.5.4">
-                <jsState>{&quot;onLoadScroll&quot;:{&quot;x&quot;:0,&quot;y&quot;:2968.5000032}}</jsState>
-              </previewPanelState>
-            </markdownNavigatorState>
+            <markdownNavigatorState />
           </second_editor>
         </state>
       </provider>
@@ -650,9 +737,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="108">
           <caret line="6" selection-start-line="6" selection-end-line="6" />
-          <folding>
-            <element signature="e#130#153#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -761,13 +845,6 @@
         <state relative-caret-position="-69" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Classify/DealCorpus.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="18">
-          <caret line="202" column="14" selection-start-line="202" selection-start-column="14" selection-end-line="202" selection-end-column="14" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Dataset/sentiment/WeiboEmotion/句子级的情绪分析结果.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="54">
@@ -827,25 +904,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/KwordExtr/readme.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;MarkdownPreviewEditor]">
-        <state split_layout="SPLIT">
-          <first_editor relative-caret-position="-1086">
-            <caret line="33" column="12" selection-start-line="33" selection-start-column="12" selection-end-line="33" selection-end-column="12" />
-          </first_editor>
-          <second_editor>
-            <markdownNavigatorState />
-          </second_editor>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Classify/CLSTM/Model.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2340">
-          <caret line="130" column="54" selection-start-line="130" selection-start-column="54" selection-end-line="130" selection-end-column="54" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/KwordExtr/readme.md" />
     <entry file="file://$PROJECT_DIR$/Dataset/synonym/readme.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;MarkdownPreviewEditor]">
         <state split_layout="SPLIT">
@@ -870,36 +929,139 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/Classify/DealCorpus.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1206">
+          <caret line="67" selection-start-line="67" selection-end-line="77" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/anaconda/envs/anaconda3/lib/python3.6/site-packages/jieba/dict.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="118">
+          <caret line="1619" column="5" selection-start-line="1619" selection-start-column="3" selection-end-line="1619" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/anaconda/envs/anaconda3/lib/python3.6/site-packages/jieba/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="207">
+          <caret line="44" column="4" lean-forward="true" selection-start-line="44" selection-start-column="4" selection-end-line="44" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/anaconda/envs/anaconda3/lib/python3.6/site-packages/jieba/finalseg/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="130">
+          <caret line="77" column="23" selection-start-line="77" selection-start-column="23" selection-end-line="77" selection-end-column="23" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Dataset/segment/testing/pku_test.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="54">
+          <caret line="3" column="14" selection-start-line="3" selection-start-column="14" selection-end-line="3" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Dataset/segment/gold/pku_training_words.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-985" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Dataset/segment/training/pku_corpus.txt" />
+    <entry file="file://$PROJECT_DIR$/Dataset/segment/training/pku_training.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="47">
+          <caret line="15" lean-forward="true" selection-start-line="15" selection-end-line="15" selection-end-column="33" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/shortTextSimilarityAnalysis/code/TextProcess.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="141" column="19" selection-start-line="141" selection-start-column="19" selection-end-line="141" selection-end-column="26" />
+        <state relative-caret-position="-275">
+          <caret line="149" column="16" lean-forward="true" selection-start-line="149" selection-start-column="16" selection-end-line="149" selection-end-column="16" />
         </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/shortTextSimilarityAnalysis/code/Utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-977" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/shortTextSimilarityAnalysis/code/shortTextSimilarity.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="259">
+        <state relative-caret-position="-3204">
           <caret line="22" column="12" selection-start-line="22" selection-start-column="12" selection-end-line="22" selection-end-column="12" />
-          <folding>
-            <element signature="e#130#153#0" expanded="true" />
-          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Segmentation/template">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="252">
+          <caret line="14" lean-forward="true" selection-start-line="14" selection-end-line="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Segmentation/SegCRFs.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-350">
+          <caret line="93" column="11" selection-start-line="93" selection-start-column="11" selection-end-line="93" selection-end-column="11" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/shortTextSimilarityAnalysis/readme.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;MarkdownPreviewEditor]">
         <state split_layout="SPLIT">
-          <first_editor relative-caret-position="353">
-            <caret line="70" column="9" selection-start-line="70" selection-start-column="9" selection-end-line="70" selection-end-column="9" />
+          <first_editor relative-caret-position="590">
+            <caret line="160" selection-start-line="160" selection-end-line="160" />
+          </first_editor>
+          <second_editor>
+            <markdownNavigatorState />
+          </second_editor>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Classify/CLSTM/Model.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="324">
+          <caret line="18" column="16" selection-start-line="18" selection-start-column="16" selection-end-line="18" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Segmentation/pku_corpus.txt">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Segmentation/utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-494">
+          <caret line="31" column="19" selection-start-line="31" selection-start-column="19" selection-end-line="31" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Segmentation/readme.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;MarkdownPreviewEditor]">
+        <state split_layout="SPLIT">
+          <first_editor relative-caret-position="507">
+            <caret line="116" selection-start-line="116" selection-end-line="116" />
           </first_editor>
           <second_editor>
             <markdownNavigatorState>
               <previewPanelState version="2.5.4">
-                <jsState>{&quot;onLoadScroll&quot;:{&quot;x&quot;:0,&quot;y&quot;:2968.5000032}}</jsState>
+                <jsState>{&quot;onLoadScroll&quot;:{&quot;x&quot;:0,&quot;y&quot;:4952}}</jsState>
               </previewPanelState>
             </markdownNavigatorState>
           </second_editor>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Segmentation/DPCWS.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="370">
+          <caret line="41" column="17" selection-start-line="41" selection-start-column="17" selection-end-line="41" selection-end-column="17" />
+          <folding>
+            <element signature="e#16#28#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

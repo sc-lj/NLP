@@ -6,7 +6,7 @@ import codecs,re
 re_han_default = re.compile("([\u4E00-\u9FD5]+)", re.U)
 re_skip_default = re.compile("(\r\n|\s)", re.U)
 # 中文utf编码格式区间,还排除了8.7类似的格式
-re_han = re.compile("([^a-zA-Z0-9\u4E00-\u9FD5\r\n\s]+[^(\d+.\d+)])", re.U)
+re_han = re.compile("([^(\d+\.\d+)(\w+\-\w+)][^a-zA-Z0-9\u4E00-\u9FD5\r\n\s]+)", re.U)
 
 # 用该标示符来标记在中文中具有天然的分割符号，如""、《》。等，并将其分割标示为O
 PAD="PAD"
@@ -58,12 +58,15 @@ def corpus(infiles,outfile):
                         continue
                     if not re_han_default.match(word):
                         # 匹配非汉字
-                        outdata.write(word.lower() + "\tS\n")
+                        outdata.write(word.lower() + "\tB\n")
                     else:
-                        outdata.write(word[0]+"\tB\n")
-                        for i in range(1,len(word)-1):
-                            outdata.write(word[i] + "\tM\n")
-                        outdata.write(word[-1]+"\tE\n")
+                        if len(word)==1:
+                            outdata.write(word + "\tE\n")
+                        else:
+                            outdata.write(word[0]+"\tM\n")
+                            for i in range(1,len(word)-1):
+                                outdata.write(word[i] + "\tM\n")
+                            outdata.write(word[-1]+"\tE\n")
         outdata.write("\n")
 
     f.close()

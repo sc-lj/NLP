@@ -156,6 +156,7 @@ adj和dist函数度量的是在句子1中给定一组字以及句子2中给定�
 word2vec词向量的缺点：词可能含有不同的含义，但是该向量并没有表示出来。而且该词向量无法区分词的前后上下文的含义。
 
 
+## Short Text Similarity with Word Embeddings
 
 
 
