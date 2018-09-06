@@ -33,7 +33,6 @@ pos = {
 # 返回数据格式:
 #   {'word': {loc, pos}, ...}
 def wordsStatistics(wordsStatisticsData):
-    print('------当前进行词语词性权重统计操作------')
     # 进行单词词性标注统计
     for key in wordsStatisticsData:
         wordsStatisticsData[key][1] = pos.get(wordsStatisticsData[key][1])
@@ -42,7 +41,6 @@ def wordsStatistics(wordsStatisticsData):
 
 # 对语料库所有文章进行tfidf计算
 def tfidf():
-    print('------当前进行词语TF-IDF统计值计算操作------')
     fileList = getCorpusFilelist()
     for file in fileList:
         print("Using jieba on " + file)
@@ -122,7 +120,6 @@ def Tfidf(segFileNameList, count = 10, segFilePath = 'segFile'):
     # 这里将每份文档词语的TF-IDF写入tfidffile文件夹中保存
     # 打印每类文本的tf-idf词语权重，第一个for遍历所有文本，第二个for便利某一类文本下的词语权重
     for i in range(len(weight)):
-        print(u"--------Writing all the tf-idf in the", i, u" file into --------")
         tfidfFileName = segFileNameList[i][:-8] + '_tfidf.txt'
         # 暂不进行文件的写入，只进行关键值的记录
         # tfidfFilePath = os.path.join(tfidfPath, tfidfFileName)

@@ -21,7 +21,6 @@ def dijkstra_score(G, shortest_distances, v, w):
 
 # 此算法完成了从任意指定点startNode到图中任意一点最短距离的计算
 def dijkstra(G, startNode):
-    print('------当前进行Dijkstra算法最短路径的计算操作------')
     # 未标记顶点集合
     unprocessed = set(G.keys())  # vertices whose shortest paths from source have not yet been calculated
     # 初始，将起始点移出

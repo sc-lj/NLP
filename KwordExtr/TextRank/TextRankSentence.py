@@ -7,8 +7,8 @@ from __future__ import (absolute_import, division, print_function,
 import networkx as nx
 import numpy as np
 
-from . import util
-from .Segmentation import Segmentation
+import util
+from Segmentation import Segmentation
 
 class TextRankSentence(object):
     

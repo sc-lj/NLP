@@ -15,16 +15,12 @@ import statisticsCount
 def main(fileName, path):
     # 逻辑结构
     # 1、文本预处理(分词与词性标注、词语过滤、词语相关信息记录)
-    print('------当前文本预处理操作------')
     wordsStatisticsData, wordsData = textPreprocessing.word_segmentation(fileName, path)
     # 2、词语语义贡献值计算(计算词语语义相似度、构建词语语义相思网络、计算词语居间度密度)
-    print('------当前进行词语语义贡献值计算操作------')
     intermediaryDensity = semanticsCount.intermediaryDegreeDensity(fileName, path)
     # 3、计算词语统计特征值
     # keywordDatas = statisticsCount.tfidf()
-    print('------当前进行词语统计特征值计算操作------')
     wordsStatisticsData = statisticsCount.wordsStatistics(wordsStatisticsData)
-    print('------当前进行汇总计算操作------')
     # 4、计算词语关键度
     # 算法基础设定
     # 语义贡献值权重

@@ -26,7 +26,6 @@ import dijkstra
 # 《同义词词林》的读入
 # 返回格式{code: '文字字符串', }
 def cilin():
-    print('------当前进行《同义词词林》的读入操作------')
     cilinFilePath = 'dict_file/cilin.txt'
     cilinFileObject = open(cilinFilePath, 'r')  # 进行分词文件的读取
     cilinDatas = {}
@@ -40,7 +39,6 @@ cilinCodeDatas = cilin()
 
 # 指定词语编码
 def wordEncoding(word ,data = cilinCodeDatas):
-    print('------当前进行指定词语编码操作------')
     if data:
         cilinDatas = data
     else:
@@ -62,7 +60,6 @@ def wordEncoding(word ,data = cilinCodeDatas):
 
 # 进行词语间语义相似度计算
 def wordSemanticSimilarity(word1, word2, wordsEncodingData):
-    print('------当前进行词语间语义相似度计算操作------')
     # 获取单词的编码
     word1EncodingDatas = wordsEncodingData.get(word1)
     word2EncodingDatas = wordsEncodingData.get(word2)
@@ -126,7 +123,6 @@ def codeCmp(code1, code2):
 #   "词2": {"词1": "词2和词1的语义相似度", "词3": "词2和词3的语义相似度",...}
 # }
 def wordSemanticSimilarityGraph(fileName, path):
-    print('------当前进行语义相似度网络构建操作------')
     # 图G的顶点集合
     wordsStatisticsData, wordsData = textPreprocessing.word_segmentation(fileName, path)
     # 词语编码的统计
@@ -153,7 +149,6 @@ def wordSemanticSimilarityGraph(fileName, path):
 
 # 居间度集合
 def intermediaryDegreeInterval(fileName, path):
-    print('------当前进行词语居间度集合构建操作------')
     # 获取语义相似度网络图
     graphDatas = wordSemanticSimilarityGraph(fileName, path)
 
@@ -175,7 +170,6 @@ def intermediaryDegreeInterval(fileName, path):
 # 计算指定顶点的居间度
 # 传入参数：指定顶点，最短路径信息
 def intermediaryDegreeScore(word, shortestDatas):
-    print('------当前进行指定顶点居间度计算操作------')
     Score = 0
     for m in shortestDatas.keys():
         for k in shortestDatas.keys():
@@ -203,7 +197,6 @@ def intermediaryDegreeScore(word, shortestDatas):
 
 # 计算居间度密度
 def intermediaryDegreeDensity(fileName, path):
-    print('------当前进行居间度密度集合构建操作------')
     # 顶点集合V对应的居间度集合bc
     interval = intermediaryDegreeInterval(fileName, path)
 
