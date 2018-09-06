@@ -1,3 +1,16 @@
+# 目前对中文分词工具
+- 中科院计算所[NLPIR](https://link.zhihu.com/?target=http%3A//ictclas.nlpir.org/nlpir/)
+- [ansj分词器](https://github.com/NLPchina/ansj_seg)
+- 哈工大的[LTP](https://github.com/HIT-SCIR/ltp)
+- 清华大学[THULAC](https://github.com/thunlp/THULAC)
+- [斯坦福分词器](https://nlp.stanford.edu/software/segmenter.shtml) -- [NLTK](https://github.com/nltk/nltk)
+- [Hanlp](https://github.com/hankcs/HanLP)分词器:求解的是最短路径。优点：开源、有人维护、可以解答。原始模型用的训练语料是人民日报的语料，当然如果你有足够的语料也可以自己训练。
+- 结巴分词[jieba](https://github.com/yanyiwu/cppjieba):基于前缀词典实现高效的词图扫描，生成句子中汉字所有可能成词情况所构成的有向无环图 (DAG)；采用了动态规划查找最大概率路径, 找出基于词频的最大切分组合；对于未登录词，采用了基于汉字成词能力的HMM模型，使用了Viterbi算法。
+- [KCWS](https://github.com/koth/kcws)分词器(字嵌入+Bi-LSTM+CRF)
+- [ZPar](https://github.com/frcchang/zpar/releases)
+- [IKAnalyzer](https://github.com/wks/ik-analyzer)
+
+
 # 中文分词相关论文
 中文不像英文有天然的空格进行分词，所以分词是中文文本处理的关键的重要步骤。
 
