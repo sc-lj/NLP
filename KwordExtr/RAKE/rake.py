@@ -2,17 +2,17 @@
 
 import re
 import operator
-import six
+import six,jieba
 from six.moves import range
 from collections import Counter
 
 # 中文句子分割标点符号,其中会包含英文的标点分割符号
 re_ch_sent_split=u"[?!;,，？！……。；…\n：:、“”\"\'《 》——‘’〝〞#﹟（）〈〉‹›﹛﹜『』〖〗［］《》〔〕{}「」【】\[\]`\(\)]"
 # 英文句子分割标点符号
-re_en_sent_split=u'[\[\]\n.!?,;:\t\-"\(\)\'\u2019\u2013{}]'
+re_en_sent_split='[\[\]\n.!?,;:\t\-"\(\)\'\u2019\u2013{}<>]'
 
 # 对短语分割
-re_ch_word_split=u"[^(\d+\.\d+)\u4E00-\u9FD5]"
+re_ch_word_split=u"[\u4E00-\u9FD5]"
 re_en_word_split=u'[^a-zA-Z0-9_\+\-/]'
 
 def is_number(s):
@@ -29,7 +29,7 @@ class Rake(object):
         """
         :param stop_words_path: 停用词文件路径
         :param min_char_length:
-        :param max_words_length:
+        :param max_words_length: 词组中最多可以有多少个单词
         :param min_keyword_frequency: 关键字至少出现的次数
         :param min_words_length_adj:
         :param max_words_length_adj:
@@ -197,6 +197,11 @@ class Rake(object):
         return self.filter_adjoined_candidates(adjoined_candidates)
 
     def is_acceptable(self,phrase):
+        """
+        判断英文词组中，需要的最短字符，最大单词数，字母数必须大于数字数
+        :param phrase:
+        :return:
+        """
         # a phrase must have a min length in characters
         if len(phrase) < self.__min_char_length:
             return 0
@@ -224,13 +229,23 @@ class Rake(object):
         return 1
 
 
-    def generate_candidate_keywords(self,sentence_list, stopword_pattern):
+    def build_stop_word_regex(self):
+        stop_word_regex_list = []
+        for word in self.__stop_words_list:
+            word_regex = "\\b"+word.strip()+"\\b"
+            stop_word_regex_list.append(word_regex)
+        stop_word_pattern = re.compile('|'.join(stop_word_regex_list), re.IGNORECASE)
+        return stop_word_pattern
+
+
+    def generate_en_candidate_keywords(self,sentence_list):
         """
+        产生英文的候选关键字
         generate candidate keyword scores
         :param sentence_list:
-        :param stopword_pattern:
         :return:
         """
+        stopword_pattern = self.build_stop_word_regex()
         phrase_list = []
         for s in sentence_list:
             tmp = re.sub(stopword_pattern, '|', s.strip())
@@ -243,13 +258,38 @@ class Rake(object):
         return phrase_list
 
 
-    def build_stop_word_regex(self):
-        stop_word_regex_list = []
-        for word in self.__stop_words_list:
-            word_regex = word.strip()
-            stop_word_regex_list.append(word_regex)
-        stop_word_pattern = re.compile('|'.join(stop_word_regex_list), re.IGNORECASE)
-        return stop_word_pattern
+    def join_ch_cut_word(self,words_list):
+        """
+        将分词好的词表，过滤掉停用词，并以停用词为分界点，对其余词进行合并
+        :param words_list:
+        :return:
+        """
+        words=[]
+        phrase=""
+        for word in words_list:
+            if word not in self.__stop_words_list and re.match(re_ch_word_split,word):
+                phrase+=word
+            else:
+                if phrase!="":
+                    words.append(phrase)
+                phrase=""
+        return words
+
+
+    def generate_ch_candidate_keywords(self,sentence_list):
+        """
+        产生中文的候选关键字
+        :param sentence_list:
+        :return:
+        """
+        phrase_list = []
+        for s in sentence_list:
+            cut=jieba.cut(s)
+            phrase=self.join_ch_cut_word(cut)
+            if len(phrase)!=0:
+                phrase_list.extend(phrase)
+        phrase_list+=""
+        return phrase_list
 
 
     def generate_candidate_keyword_scores(self,phrase_list, word_score):
@@ -270,8 +310,10 @@ class Rake(object):
     def run(self, text):
         sentence_list = self.split_sentences(text)
         print(sentence_list)
-        stop_words_pattern = self.build_stop_word_regex()
-        phrase_list = self.generate_candidate_keywords(sentence_list, stop_words_pattern)
+        if self.ch:
+            phrase_list=self.generate_ch_candidate_keywords(sentence_list)
+        else:
+            phrase_list = self.generate_en_candidate_keywords(sentence_list)
         print(phrase_list)
         # word_scores = self.calculate_word_scores(phrase_list)
         #
@@ -283,11 +325,14 @@ class Rake(object):
 
 if __name__ == '__main__':
 
-    en_text = "Compatibility of systems of linear constraints over the set of natural numbers. Criteria of compatibility of a system of linear Diophantine equations, strict inequations, and nonstrict inequations are considered. Upper bounds for components of a minimal set of solutions and algorithms of construction of minimal generating sets of solutions for all types of systems are given. These criteria and the corresponding algorithms for constructing a minimal supporting set of solutions can be used in solving all the considered types of systems and systems of mixed types."
+    en_text = u"Compatibility of systems of linear constraints over the set of natural numbers. Criteria of compatibility of a system of linear Diophantine equations, strict inequations, and nonstrict inequations are considered. Upper bounds for components of a minimal set of solutions and algorithms of construction of minimal generating sets of solutions for all types of systems are given. These criteria and the corresponding algorithms for constructing a minimal supporting set of solutions can be used in solving all the considered types of systems and systems of mixed types."
     ch_text="美国阿拉斯加州一架观光飞机坠毁，4人遇难1人失踪。（图源：推特）海外网8月7日电 一架观光飞机在美国阿拉斯加州德纳里国家公园坠毁，造成至少4人遇难，1人失踪。美联社、美国广播公司（ABC）等外媒7日报道称，事发于当地时间上周六（4日）晚18点左右，事发时，机上载有4名乘客及一名飞行员。报道指出，机上乘客均为波兰公民，但其姓名未透露，飞行员身份目前也已被确认。公园管理局正与波兰驻洛杉矶领事馆联系。报道指出，飞行员在失事后成功进行了两次无线电呼救，并在联系中断前通知有伤员。救援部门接到呼救电话后立即前往事发地，但由于天气条件恶劣，救援人员当天没能与飞机取得联系，也未能找到其坠落地。随着救援行动持续展开，当地时间周一（6日），相关机构派出的直升机在事故现场找到4具遇难者遗体，另外一人失踪，但推测其已丧生。目前美国国家交通安全局、旅游飞机业主公司和国家公园管理局已就此事展开调查。事实上，类似的飞行事故近日在美国时有发生。此前不久，当地时间周日（5日），一架双引擎小型飞机在美国加利福尼亚州南部一停车场坠毁，造成5人死亡。据称，飞机撞上了一辆汽车，所幸的是车主当时不在车内。坠机时地面上没有人受伤，也没有引发火灾。坠机后，警方封锁了附近几条道路以及一家购物中心。5月10日晚间8点40分左右，加州圣地亚哥斯堪的纳维亚航空学院的双引擎小飞机失联，多个目击者的报警电话证实在圣地亚哥郡的朱利安山区有飞机坠毁。警方赶赴现场后发现坠机事件引发山火，过火面积达12英亩（约5万平方米）。由于坠机地点地势险要，无法靠近，直到13日救援人员才找到飞机残骸和三具遇难者尸体。经确认残骸为失联飞机，遇难者为中国公民。（海外网 姚凯红）本文系版权作品，未经授权严禁转载。海外视野，中国立场，登陆人民日报海外版官网——海外网www.haiwainet.cn或“海客”客户端，领先一步获取权威资讯。责编：姚凯红、王栋 "
-
-
-    rake = Rake(chinese=True)
-
-    rake.run(ch_text)
+    #
+    # chinese = True
+    # if chinese:
+    #     text=ch_text
+    # else:
+    #     text=en_text
+    # rake = Rake(chinese=chinese)
+    # rake.run(text)
 

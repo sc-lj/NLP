@@ -10,4 +10,5 @@ Dataset/test.txt
 Dataset/vocab_file.txt
 */__pycache__/
 */*/__pycache__/
+Segmentation/thulac/models
 

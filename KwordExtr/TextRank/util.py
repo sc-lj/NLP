@@ -29,10 +29,6 @@ def as_text(v):  ## 生成unicode字符串
     else:
         raise ValueError('Unknown type %r' % type(v))
 
-def is_text(v):
-    return isinstance(v, text_type)
-
-
 
 class AttrDict(dict):
     """Dict that can get attribute by dot"""
