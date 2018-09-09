@@ -16,8 +16,8 @@ FLAGS = tf.app.flags.FLAGS
 tf.app.flags.DEFINE_string('command', 'binary_to_text',
                            'Either binary_to_text or text_to_binary.'
                            'Specify FLAGS.in_file accordingly.')
-tf.app.flags.DEFINE_string('in_file', '', 'path to file')
-tf.app.flags.DEFINE_string('out_file', '', 'path to file')
+tf.app.flags.DEFINE_string('in_file', 'data/data', 'path to file')
+tf.app.flags.DEFINE_string('out_file', 'data/text_data', 'path to file')
 
 def _binary_to_text():
   reader = open(FLAGS.in_file, 'rb')

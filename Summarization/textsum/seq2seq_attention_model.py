@@ -46,11 +46,9 @@ def _extract_argmax_and_embed(embedding, output_projection=None,
   def loop_function(prev, _):
     """function that feed previous model output rather than ground truth."""
     if output_projection is not None:
-      prev = tf.nn.xw_plus_b(
-          prev, output_projection[0], output_projection[1])
+      prev = tf.nn.xw_plus_b(prev, output_projection[0], output_projection[1])
     prev_symbol = tf.argmax(prev, 1)
-    # Note that gradients will not propagate through the second parameter of
-    # embedding_lookup.
+    # Note that gradients will not propagate through the second parameter of embedding_lookup.
     emb_prev = tf.nn.embedding_lookup(embedding, prev_symbol)
     if not update_embedding:
       emb_prev = tf.stop_gradient(emb_prev)
@@ -150,23 +148,25 @@ class Seq2SeqAttentionModel(object):
         embedding = tf.get_variable(
             'embedding', [vsize, hps.emb_dim], dtype=tf.float32,
             initializer=tf.truncated_normal_initializer(stddev=1e-4))
+        # emb_encoder_inputs中的每个元素shape是[batch_size,emb_dim]
         emb_encoder_inputs = [tf.nn.embedding_lookup(embedding, x)
                               for x in encoder_inputs]
         emb_decoder_inputs = [tf.nn.embedding_lookup(embedding, x)
                               for x in decoder_inputs]
 
       for layer_i in xrange(hps.enc_layers):
-        with tf.variable_scope('encoder%d'%layer_i), tf.device(
-            self._next_device()):
-          cell_fw = tf.contrib.rnn.LSTMCell(
+        with tf.variable_scope('encoder%d'%layer_i), tf.device(self._next_device()):
+          cell_fw = tf.nn.rnn_cell.LSTMCell(
               hps.num_hidden,
               initializer=tf.random_uniform_initializer(-0.1, 0.1, seed=123),
-              state_is_tuple=False)
-          cell_bw = tf.contrib.rnn.LSTMCell(
+              state_is_tuple=True)
+
+          cell_bw = tf.nn.rnn_cell.LSTMCell(
               hps.num_hidden,
               initializer=tf.random_uniform_initializer(-0.1, 0.1, seed=113),
-              state_is_tuple=False)
-          (emb_encoder_inputs, fw_state, _) = tf.contrib.rnn.static_bidirectional_rnn(
+              state_is_tuple=True)
+          # emb_encoder_inputs的shape是[batch_size,2*num_hidden]
+          (emb_encoder_inputs, fw_state, _) = tf.nn.static_bidirectional_rnn(
               cell_fw, cell_bw, emb_encoder_inputs, dtype=tf.float32,
               sequence_length=article_lens)
       encoder_outputs = emb_encoder_inputs
@@ -185,21 +185,22 @@ class Seq2SeqAttentionModel(object):
         # for the next step.
         loop_function = None
         if hps.mode == 'decode':
-          loop_function = _extract_argmax_and_embed(
-              embedding, (w, v), update_embedding=False)
+          loop_function = _extract_argmax_and_embed(embedding, (w, v), update_embedding=False)
 
-        cell = tf.contrib.rnn.LSTMCell(
+        cell = tf.nn.rnn_cell.LSTMCell(
             hps.num_hidden,
             initializer=tf.random_uniform_initializer(-0.1, 0.1, seed=113),
-            state_is_tuple=False)
+            state_is_tuple=True)
+        # 扩展维度，由原来的二维变成三维
+        encoder_outputs = [tf.reshape(x, [hps.batch_size, 1, 2*hps.num_hidden]) for x in encoder_outputs]
 
-        encoder_outputs = [tf.reshape(x, [hps.batch_size, 1, 2*hps.num_hidden])
-                           for x in encoder_outputs]
+        # _enc_top_states的shape是[batch_size,len(encoder_outputs),2*hps.num_hidden]
         self._enc_top_states = tf.concat(axis=1, values=encoder_outputs)
         self._dec_in_state = fw_state
         # During decoding, follow up _dec_in_state are fed from beam_search.
         # dec_out_state are stored by beam_search for next step feeding.
         initial_state_attention = (hps.mode == 'decode')
+        # decoder_outputs 是一个list，其中每个元素的shape为[batch_size x output_size]，其中output_size，由于没有指定，所以其值为cell.output_size
         decoder_outputs, self._dec_out_state = tf.contrib.legacy_seq2seq.attention_decoder(
             emb_decoder_inputs, self._dec_in_state, self._enc_top_states,
             cell, num_heads=1, loop_function=loop_function,
@@ -209,19 +210,17 @@ class Seq2SeqAttentionModel(object):
         model_outputs = []
         for i in xrange(len(decoder_outputs)):
           if i > 0:
+            # set reuse to True
             tf.get_variable_scope().reuse_variables()
-          model_outputs.append(
-              tf.nn.xw_plus_b(decoder_outputs[i], w, v))
+          model_outputs.append(tf.nn.xw_plus_b(decoder_outputs[i], w, v))
 
       if hps.mode == 'decode':
         with tf.variable_scope('decode_output'), tf.device('/cpu:0'):
           best_outputs = [tf.argmax(x, 1) for x in model_outputs]
           tf.logging.info('best_outputs%s', best_outputs[0].get_shape())
-          self._outputs = tf.concat(
-              axis=1, values=[tf.reshape(x, [hps.batch_size, 1]) for x in best_outputs])
+          self._outputs = tf.concat(axis=1, values=[tf.reshape(x, [hps.batch_size, 1]) for x in best_outputs])
 
-          self._topk_log_probs, self._topk_ids = tf.nn.top_k(
-              tf.log(tf.nn.softmax(model_outputs[-1])), hps.batch_size*2)
+          self._topk_log_probs, self._topk_ids = tf.nn.top_k(tf.log(tf.nn.softmax(model_outputs[-1])), hps.batch_size*2)
 
       with tf.variable_scope('loss'), tf.device(self._next_device()):
         def sampled_loss_func(inputs, labels):
