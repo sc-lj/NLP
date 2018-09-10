@@ -98,11 +98,9 @@ class BeamSearch(object):
     """
 
     # Run the encoder and extract the outputs and final state.
-    enc_top_states, dec_in_state = self._model.encode_top_state(
-        sess, enc_inputs, enc_seqlen)
+    enc_top_states, dec_in_state = self._model.encode_top_state(sess, enc_inputs, enc_seqlen)
     # Replicate the initial states K times for the first step.
-    hyps = [Hypothesis([self._start_token], 0.0, dec_in_state)
-           ] * self._beam_size
+    hyps = [Hypothesis([self._start_token], 0.0, dec_in_state)] * self._beam_size
     results = []
 
     steps = 0

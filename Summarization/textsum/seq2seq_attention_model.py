@@ -210,7 +210,7 @@ class Seq2SeqAttentionModel(object):
         model_outputs = []
         for i in xrange(len(decoder_outputs)):
           if i > 0:
-            # set reuse to True
+            # tf.get_variable_scope() 返回的只是 variable_scope,不管 name_scope. 在使用tf.get_variable_scope().reuse_variables() 时可以无视name_scope
             tf.get_variable_scope().reuse_variables()
           model_outputs.append(tf.nn.xw_plus_b(decoder_outputs[i], w, v))
 
@@ -219,7 +219,7 @@ class Seq2SeqAttentionModel(object):
           best_outputs = [tf.argmax(x, 1) for x in model_outputs]
           tf.logging.info('best_outputs%s', best_outputs[0].get_shape())
           self._outputs = tf.concat(axis=1, values=[tf.reshape(x, [hps.batch_size, 1]) for x in best_outputs])
-
+          # 取model_outputs[-1]最后一个，
           self._topk_log_probs, self._topk_ids = tf.nn.top_k(tf.log(tf.nn.softmax(model_outputs[-1])), hps.batch_size*2)
 
       with tf.variable_scope('loss'), tf.device(self._next_device()):
@@ -242,14 +242,11 @@ class Seq2SeqAttentionModel(object):
     """Sets self._train_op, op to run for training."""
     hps = self._hps
 
-    self._lr_rate = tf.maximum(
-        hps.min_lr,  # min_lr_rate.
-        tf.train.exponential_decay(hps.lr, self.global_step, 30000, 0.98))
+    self._lr_rate = tf.maximum(hps.min_lr,tf.train.exponential_decay(hps.lr, self.global_step, 30000, 0.98))
 
     tvars = tf.trainable_variables()
     with tf.device(self._get_gpu(self._num_gpus-1)):
-      grads, global_norm = tf.clip_by_global_norm(
-          tf.gradients(self._loss, tvars), hps.max_grad_norm)
+      grads, global_norm = tf.clip_by_global_norm(tf.gradients(self._loss, tvars), hps.max_grad_norm)
     tf.summary.scalar('global_norm', global_norm)
     optimizer = tf.train.GradientDescentOptimizer(self._lr_rate)
     tf.summary.scalar('learning rate', self._lr_rate)
@@ -276,10 +273,8 @@ class Seq2SeqAttentionModel(object):
     """Return the topK results and new decoder states."""
     feed = {
         self._enc_top_states: enc_top_states,
-        self._dec_in_state:
-            np.squeeze(np.array(dec_init_states)),
-        self._abstracts:
-            np.transpose(np.array([latest_tokens])),
+        self._dec_in_state:np.squeeze(np.array(dec_init_states)),
+        self._abstracts:np.transpose(np.array([latest_tokens])),
         self._abstract_lens: np.ones([len(dec_init_states)], np.int32)}
 
     results = sess.run(

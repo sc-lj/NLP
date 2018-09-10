@@ -87,6 +87,7 @@ def _Train(model, data_batcher):
     # Train dir is different from log_root to avoid summary directory
     # conflict with Supervisor.
     summary_writer = tf.summary.FileWriter(FLAGS.train_dir)
+    # tf.train.Supervisor可以简化编程,避免显示地实现restore操作
     sv = tf.train.Supervisor(logdir=FLAGS.log_root,
                              is_chief=True,
                              saver=saver,
@@ -106,8 +107,7 @@ def _Train(model, data_batcher):
           abstract_lens, loss_weights)
 
       summary_writer.add_summary(summaries, train_step)
-      running_avg_loss = _RunningAvgLoss(
-          running_avg_loss, loss, summary_writer, train_step)
+      running_avg_loss = _RunningAvgLoss(loss,running_avg_loss, summary_writer, train_step)
       step += 1
       if step % 100 == 0:
         summary_writer.flush()

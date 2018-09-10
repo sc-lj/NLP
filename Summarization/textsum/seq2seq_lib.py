@@ -77,8 +77,7 @@ def sampled_sequence_loss(inputs, targets, weights, loss_function,
   Raises:
     ValueError: If len(inputs) is different from len(targets) or len(weights).
   """
-  with tf.name_scope(values=inputs + targets + weights, name=name,
-                     default_name='sampled_sequence_loss'):
+  with tf.name_scope(values=inputs + targets + weights, name=name,default_name='sampled_sequence_loss'):
     cost = tf.reduce_sum(sequence_loss_by_example(
         inputs, targets, weights, loss_function,
         average_across_timesteps=average_across_timesteps))
