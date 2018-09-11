@@ -123,28 +123,28 @@ def extract_html(content):
         sentences=""
         for text, annotations in paragraph:
             sentences+=text
+        sentences=list(jieba.cut(sentences))
         quote=False
         newsentences=""
         newsentences+=" "+data.PARAGRAPH_START+" "+data.SENTENCE_START+" "
         for word in sentences:
             if word in Dquotes and not quote:
                 quote=True
-                newsentences+=word
+                newsentences+=word+" "
             elif word in Dquotes and quote:
                 quote=False
-                newsentences+=word
+                newsentences+=word+" "
             elif quote:
-                newsentences+=word
+                newsentences+=word+" "
             elif word in split_sent and not quote:
-                newsentences+=word
-                newsentences+=" "+data.SENTENCE_END
-                newsentences+=" "+data.SENTENCE_START+" "
+                newsentences+=word+" "
+                newsentences+=data.SENTENCE_END+" "
+                newsentences+=data.SENTENCE_START+" "
             else:
-                newsentences+=word
-        newsentences=newsentences[:-len(" "+data.SENTENCE_START+" ")]
-        newsentences+=" "+data.PARAGRAPH_END+" "
+                newsentences+=word+" "
+        newsentences=newsentences[:-len(data.SENTENCE_START+" ")]
+        newsentences+=data.PARAGRAPH_END+" "
         paragraphs+=newsentences
-
     return paragraphs
 
 def toSentence():
@@ -153,8 +153,11 @@ def toSentence():
     cursor=mysql.get_cursor()
     sent="select title,brief,content from news where 1"
     cursor.execute(sent)
-    for content in cursor.fetchall():
+    for rows in cursor.fetchall():
+        title, brief, content = rows
         content=extract_html(content)
+        brief=extract_html(brief)
+
 
 
 
@@ -166,4 +169,5 @@ if __name__ == '__main__':
     content="""<div class="left_zw" >  <p>　　<a target="_blank" href="http://www.chinanews.com/">中新网</a>7月13日电 据澳洲网报道，最近，澳大利亚墨尔本Elwood地区的多处地方都莫名出现了很多奶酪，这些奶酪有的散落在院子里，有的散落在草丛里，有些奶酪还已经发霉长毛。当地议会近日警告民众，要远离这些神秘的奶酪，有可能这些奶酪是被当做诱饵投放在多处。</p><table border="0" cellspacing="0" cellpadding="0" align="left" ><tr><td></td></tr></table><p>　　<strong>民众应防止宠物狗误食</strong></p><p>　　报道称，由于墨尔本Elwood地区多处出现不明来源的大块奶酪，已经引起当地民众的不安和恐慌，近日Port Phillip议会表示，他们已经将两块奶酪送去接受检测，并且强烈要求民众不要让自家的宠物狗误食这些奶制品。该案件的调查负责人史密斯(Peter Smith)表示，</p><p>　　人们应该将这些奶酪小心的丢弃在垃圾桶里，之后再好好清洁一下双手。“虽然目前没有迹象表明这些奶酪被人下毒，但是我们应该谨慎对待，这些奶酪正在被送往检测机构进行检测，以确保它们不是用来引诱犬类上钩的诱饵，”史密斯说，“就算这些奶酪经检测没有问题，我们也建议狗的主人看紧宠物狗，不要让它们吃得太多，因为过量的奶制品会引发狗狗呕吐。”</p><p>　　报道称，当地议会会持续关注该案件的发展，查清是谁在随意丢弃这些奶制品。据当地居民反映，这些奶制品在几周之前就出现了，有人在树丛中、草地上、公路旁和居民区内，甚至是通往沙滩的Tiuna Grove大街、Byrne大街和Bendigo大街上都看到过这些奶酪，人们都将此事称为“Elwood神秘奶酪案件”。</p><p>　　<strong>神秘奶酪来源扑朔迷离</strong></p><p>　　据悉，当地很多民众认为是狐狸将这些奶酪散落的到处都是，但是目前还没有人知道这些奶酪的确切来历。</p><p>　　有人称是附近一位老奶奶丢弃的奶酪，她想用这些奶酪喂鸟，但是奶酪的数量太多，人们认为这一假设不可能。“这件事情已经失去控制了，不可能是老奶奶干的，依靠退休金是买不起这么多奶酪的，”一名女子在社交媒体“脸谱”(Facebook)上写道，“也许是一名行为古怪、但是乐善好施的富豪干的。”</p><p>　　当地居民Rachel Cassar表示，她的狗狗在过去两周内发现了7块奶酪，其中一个就在她家院内。“有人在持续地往这里投放大量的奶酪，我的一位朋友已经给她家的狗洗胃了，因为它们吃了一块奶酪。现在这些奶酪很多都已经长毛发霉了，我的狗狗把它们堆在后院，但是有些奶酪看起来还新鲜，我的狗狗目前状况还好。”Rachel Cassar说。</p><p>　　另一位居民Emma 表示，她的狗狗Ollie几个月前就在花园里发现了一块奶酪，而他们家已经很多年没有买过奶酪了。</p><div id="function_code_page"></div>        </div>"""
     content=extract_html(content)
     print(content)
+    print(len(content))
 

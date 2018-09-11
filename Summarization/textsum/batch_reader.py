@@ -145,11 +145,10 @@ class Batcher(object):
       dec_inputs = [start_id]
 
       # Convert first N sentences to word IDs, stripping existing <s> and </s>.
-      for i in xrange(min(self._max_article_sentences,
-                          len(article_sentences))):
+      for i in xrange(min(self._max_article_sentences,len(article_sentences))):
         enc_inputs += data.GetWordIds(article_sentences[i], self._vocab)
-      for i in xrange(min(self._max_abstract_sentences,
-                          len(abstract_sentences))):
+
+      for i in xrange(min(self._max_abstract_sentences,len(abstract_sentences))):
         dec_inputs += data.GetWordIds(abstract_sentences[i], self._vocab)
 
       # Filter out too-short input
