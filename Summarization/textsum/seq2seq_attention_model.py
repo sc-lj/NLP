@@ -21,6 +21,7 @@ import numpy as np
 import seq2seq_lib
 from six.moves import xrange
 import tensorflow as tf
+from copy import deepcopy
 
 HParams = namedtuple('HParams',
                      'mode, min_lr, lr, batch_size, '
@@ -145,40 +146,25 @@ class Seq2SeqAttentionModel(object):
 
       # Embedding shared by the input and outputs.
       with tf.variable_scope('embedding'), tf.device('/cpu:0'):
-        embedding = tf.get_variable(
-            'embedding', [vsize, hps.emb_dim], dtype=tf.float32,
-            initializer=tf.truncated_normal_initializer(stddev=1e-4))
+        embedding = tf.get_variable('embedding', [vsize, hps.emb_dim], dtype=tf.float32,initializer=tf.truncated_normal_initializer(stddev=1e-4))
         # emb_encoder_inputs中的每个元素shape是[batch_size,emb_dim]
-        emb_encoder_inputs = [tf.nn.embedding_lookup(embedding, x)
-                              for x in encoder_inputs]
-        emb_decoder_inputs = [tf.nn.embedding_lookup(embedding, x)
-                              for x in decoder_inputs]
+        emb_encoder_inputs = [tf.nn.embedding_lookup(embedding, x) for x in encoder_inputs]
+        emb_decoder_inputs = [tf.nn.embedding_lookup(embedding, x) for x in decoder_inputs]
 
       for layer_i in xrange(hps.enc_layers):
         with tf.variable_scope('encoder%d'%layer_i), tf.device(self._next_device()):
-          cell_fw = tf.nn.rnn_cell.LSTMCell(
-              hps.num_hidden,
-              initializer=tf.random_uniform_initializer(-0.1, 0.1, seed=123),
-              state_is_tuple=True)
+          cell_fw = tf.nn.rnn_cell.LSTMCell(hps.num_hidden,initializer=tf.random_uniform_initializer(-0.1, 0.1, seed=123),state_is_tuple=True)
 
-          cell_bw = tf.nn.rnn_cell.LSTMCell(
-              hps.num_hidden,
-              initializer=tf.random_uniform_initializer(-0.1, 0.1, seed=113),
-              state_is_tuple=True)
+          cell_bw = tf.nn.rnn_cell.LSTMCell(hps.num_hidden,initializer=tf.random_uniform_initializer(-0.1, 0.1, seed=113),state_is_tuple=True)
           # emb_encoder_inputs的shape是[batch_size,2*num_hidden]
-          (emb_encoder_inputs, fw_state, _) = tf.nn.static_bidirectional_rnn(
-              cell_fw, cell_bw, emb_encoder_inputs, dtype=tf.float32,
-              sequence_length=article_lens)
-      encoder_outputs = emb_encoder_inputs
+          (emb_encoder_inputs, fw_state, _) = tf.nn.static_bidirectional_rnn(cell_fw, cell_bw, emb_encoder_inputs, dtype=tf.float32,sequence_length=article_lens)
+
+      encoder_outputs = deepcopy(emb_encoder_inputs)
 
       with tf.variable_scope('output_projection'):
-        w = tf.get_variable(
-            'w', [hps.num_hidden, vsize], dtype=tf.float32,
-            initializer=tf.truncated_normal_initializer(stddev=1e-4))
+        w = tf.get_variable('w', [hps.num_hidden, vsize], dtype=tf.float32,initializer=tf.truncated_normal_initializer(stddev=1e-4))
         w_t = tf.transpose(w)
-        v = tf.get_variable(
-            'v', [vsize], dtype=tf.float32,
-            initializer=tf.truncated_normal_initializer(stddev=1e-4))
+        v = tf.get_variable('v', [vsize], dtype=tf.float32,initializer=tf.truncated_normal_initializer(stddev=1e-4))
 
       with tf.variable_scope('decoder'), tf.device(self._next_device()):
         # When decoding, use model output from the previous step
@@ -187,10 +173,7 @@ class Seq2SeqAttentionModel(object):
         if hps.mode == 'decode':
           loop_function = _extract_argmax_and_embed(embedding, (w, v), update_embedding=False)
 
-        cell = tf.nn.rnn_cell.LSTMCell(
-            hps.num_hidden,
-            initializer=tf.random_uniform_initializer(-0.1, 0.1, seed=113),
-            state_is_tuple=True)
+        cell = tf.nn.rnn_cell.LSTMCell( hps.num_hidden,initializer=tf.random_uniform_initializer(-0.1, 0.1, seed=113),state_is_tuple=True)
         # 扩展维度，由原来的二维变成三维
         encoder_outputs = [tf.reshape(x, [hps.batch_size, 1, 2*hps.num_hidden]) for x in encoder_outputs]
 

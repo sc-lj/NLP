@@ -132,13 +132,11 @@ class Batcher(object):
     start_id = self._vocab.WordToId(data.SENTENCE_START)
     end_id = self._vocab.WordToId(data.SENTENCE_END)
     pad_id = self._vocab.WordToId(data.PAD_TOKEN)
-    input_gen = self._TextGenerator(data.ExampleGen(self._data_path))
+    input_gen = data.ExampleGen()
     while True:
       (article, abstract) = six.next(input_gen)
-      article_sentences = [sent.strip() for sent in
-                           data.ToSentences(article, include_token=False)]
-      abstract_sentences = [sent.strip() for sent in
-                            data.ToSentences(abstract, include_token=False)]
+      article_sentences = [sent.strip() for sent in data.ToSentences(article, include_token=False)]
+      abstract_sentences = [sent.strip() for sent in data.ToSentences(abstract, include_token=False)]
 
       enc_inputs = []
       # Use the <s> as the <GO> symbol for decoder inputs.

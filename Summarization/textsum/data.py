@@ -19,7 +19,8 @@ import glob
 import random
 import struct
 import sys
-
+from database import MySQL
+import data_convert_example  as convert
 from tensorflow.core.example import example_pb2
 
 
@@ -75,7 +76,7 @@ class Vocab(object):
     return self._count
 
 
-def ExampleGen(data_path, num_epochs=None):
+def ExampleGen1(data_path, num_epochs=None):
   """Generates tf.Examples from path of data files.
 
     Binary data format: <length><blob>. <length> represents the byte size
@@ -106,6 +107,25 @@ def ExampleGen(data_path, num_epochs=None):
         str_len = struct.unpack('q', len_bytes)[0]
         example_str = struct.unpack('%ds' % str_len, reader.read(str_len))[0]
         yield example_pb2.Example.FromString(example_str)
+
+    epoch += 1
+
+def ExampleGen(num_epochs=None):
+  epoch = 0
+  mysql=MySQL()
+  mysql.login()
+  cursor=mysql.get_cursor()
+  while True:
+    if num_epochs is not None and epoch >= num_epochs:
+      break
+
+    sent="select title,brief,content from news where brief !=''"
+    cursor.execute(sent)
+    for rows in cursor.fetchall():
+        title, brief, content=rows
+        content=convert.extract_html(content)
+        brief=convert.extract_html(brief)
+        yield (content,brief)
 
     epoch += 1
 

@@ -7,7 +7,7 @@ import MySQLdb
 
 SQLHOST = "172.29.3.56"
 SQLUSER = "root"
-SQLPASSWORD = "cdSB123"
+SQLPASSWORD = "123456"
 # 数据库名
 SQLDB = "HWCom"
 SQLPORT = 3306
