@@ -8,8 +8,6 @@ import MySQLdb
 SQLHOST = "172.29.3.56"
 SQLUSER = "root"
 SQLPASSWORD = "123456"
-# 数据库名
-SQLDB = "HWCom"
 SQLPORT = 3306
 
 class MySQL():
