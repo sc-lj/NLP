@@ -14,7 +14,7 @@ import pandas as pd
 import tensorflow as tf
 from tensorflow.core.example import example_pb2
 from database import MySQL
-import Data
+import Data,time
 
 FLAGS = tf.app.flags.FLAGS
 tf.app.flags.DEFINE_string('command', 'binary_to_text',
@@ -83,9 +83,7 @@ def genVocab(vocabfile):
             vocab[a]+=1
 
     dalist=[]
-    for sent in cursor.fetchall():
-        title, brief, content=sent
-        content=Data.extract_html(content)
+    for title, brief, content in cursor.fetchall():
         title=re.sub("\d","#",title)
         imdict(title)
 
@@ -96,22 +94,26 @@ def genVocab(vocabfile):
 
         content=re.sub("资料图（图源：.*?）","",content)
         content=re.sub("(本文系版权作品，未经授权严禁转载。.*)\s?责编","责编",content)
-        content=re.sub("(.编译.*责编：.+)","",content)
+        content=re.sub("(《.*?》)?(（.+）)?(\(.+\))?(编译.+)?(责编：.+)?", "", content)
         content=re.sub("\d","#",content)
+        print(content+"\n")
+        content=Data.extract_html(content)
+        time.sleep(0.1)
         imdict(content)
         contentlen=len(content)
         dalist.append([brieflen,contentlen])
-    data = pd.DataFrame(columns=["brief", "content"],data=da)
+    data = pd.DataFrame(columns=["brief", "content"],data=dalist)
     data=data[data['brief']>0]
-    mysql.close()
-    print(len(vocab))
-    vocab={key:value for key,value in vocab.items() if value>=5}
-    print(len(vocab))
-    print(sum(vocab.values()))
-    with open(vocabfile,'w') as f:
-        for word,num in vocab.items():
-            f.write(word+" "+str(num)+"\n")
     data.to_csv("./data/len.csv",index=False)
+    cursor.close()
+    mysql.close()
+    # print(len(vocab))
+    # vocab={key:value for key,value in vocab.items() if value>=5}
+    # print(len(vocab))
+    # print(sum(vocab.values()))
+    # with open(vocabfile,'w') as f:
+    #     for word,num in vocab.items():
+    #         f.write(word+" "+str(num)+"\n")
 
 
 
@@ -122,3 +124,4 @@ if __name__ == '__main__':
     # tf.app.run()
     genVocab("./data/chivocab")
 
+content="""老挝和菲律宾的21个地区40多所学校开展实践活动，参与活动的当地中小学生达8000余人。(华侨大学华文学院 卢鹏 王可昕/文 陈晓婷 张贤智/图)责编：季冉冉 """
