@@ -26,7 +26,7 @@ import time
 
 import tensorflow as tf
 import batch_reader
-import data
+import Data
 import seq2seq_attention_decode
 import seq2seq_attention_model
 
@@ -145,10 +145,10 @@ def _Eval(model, data_batcher, vocab=None):
         abstract_lens, loss_weights)
     tf.logging.info(
         'article:  %s',
-        ' '.join(data.Ids2Words(article_batch[0][:].tolist(), vocab)))
+        ' '.join(Data.Ids2Words(article_batch[0][:].tolist(), vocab)))
     tf.logging.info(
         'abstract: %s',
-        ' '.join(data.Ids2Words(abstract_batch[0][:].tolist(), vocab)))
+        ' '.join(Data.Ids2Words(abstract_batch[0][:].tolist(), vocab)))
 
     summary_writer.add_summary(summaries, train_step)
     running_avg_loss = _RunningAvgLoss(
@@ -158,12 +158,12 @@ def _Eval(model, data_batcher, vocab=None):
 
 
 def main(unused_argv):
-  vocab = data.Vocab(FLAGS.vocab_path, 1000000)
+  vocab = Data.Vocab(FLAGS.vocab_path, 1000000)
   # Check for presence of required special tokens.
-  assert vocab.CheckVocab(data.PAD_TOKEN) > 0
-  assert vocab.CheckVocab(data.UNKNOWN_TOKEN) >= 0
-  assert vocab.CheckVocab(data.SENTENCE_START) > 0
-  assert vocab.CheckVocab(data.SENTENCE_END) > 0
+  assert vocab.CheckVocab(Data.PAD_TOKEN) > 0
+  assert vocab.CheckVocab(Data.UNKNOWN_TOKEN) >= 0
+  assert vocab.CheckVocab(Data.SENTENCE_START) > 0
+  assert vocab.CheckVocab(Data.SENTENCE_END) > 0
 
   batch_size = 4
   if FLAGS.mode == 'decode':

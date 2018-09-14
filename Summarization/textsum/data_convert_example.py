@@ -14,8 +14,7 @@ import pandas as pd
 import tensorflow as tf
 from tensorflow.core.example import example_pb2
 from database import MySQL
-from breadability.readable import Article
-import data
+import Data
 
 FLAGS = tf.app.flags.FLAGS
 tf.app.flags.DEFINE_string('command', 'binary_to_text',
@@ -66,41 +65,7 @@ def main(unused_argv):
     _text_to_binary()
 
 
-def extract_html(content):
-    article = Article(content)
-    annotated_text=article.main_text
-    paragraphs=""
-    split_sent=['。','？','！']
 
-    #  将双分号里面的句子不进行分割。
-    Dquotes=['"','“','”']
-    for paragraph in annotated_text:
-        sentences=""
-        for text, annotations in paragraph:
-            sentences+=text
-        sentences=list(jieba.cut(sentences))
-        quote=False
-        newsentences=""
-        newsentences+=" "+data.PARAGRAPH_START+" "+data.SENTENCE_START+" "
-        for word in sentences:
-            if word in Dquotes and not quote:
-                quote=True
-                newsentences+=word+" "
-            elif word in Dquotes and quote:
-                quote=False
-                newsentences+=word+" "
-            elif quote:
-                newsentences+=word+" "
-            elif word in split_sent and not quote:
-                newsentences+=word+" "
-                newsentences+=data.SENTENCE_END+" "
-                newsentences+=data.SENTENCE_START+" "
-            else:
-                newsentences+=word+" "
-        newsentences=newsentences[:-len(data.SENTENCE_START+" ")]
-        newsentences+=data.PARAGRAPH_END+" "
-        paragraphs+=newsentences
-    return paragraphs
 
 def genVocab(vocabfile):
     mysql=MySQL()
@@ -117,9 +82,10 @@ def genVocab(vocabfile):
                 continue
             vocab[a]+=1
 
-    da=[]
+    dalist=[]
     for sent in cursor.fetchall():
         title, brief, content=sent
+        content=Data.extract_html(content)
         title=re.sub("\d","#",title)
         imdict(title)
 
@@ -134,7 +100,7 @@ def genVocab(vocabfile):
         content=re.sub("\d","#",content)
         imdict(content)
         contentlen=len(content)
-        da.append([brieflen,contentlen])
+        dalist.append([brieflen,contentlen])
     data = pd.DataFrame(columns=["brief", "content"],data=da)
     data=data[data['brief']>0]
     mysql.close()

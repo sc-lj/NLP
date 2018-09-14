@@ -19,7 +19,7 @@ import os
 import time
 
 import beam_search
-import data
+import Data
 from six.moves import xrange
 import tensorflow as tf
 
@@ -130,8 +130,8 @@ class BSDecoder(object):
       for i in xrange(self._hps.batch_size):
         bs = beam_search.BeamSearch(
             self._model, self._hps.batch_size,
-            self._vocab.WordToId(data.SENTENCE_START),
-            self._vocab.WordToId(data.SENTENCE_END),
+            self._vocab.WordToId(Data.SENTENCE_START),
+            self._vocab.WordToId(Data.SENTENCE_END),
             self._hps.dec_timesteps)
 
         article_batch_cp = article_batch.copy()
@@ -152,8 +152,8 @@ class BSDecoder(object):
       abstract: The human (correct) abstract string.
       output_ids: The abstract word ids output by machine.
     """
-    decoded_output = ' '.join(data.Ids2Words(output_ids, self._vocab))
-    end_p = decoded_output.find(data.SENTENCE_END, 0)
+    decoded_output = ' '.join(Data.Ids2Words(output_ids, self._vocab))
+    end_p = decoded_output.find(Data.SENTENCE_END, 0)
     if end_p != -1:
       decoded_output = decoded_output[:end_p]
     tf.logging.info('article:  %s', article)

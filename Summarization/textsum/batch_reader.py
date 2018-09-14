@@ -26,7 +26,7 @@ from six.moves import queue as Queue
 from six.moves import xrange
 import tensorflow as tf
 
-import data
+import Data
 
 ModelInput = namedtuple('ModelInput',
                         'enc_input dec_input target enc_len dec_len '
@@ -129,14 +129,14 @@ class Batcher(object):
 
   def _FillInputQueue(self):
     """Fill input queue with ModelInput."""
-    start_id = self._vocab.WordToId(data.SENTENCE_START)
-    end_id = self._vocab.WordToId(data.SENTENCE_END)
-    pad_id = self._vocab.WordToId(data.PAD_TOKEN)
-    input_gen = data.ExampleGen()
+    start_id = self._vocab.WordToId(Data.SENTENCE_START)
+    end_id = self._vocab.WordToId(Data.SENTENCE_END)
+    pad_id = self._vocab.WordToId(Data.PAD_TOKEN)
+    input_gen = Data.ExampleGen()
     while True:
       (article, abstract) = six.next(input_gen)
-      article_sentences = [sent.strip() for sent in data.ToSentences(article, include_token=False)]
-      abstract_sentences = [sent.strip() for sent in data.ToSentences(abstract, include_token=False)]
+      article_sentences = [sent.strip() for sent in Data.ToSentences(article, include_token=False)]
+      abstract_sentences = [sent.strip() for sent in Data.ToSentences(abstract, include_token=False)]
 
       enc_inputs = []
       # Use the <s> as the <GO> symbol for decoder inputs.
@@ -144,10 +144,10 @@ class Batcher(object):
 
       # Convert first N sentences to word IDs, stripping existing <s> and </s>.
       for i in xrange(min(self._max_article_sentences,len(article_sentences))):
-        enc_inputs += data.GetWordIds(article_sentences[i], self._vocab)
+        enc_inputs += Data.GetWordIds(article_sentences[i], self._vocab)
 
       for i in xrange(min(self._max_abstract_sentences,len(abstract_sentences))):
-        dec_inputs += data.GetWordIds(abstract_sentences[i], self._vocab)
+        dec_inputs += Data.GetWordIds(abstract_sentences[i], self._vocab)
 
       # Filter out too-short input
       if (len(enc_inputs) < self._hps.min_input_len or

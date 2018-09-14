@@ -202,7 +202,7 @@ class Seq2SeqAttentionModel(object):
           best_outputs = [tf.argmax(x, 1) for x in model_outputs]
           tf.logging.info('best_outputs%s', best_outputs[0].get_shape())
           self._outputs = tf.concat(axis=1, values=[tf.reshape(x, [hps.batch_size, 1]) for x in best_outputs])
-          # 取model_outputs[-1]最后一个，
+          # 取model_outputs[-1]最后一个，在测试的时候，beam_search每次获取attention最后一个输出的topk，来进行搜索
           self._topk_log_probs, self._topk_ids = tf.nn.top_k(tf.log(tf.nn.softmax(model_outputs[-1])), hps.batch_size*2)
 
       with tf.variable_scope('loss'), tf.device(self._next_device()):
@@ -250,6 +250,7 @@ class Seq2SeqAttentionModel(object):
     results = sess.run([self._enc_top_states, self._dec_in_state],
                        feed_dict={self._articles: enc_inputs,
                                   self._article_lens: enc_len})
+    # results[1][0]之所以要获取第一个[0]是为了初始化beam_search的初始状态
     return results[0], results[1][0]
 
   def decode_topk(self, sess, latest_tokens, enc_top_states, dec_init_states):

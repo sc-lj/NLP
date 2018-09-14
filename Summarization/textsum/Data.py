@@ -15,14 +15,13 @@
 
 """Data batchers for data described in ..//data_prep/README.md."""
 
-import glob
+import glob,jieba
 import random
 import struct
 import sys
 from database import MySQL
-import data_convert_example  as convert
 from tensorflow.core.example import example_pb2
-
+from breadability.readable import Article
 
 # Special tokens
 PARAGRAPH_START = '<p>'
@@ -110,6 +109,44 @@ def ExampleGen1(data_path, num_epochs=None):
 
     epoch += 1
 
+
+def extract_html(content):
+    article = Article(content)
+    annotated_text=article.main_text
+    paragraphs=""
+    split_sent=['。','？','！']
+
+    #  将双分号里面的句子不进行分割。
+    Dquotes=['"','“','”']
+    for paragraph in annotated_text:
+        sentences=""
+        for text, annotations in paragraph:
+            sentences+=text
+        sentences=list(jieba.cut(sentences))
+        quote=False
+        newsentences=""
+        newsentences+=" "+PARAGRAPH_START+" "+SENTENCE_START+" "
+        for word in sentences:
+            if word in Dquotes and not quote:
+                quote=True
+                newsentences+=word+" "
+            elif word in Dquotes and quote:
+                quote=False
+                newsentences+=word+" "
+            elif quote:
+                newsentences+=word+" "
+            elif word in split_sent and not quote:
+                newsentences+=word+" "
+                newsentences+=SENTENCE_END+" "
+                newsentences+=SENTENCE_START+" "
+            else:
+                newsentences+=word+" "
+        newsentences=newsentences[:-len(SENTENCE_START+" ")]
+        newsentences+=PARAGRAPH_END+" "
+        paragraphs+=newsentences
+    return paragraphs
+
+
 def ExampleGen(num_epochs=None):
   epoch = 0
   mysql=MySQL()
@@ -123,8 +160,8 @@ def ExampleGen(num_epochs=None):
     cursor.execute(sent)
     for rows in cursor.fetchall():
         title, brief, content=rows
-        content=convert.extract_html(content)
-        brief=convert.extract_html(brief)
+        content=extract_html(content)
+        brief=extract_html(brief)
         yield (content,brief)
 
     epoch += 1
