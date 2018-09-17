@@ -11,9 +11,8 @@ SQLPASSWORD = "123456"
 SQLPORT = 3306
 
 class MySQL():
-    def __init__(self,sqldb="HWCom"):
+    def __init__(self,sqldb="cdsbapp_db"):
         self.sqldb=sqldb
-
 
     def login(self):
         cursor=MySQLdb.cursors.SSCursor

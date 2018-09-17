@@ -3,12 +3,13 @@
 import tensorflow as tf
 
 class Abs():
-    def __init__(self,emb_dim, hid_dim, vocab_size, q, c,batch_size,enc_timesteps,dec_timesteps, encoder_type='attention'):
+    def __init__(self, vocab_size, batch_size,enc_timesteps,dec_timesteps,emb_dim=200, hid_dim=400,L=3,Q=2,C=5, encoder_type='attention'):
         self.emb_dim=emb_dim
         self.hid_dim=hid_dim
         self.vocab_size=vocab_size
-        self._q=q
-        self._c=c
+        self._q=Q
+        self._c=C
+        self._l=L
         self.encoder_type=encoder_type
         self.batch_size=batch_size
         self.dec_timesteps=dec_timesteps
@@ -55,8 +56,11 @@ class Abs():
                 W_enc = tf.nn.xw_plus_b(tf.reduce_mean(xt_embs, 2), self._W,self.W_biase)
 
             elif self.encoder_type == 'attention':
-                x_bar=[tf.reduce_mean(encoder_embs[max(0,i-self._q):min(self.enc_timesteps,i+self._q)],0) for i in range(self.enc_timesteps)]
+                x_bar=[tf.reduce_sum(encoder_embs[max(0,i-self._q):min(self.enc_timesteps,i+self._q)],0) for i in range(self.enc_timesteps)]
+                x_bar=[tf.divide(bar,self._q) for bar in x_bar]
                 encoder_y=[]
+
+
 
             decoder_embs = tf.concat([tf.reshape(embs, shape=[-1, self.emb_dim, 1]) for embs in decoder_embs], 2)
             h = tf.nn.tanh(self._U * decoder_embs)
