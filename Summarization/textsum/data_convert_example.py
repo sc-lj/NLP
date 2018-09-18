@@ -74,8 +74,7 @@ def genVocab(vocabfile):
 
     vocab=defaultdict(int)
     def imdict(ab):
-        ab=jieba.cut(ab)
-        for a in ab:
+        for a in ab.split(" "):
             a=a.strip()
             # 去掉全是小写的英文单词
             if len(a)==0 or (rec.match(a) and a.islower()):

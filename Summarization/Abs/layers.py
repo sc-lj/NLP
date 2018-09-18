@@ -58,10 +58,15 @@ class Abs():
             elif self.encoder_type == 'attention':
                 x_bar=[tf.reduce_sum(encoder_embs[max(0,i-self._q):min(self.enc_timesteps,i+self._q)],0) for i in range(self.enc_timesteps)]
                 x_bar=[tf.divide(bar,self._q) for bar in x_bar]
+                x_bar=tf.concat([tf.reshape(xbar,shape=[self.batch_size,self.hid_dim,1]) for xbar in x_bar],2)
 
                 encoder_y=[decoder_embs[max(0,i-self._c+1):i] for i in range(self.dec_timesteps)]
                 encoder_y=[tf.concat(encodery,1) for encodery in encoder_y]
-                enc_exp=tf.matmul()
+                enc_exp=[tf.matmul(self._P,encoder,transpose_b=True) for encoder in encoder_y]
+                lowerp=[tf.concat([tf.reduce_sum(tf.multiply(encoder_emb,enc)) for encoder_emb in encoder_embs],1) for enc in enc_exp]
+                lowerp=[tf.nn.softmax(lowers) for lowers in lowerp]
+                W_encs=[tf.reduce_sum(tf.multiply(x_bar,tf.reshape(lower_p,shape=[self.batch_size,1,-1])),2) for lower_p in lowerp]
+                W_enc = [tf.nn.xw_plus_b(Wenc, self._W,self.W_biase) for Wenc in W_encs]
 
 
 

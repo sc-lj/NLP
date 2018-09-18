@@ -1,6 +1,8 @@
 # A Neural Attention Model for Sentence Summarization
 这是Facebook提出的用神经网络来生成文本摘要的开山之作，在 github 上有开源的代码放出来，可以参考[facebook/NAMAS](https://github.com/facebookarchive/NAMAS)。
 
+自动摘要技术有两种类型，即抽取式（extraction）和生成式（abstraction）。抽取式摘要 [Neto et al., 2002] 的目标是通过选择源文档中的重要片段并将它们组合来生成摘要；而生成式摘要 [Chopra et al., 2016] 则是根据文档的核心思想来重新组织生成摘要，因此这种摘要的灵活性更高。
+
 本文提出的是一个基于全数据驱动文本摘要生成方法(Attention-Based Summarization (ABS))，该方法基于输入的语句采用局部注意力模型来生成摘要的每个单词。\
 大部分成功的文本摘要生成方法，利用萃取法裁剪和粘贴部分文本来生成凝练的文本摘要。与此相反，抽象的文本摘要生成方法意图生成自上而下的文本摘要，即文本摘要不再是原始文本的一部分。
 
