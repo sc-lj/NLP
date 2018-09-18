@@ -18,7 +18,7 @@
 import glob,jieba
 import random
 import struct
-import sys
+import sys,re
 from database import MySQL
 from tensorflow.core.example import example_pb2
 from breadability.readable import Article
@@ -109,6 +109,9 @@ def ExampleGen1(data_path, num_epochs=None):
 
     epoch += 1
 
+def check_html(content):
+    rec=re.compile("<.*>")
+    return rec.match(content)
 
 def extract_html(content):
     article = Article(content)
@@ -270,3 +273,9 @@ def ToSentences(paragraph, include_token=True):
   """
   s_gen = SnippetGen(paragraph, SENTENCE_START, SENTENCE_END, include_token)
   return [s for s in s_gen]
+
+if __name__ == '__main__':
+
+    content=""
+    extract_html(content)
+

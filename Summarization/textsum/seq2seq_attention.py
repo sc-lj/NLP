@@ -34,24 +34,22 @@ FLAGS = tf.app.flags.FLAGS
 tf.app.flags.DEFINE_string('data_path',
                            '', 'Path expression to tf.Example.')
 tf.app.flags.DEFINE_string('vocab_path',
-                           '', 'Path expression to text vocabulary file.')
+                           'data/chivocab', 'Path expression to text vocabulary file.')
 tf.app.flags.DEFINE_string('article_key', 'article',
                            'tf.Example feature key for article.')
 tf.app.flags.DEFINE_string('abstract_key', 'headline',
                            'tf.Example feature key for abstract.')
-tf.app.flags.DEFINE_string('log_root', '', 'Directory for model root.')
-tf.app.flags.DEFINE_string('train_dir', '', 'Directory for train.')
-tf.app.flags.DEFINE_string('eval_dir', '', 'Directory for eval.')
-tf.app.flags.DEFINE_string('decode_dir', '', 'Directory for decode summaries.')
+tf.app.flags.DEFINE_string('log_root', 'model/log', 'Directory for model root.')
+tf.app.flags.DEFINE_string('train_dir', 'model/train', 'Directory for train.')
+tf.app.flags.DEFINE_string('eval_dir', 'model/eval', 'Directory for eval.')
+tf.app.flags.DEFINE_string('decode_dir', 'model/decode', 'Directory for decode summaries.')
 tf.app.flags.DEFINE_string('mode', 'train', 'train/eval/decode mode')
 tf.app.flags.DEFINE_integer('max_run_steps', 10000000,
                             'Maximum number of run steps.')
 tf.app.flags.DEFINE_integer('max_article_sentences', 2,
-                            'Max number of first sentences to use from the '
-                            'article')
+                            'Max number of first sentences to use from the article')
 tf.app.flags.DEFINE_integer('max_abstract_sentences', 100,
-                            'Max number of first sentences to use from the '
-                            'abstract')
+                            'Max number of first sentences to use from the abstract')
 tf.app.flags.DEFINE_integer('beam_size', 4,
                             'beam size for beam search decoding.')
 tf.app.flags.DEFINE_integer('eval_interval_secs', 60, 'How often to run eval.')
@@ -59,8 +57,7 @@ tf.app.flags.DEFINE_integer('checkpoint_secs', 60, 'How often to checkpoint.')
 tf.app.flags.DEFINE_bool('use_bucketing', False,
                          'Whether bucket articles of similar length.')
 tf.app.flags.DEFINE_bool('truncate_input', False,
-                         'Truncate inputs that are too long. If False, '
-                         'examples that are too long are discarded.')
+                         'Truncate inputs that are too long. If False,  examples that are too long are discarded.')
 tf.app.flags.DEFINE_integer('num_gpus', 0, 'Number of gpus used.')
 tf.app.flags.DEFINE_integer('random_seed', 111, 'A seed value for randomness.')
 
@@ -175,8 +172,8 @@ def main(unused_argv):
       lr=0.15,  # learning rate
       batch_size=batch_size,
       enc_layers=4,
-      enc_timesteps=120,
-      dec_timesteps=30,
+      enc_timesteps=520, #文章的最长长度
+      dec_timesteps=90, # 摘要的最长长度
       min_input_len=2,  # discard articles/summaries < than this
       num_hidden=256,  # for rnn cell
       emb_dim=128,  # If 0, don't use embedding

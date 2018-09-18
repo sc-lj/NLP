@@ -65,7 +65,7 @@ def main(unused_argv):
     _text_to_binary()
 
 
-
+rec=re.compile("[a-zA-Z]")
 
 def genVocab(vocabfile):
     mysql=MySQL()
@@ -76,7 +76,9 @@ def genVocab(vocabfile):
     def imdict(ab):
         ab=jieba.cut(ab)
         for a in ab:
-            if len(a)==0:
+            a=a.strip()
+            # 去掉全是小写的英文单词
+            if len(a)==0 or (rec.match(a) and a.islower()):
                 continue
             vocab[a]+=1
 
@@ -95,7 +97,7 @@ def genVocab(vocabfile):
             title=re.sub("\d","#",title)
             imdict(title)
 
-            if table=="news":
+            if table=="news" and brief is not None:
                 brief= re.sub("摘要：","",brief)
                 brief= re.sub("\d","#",brief)
                 imdict(brief)
@@ -106,8 +108,10 @@ def genVocab(vocabfile):
             content=re.sub("(本文系版权作品，未经授权严禁转载。.*)\s?责编","责编",content)
             content=re.sub("(《.*?》)?(（.+）)?(\(.+\))?(编译.+)?(责编：.+)?", "", content)
             content=re.sub("\d","#",content)
-            print(content+"\n")
-            content=Data.extract_html(content)
+            try:
+               content=Data.extract_html(content)
+            except:
+                continue
             time.sleep(0.1)
             imdict(content)
             contentlen=len(content)
@@ -117,12 +121,14 @@ def genVocab(vocabfile):
     data=data[data['brief']>0]
     data.to_csv("./data/len.csv",index=False)
     mysql.close()
-    print(len(vocab))
-    vocab={key:value for key,value in vocab.items() if value>=5}
-    print(len(vocab))
-    print(sum(vocab.values()))
+    newvocab={Data.UNKNOWN_TOKEN:0,Data.PAD_TOKEN:-1,Data.SENTENCE_START:-1,Data.SENTENCE_END:-1}
+    for key, value in vocab.items():
+        if value >= 5:
+            newvocab.update({key:value})
+        else:
+            newvocab[Data.UNKNOWN_TOKEN]+=value
     with open(vocabfile,'w') as f:
-        for word,num in vocab.items():
+        for word,num in newvocab.items():
             f.write(word+" "+str(num)+"\n")
 
 
