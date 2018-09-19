@@ -99,40 +99,50 @@ def check_html(content):
     rec=re.compile("<.*>")
     return rec.match(content)
 
-def extract_html(content):
-    article = Article(content)
-    annotated_text=article.main_text
+def extract_html(content,is_content=True):
+    if is_content:
+        article = Article(content)
+        annotated_text=article.main_text
+    else:
+        annotated_text=[((content,None),)]
     paragraphs=""
-    split_sent=['。','？','！']
+    split_sent=['。','？','！','!','?']
 
     #  将双分号里面的句子不进行分割。
     Dquotes=['"','“','”']
     for paragraph in annotated_text:
-        print(paragraph)
         sentences=""
         for text, annotations in paragraph:
             sentences+=text
-        sentences=list(jieba.cut(sentences))
+        sentences = re.sub("(（.*?）)?(\(.+\))?(编译.+)?(责编：.+)?", "", sentences)
+        sentences = re.sub("(本文系版权作品，未经授权严禁转载。.*)\s?(责编)?", "", sentences)
+        sentences = re.sub("\d", "#", sentences)
+        sentences=" ".join(jieba.cut(sentences))
+        if len(sentences)==0:
+            continue
         quote=False
         newsentences=""
         newsentences+=" "+PARAGRAPH_START+" "+SENTENCE_START+" "
         for word in sentences:
             if word in Dquotes and not quote:
                 quote=True
-                newsentences+=word+" "
+                newsentences+=word
             elif word in Dquotes and quote:
                 quote=False
-                newsentences+=word+" "
+                newsentences+=word
             elif quote:
-                newsentences+=word+" "
+                newsentences+=word
             elif word in split_sent and not quote:
-                newsentences+=word+" "
-                newsentences+=SENTENCE_END+" "
+                newsentences+=word
+                newsentences+=" "+SENTENCE_END+" "
                 newsentences+=SENTENCE_START+" "
             else:
-                newsentences+=word+" "
-        newsentences=newsentences[:-len(SENTENCE_START+" ")]
-        newsentences+=PARAGRAPH_END+" "
+                newsentences+=word
+        if len(newsentences)-newsentences.rfind(SENTENCE_START+" ")==4:
+            newsentences=newsentences[:-len(SENTENCE_START+" ")]
+        else:
+            newsentences+=" "+SENTENCE_END
+        newsentences+=" "+PARAGRAPH_END
         paragraphs+=newsentences
     return paragraphs
 
@@ -263,6 +273,13 @@ def ToSentences(paragraph, include_token=True):
 
 if __name__ == '__main__':
 
-    content=u"图为第三季港澳台学子金华活动闭幕式合影　　吴俊鹏摄来自港澳台地区的37名高校学子近日来到黄大仙故里浙江金华，参加第三季“台港澳学子走进‘侨仙’故里金华”活动，开启了为期10天的文化寻根之旅。回家的感觉真好“关上房门是星级酒店、打开房门是温馨家庭、走出家门是乡野生活”，这是金华首创的“家+”模式。在前两季“台港澳学子走进金华古村落”活动中，它深受学子欢迎。学子们入住“家+”有一定的仪式。“家+”的住家们手拿对联站在村口，学子们则需要在另一边的对联中，找出与自己入住之处相呼应的对联。“少小离家老大回，下一句是？”“乡音无改鬓毛衰。”“哈哈，孩子，欢迎你到我家。”配对成功后，学生即可跟着住家回去。来自澳门、目前在中国人民大学读研的吴海琴对此感触特别深：“这里的一山一水、一家一户、每个人一下子变得非常亲切，好像前世注定的亲人一样，注定在某个地方相遇，真的太美！”每当夜幕降临，炊烟升起，在古村落的一幢幢房子里，一户户“家+”灯火通明，港澳台学子与住家叔叔阿姨们一起用餐，一道聊天，一片欢声笑语。金华市港澳办主任章宏说，金华要通过“家+住宿”“家+餐饮”“家+活动”，特别是“家+特殊人文”，打造环境古朴、设施现代、人文诚善，既有住家体验又有旅行情怀，还有研学修行的台港澳学子的“情感驿站”和“心灵港湾”。文化传承的使者作为中华优秀传统文化的一种精华浓缩，黄大仙文化已经在22个国家和地区传播，金华传统村落文化也留在了台港澳与海外高校学子的记忆里。“我们两岸三地青年一代有责任当好保护和传承中华传统文化的使者。”来自香港大学的丁泽棋认为，金华要与粤港澳联手，更好地保护和发扬“黄大仙文化”，使其成为东西方文化兼容的典型代表。澳门城市大学万淑娟同学则建议，金华要用好作为黄大仙文化发源地、港澳影视演员常年在横店拍摄作品的独特优势，精心制作黄大仙文化和传统村落文化影视作品及动漫产品，延伸文化产业链，使自身成为与“一带一路”沿线国家对接、凝聚海内外华人的重要纽带。活动组织者之一、北大金华选调生吴俊鹏说，每一季港澳台学子进古村活动中，都会开展以传统文化的传承、融合、发展为主线的海峡两岸暨港澳青年论坛，以此推进两岸暨港澳青年主动融入国家发展大局，共绘中国梦。乡梓故里的依恋“黄大仙在港澳地区可谓家喻户晓，寄托了我们祖祖辈辈对中华传统文化的归属与依恋。没想到黄大仙来自金华，而且有1600多年历史了。”第一次来金华文化寻根的香港大学学生蓝晓珺感慨不已。金华是黄大仙的祖庭所在地。晋代黄大仙因擅长炼丹和医术，一生劝善扬善、惩恶除奸、有求必应，泽被一方，民众遂为之修祠，世代祀奉。随着金华乡亲旅居港澳地区和海外，黄大仙信仰也走向港澳和海外，并成为众多华侨华人心中的“侨仙”。金华一直是港澳台地区和海外信众的朝圣地，两岸三地经常在这里联合举办庙会和旅游节。"
-    extract_html(content)
+    content="福建省加快推进海洋强省重大项目建设"
+    content1="""<div class="contentMain">
+                <p style="text-indent: 2em;"><strong><a href="http://www.haiwainet.cn/" target="_blank" class="keylink">海外网</a>9月19日电</strong> 波兰领导人周二（18日）敦促美国总统特朗普考虑在波兰建立一个永久性的美国军事基地，以防范俄罗斯。特朗普回应称，非常认真考虑应波兰要求，在波兰永久派驻美军。</p><p style="text-align:center"><img src="http://images.haiwainet.cn/20180919/1537303125961392.jpg" title="1537303125961392.jpg" alt="8(1).jpg"></p><p style="text-indent: 2em; text-align: center;">特朗普（右）在椭圆形办公室见杜达。（图：美联社）</p><p style="text-indent: 2em;">据《美联社》（AP）消息，波兰总统杜达（Andrzej Duda）在白宫与特朗普的一对一会谈中发出邀请，称该国面临俄罗斯在该地区增加的军事活动之压力，波兰希望将在波兰部署的3000名美军升级为更大的永久存在。杜达甚至提供诱人的激励：新建的永久性基地将被命名为“特朗普堡”（Fort Trump）。</p><p style="text-indent: 2em;">特朗普在与杜达的联合<a href="http://world.haiwainet.cn/" target="_blank" class="keylink">新闻</a>发布会上表示，他正在考虑这个提议，并指出波兰已向美国提供超过20亿美元以支付这笔费用。就他而言，杜达相信特朗普已朝着在波建立永久性美军基地迈出了重要的一步。特朗普表示，两国领导人同意加强国防、能源和商业关系，并表示两国之间的联盟“从未变得比现在更强大”。</p><p style="text-indent: 2em;">据悉，美军在去年起，向波兰及周边国家派遣为数3000人的装甲旅和重装部队；今年年中有波兰媒体报道指，波兰希望美军一个装甲师永久部署当地，愿意出资最多20亿美元协助建造相关军事设施。俄罗斯克里姆林宫则警告，美方行动威胁了俄罗斯家门口的安全。（编译/海外网 侯兴川）</p><p style="text-indent: 2em;">本文系版权作品，未经授权严禁转载。海外视野，中国立场，登陆人民日报海外版官网——海外网www.haiwainet.cn或“海客”客户端，领先一步获取权威<a href="http://news.haiwainet.cn/" target="_blank" class="keylink">资讯</a>。</p>                <p class="writer">责编：侯兴川 </p>
+                <div style="display:none;">
+                                                 <img src="http://images.haiwainet.cn/2018/0919/20180919044544869.jpg" alt="">
+                                       </div>
+                <div class="page"></div>
+            </div>"""
+    extract_html(content,False)
 

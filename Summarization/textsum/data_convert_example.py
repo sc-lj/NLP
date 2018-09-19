@@ -66,6 +66,7 @@ def main(unused_argv):
 
 
 rec=re.compile("[a-zA-Z]")
+rec0=re.compile("[^\u4e00-\u9fa5a-zA-Z0-9<>/#.+_]")
 
 def genVocab(vocabfile):
     mysql=MySQL()
@@ -77,7 +78,7 @@ def genVocab(vocabfile):
         for a in ab.split(" "):
             a=a.strip()
             # 去掉全是小写的英文单词
-            if len(a)==0 or (rec.match(a) and a.islower()):
+            if len(a)==0 or (rec.match(a) and a.islower()) or (rec0.match(a)):
                 continue
             vocab[a]+=1
 
@@ -93,20 +94,17 @@ def genVocab(vocabfile):
                 continue
             else:
                 urlset.add(url)
-            title=re.sub("\d","#",title)
+            title = Data.extract_html(title,False)
             imdict(title)
 
             if table=="news" and brief is not None:
                 brief= re.sub("摘要：","",brief)
-                brief= re.sub("\d","#",brief)
+                brief = Data.extract_html(brief,False)
                 imdict(brief)
                 brieflen=len(brief)
             else:brieflen=0
 
             content=re.sub("资料图（图源：.*?）","",content)
-            content=re.sub("(本文系版权作品，未经授权严禁转载。.*)\s?责编","责编",content)
-            content=re.sub("(《.*?》)?(（.+）)?(\(.+\))?(编译.+)?(责编：.+)?", "", content)
-            content=re.sub("\d","#",content)
             try:
                content=Data.extract_html(content)
             except:
