@@ -8,7 +8,7 @@ import networkx as nx
 import numpy as np
 
 import util
-from Segmentation import Segmentation
+from Segment import Segmentation
 
 class TextRankSentence(object):
     
