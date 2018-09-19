@@ -183,7 +183,7 @@ class Seq2SeqAttentionModel(object):
         # During decoding, follow up _dec_in_state are fed from beam_search.
         # dec_out_state are stored by beam_search for next step feeding.
         initial_state_attention = (hps.mode == 'decode')
-        # decoder_outputs 是一个list，其中每个元素的shape为[batch_size x output_size]，其中output_size，由于没有指定，所以其值为cell.output_size
+        # decoder_outputs 是一个list，其中每个元素的shape为[batch_size x output_size]，其中output_size，由于没有指定，所以其值为cell.output_size即hps.num_hidden
         decoder_outputs, self._dec_out_state = tf.contrib.legacy_seq2seq.attention_decoder(
             emb_decoder_inputs, self._dec_in_state, self._enc_top_states,
             cell, num_heads=1, loop_function=loop_function,
