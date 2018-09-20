@@ -1,4 +1,4 @@
-# Abstractive Text Summarization using Sequence-to-sequence RNNs andBeyond
+# Abstractive Text Summarization using Sequence-to-sequence RNNs and Beyond
 
 由 IBM Watson 实验室提出。
 
