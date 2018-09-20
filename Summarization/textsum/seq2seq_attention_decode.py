@@ -24,11 +24,8 @@ from six.moves import xrange
 import tensorflow as tf
 
 FLAGS = tf.flags.FLAGS
-tf.flags.DEFINE_integer('max_decode_steps', 1000000,
-                            'Number of decoding steps.')
-tf.flags.DEFINE_integer('decode_batches_per_ckpt', 8000,
-                            'Number of batches to decode before restoring next '
-                            'checkpoint')
+tf.flags.DEFINE_integer('max_decode_steps', 1000000, 'Number of decoding steps.')
+tf.flags.DEFINE_integer('decode_batches_per_ckpt', 8000, 'Number of batches to decode before restoring next checkpoint')
 
 DECODE_LOOP_DELAY_SECS = 60
 DECODE_IO_FLUSH_INTERVAL = 100

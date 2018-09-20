@@ -74,7 +74,7 @@ def _Train(model, data_batcher):
     # conflict with Supervisor.
     summary_writer = tf.summary.FileWriter(FLAGS.train_dir)
     # tf.train.Supervisor可以简化编程,避免显示地实现restore操作
-    sv = tf.train.Supervisor(logdir=FLAGS.log_root,
+    sv = tf.train.MonitoredTrainingSession(logdir=FLAGS.log_root,
                              is_chief=True,
                              saver=saver,
                              summary_op=None,
