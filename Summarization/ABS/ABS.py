@@ -28,10 +28,24 @@ class ABS():
         self.num_softmax_samples=4056
 
 
+    def run_train_step(self,sess, article_batch, abstract_batch, targets, article_lens,
+                abstract_lens, loss_weights):
+        to_return = [self._train, self._summeries, self.cost, self.global_step]
+        return sess.run(to_return,
+                        feed_dict={self._articles: article_batch,
+                                   self._abstracts: abstract_batch,
+                                   self._targets: targets,
+                                   self._articles_len: article_lens,
+                                   self._abstracts_len: abstract_lens,
+                                   self._loss_weight: loss_weights})
+
+
     def _add_placeholder(self):
         hps = self._hps
         self._articles = tf.placeholder(tf.int32,[hps.batch_size, self.enc_timesteps],name='articles')
+        self._articles_len=tf.placeholder(tf.int32,[hps.batch_size],name="article_len")
         self._abstracts = tf.placeholder(tf.int32,[hps.batch_size, self.dec_timesteps],name='abstracts')
+        self._abstracts_len=tf.placeholder(tf.int32,[hps.batch_size],name="abstract_len")
         self._targets = tf.placeholder(tf.int32,[hps.batch_size, self.dec_timesteps],name='targets')
         self._loss_weight=tf.placeholder(tf.int32,[hps.batch_size,self.dec_timesteps],name="loss_weight")
 
@@ -69,10 +83,34 @@ class ABS():
 
             if self.encoder_type == 'bow':
                 with tf.variable_scope("Bow"):
-                    self.BowEncoder()
+                    xt_embs = tf.concat([tf.reshape(embs, shape=[-1, self._hps.emb_dim, 1]) for embs in self.encoder_embs], 2)
+                    self.W_enc = tf.nn.xw_plus_b(tf.reduce_mean(xt_embs, 2), self._W, self.W_biase)
+                    if hps.mode=="train":
+                        outputs=[]
+                        for i in range(len(self.decoder_embs)):
+                            encoder=self.decoder_embs[max(0, i - hps.C + 1):i]
+                            output=self.BowEncoder(encoder)
+                            outputs.append(output)
+                    elif hps.mode=='decode':
+                        outputs=[self.BowEncoder(self.decoder_embs)]
+                    else:raise("没有该mode")
+                    self._label=outputs
+
             elif self.encoder_type == 'attention':
                 with tf.variable_scope("attention"):
-                    self.AttentionEncoder()
+                    x_bar = [tf.reduce_sum(self.encoder_embs[max(0, i - hps.Q):min(self.enc_timesteps, i + hps.Q)], 0) for i in range(self.enc_timesteps)]
+                    x_bar = [tf.divide(bar, hps.Q) for bar in x_bar]
+                    self.x_bar = tf.concat( [tf.reshape(xbar, shape=[self._hps.batch_size, self._hps.hid_dim, 1]) for xbar in x_bar], 2)
+                    if hps.mode=='train':
+                        outputs=[]
+                        for i in range(len(self.decoder_embs)):
+                            encoder_y=self.decoder_embs[max(0, i - hps.C + 1):i]
+                            output=self.AttentionEncoder(encoder_y)
+                            outputs.append(output)
+                    elif hps.mode=='decode':
+                        outputs =[self.AttentionEncoder(self.decoder_embs)]
+                    else:raise("没有该mode")
+                    self._label=outputs
             elif self.encoder_type=='conv':
                 with tf.variable_scope("conv"):
                     self.ConvEncoder()
@@ -91,13 +129,29 @@ class ABS():
                             weights=w_t, biases=v, labels=labels, inputs=inputs,
                             num_sampled=self.num_softmax_samples, num_classes=self.vocab_size)
 
-            outputs=self._label
+            self.last_state=self._label[-1]
+            if hps.mode=="decode":
+                with tf.variable_scope("output"):
+                    best_outputs=[tf.argmax(output,1) for output in self._label]
+                    self.outputs=tf.concat([tf.reshape(output,shape=[hps.batch_size,1]) for output in best_outputs],axis=1)
+                    self.topk_log_probs,self.topk_ids=tf.nn.top_k(tf.log(self._label[-1]),2*hps.batch_size)
+
             if hps.mode=="train":
                 # 训练的时候，使用负采样
-                self.cost = tf.reduce_sum(sequence_loss_by_example(outputs, targets,weight, sampled_loss_func))
+                self.cost = tf.reduce_sum(sequence_loss_by_example(self._label, targets,weight, sampled_loss_func))
             else:
-                self.cost=tf.contrib.legacy_seq2seq.sequence_loss(outputs,targets,weight)
+                self.cost=tf.contrib.legacy_seq2seq.sequence_loss(self._label,targets,weight)
 
+    def topk(self,sess,enc_inputs,enc_len,abstracts,abstracts_len):
+        feed_dict={
+            self._articles:enc_inputs,
+            self._articles_len:enc_len,
+            self._abstracts:np.array(abstracts),
+            self._abstracts_len:abstracts_len
+        }
+        results=sess.run([self.topk_ids,self.topk_log_probs],feed_dict=feed_dict)
+        ids, probs = results[0], results[1]
+        return ids,probs
 
     def _train(self):
         hps=self._hps
@@ -113,50 +167,32 @@ class ABS():
         pass
 
 
-    def BowEncoder(self):
+    def BowEncoder(self,encoder):
         """BOW encoder"""
-        hps=self._hps
-        xt_embs = tf.concat([tf.reshape(embs, shape=[-1, self._hps.emb_dim, 1]) for embs in self.encoder_embs], 2)
-        W_enc = tf.nn.xw_plus_b(tf.reduce_mean(xt_embs, 2), self._W, self.W_biase)
-        outputs=[]
-        for i in range(len(self.decoder_embs)):
-            NLM_y = tf.concat(self.decoder_embs[max(0, i - hps.C + 1):i], 1)
-            h = tf.nn.tanh(tf.matmul(self._U, NLM_y, transpose_b=True))
-            output = tf.nn.softmax(self._V * h + W_enc)
-            outputs.append(output)
-        self._label=outputs
+        NLM_y = tf.concat(encoder, 1)
+        h = tf.nn.tanh(tf.matmul(self._U, NLM_y, transpose_b=True))
+        output = tf.nn.softmax(self._V * h + self.W_enc)
+        return output
 
-
-    def AttentionEncoder(self):
+    def AttentionEncoder(self,encoder):
         """注意力Encoder"""
-        hps=self._hps
-        x_bar = [tf.reduce_sum(self.encoder_embs[max(0, i - hps.Q):min(self.enc_timesteps, i + hps.Q)], 0) for i in
-                 range(self.enc_timesteps)]
-        x_bar = [tf.divide(bar, hps.Q) for bar in x_bar]
-        x_bar = tf.concat([tf.reshape(xbar, shape=[self._hps.batch_size, self._hps.hid_dim, 1]) for xbar in x_bar], 2)
+        encoder_y = tf.concat(encoder, 1)
+        enc_exp = tf.matmul(self._P, encoder_y, transpose_b=True)
+        lowerp = tf.concat([tf.reduce_sum(tf.multiply(encoder_emb, enc_exp)) for encoder_emb in self.encoder_embs], 1)
+        lowerp = tf.nn.softmax(lowerp)
+        W_encs = tf.reduce_sum(tf.multiply(self.x_bar, tf.reshape(lowerp, shape=[self._hps.batch_size, 1, -1])), 2)
+        W_enc = tf.nn.xw_plus_b(W_encs, self._W, self.W_biase)
 
-        outputs=[]
-        for i in range(len(self.decoder_embs)):
-            encoder_y = self.decoder_embs[max(0, i - hps.C + 1):i]
-            encoder_y = tf.concat(encoder_y, 1)
-            enc_exp = tf.matmul(self._P, encoder_y, transpose_b=True)
-            lowerp = tf.concat([tf.reduce_sum(tf.multiply(encoder_emb, enc_exp)) for encoder_emb in self.encoder_embs], 1)
-            lowerp = tf.nn.softmax(lowerp)
-            W_encs = tf.reduce_sum(tf.multiply(x_bar, tf.reshape(lowerp, shape=[self._hps.batch_size, 1, -1])), 2)
-            W_enc = tf.nn.xw_plus_b(W_encs, self._W, self.W_biase)
-
-            NLM_y = tf.concat(self.decoder_embs[max(0, i - hps.C + 1):i], 1)
-            h = tf.nn.tanh(tf.matmul(self._U , NLM_y,transpose_b=True))
-            output = tf.nn.softmax(self._V * h + W_enc)
-            outputs.append(output)
-
-        self._label=outputs
+        NLM_y = tf.concat(encoder, 1)
+        h = tf.nn.tanh(tf.matmul(self._U , NLM_y,transpose_b=True))
+        output = tf.nn.softmax(self._V * h + W_enc)
+        return output
 
 
-    def main(self):
+    def build_graph(self):
         self._add_placeholder()
         self._add_abs()
         self.global_step=tf.Variable(0,trainable=False,name="global_step")
-
+        self._summeries=tf.summary.merge_all()
 
 

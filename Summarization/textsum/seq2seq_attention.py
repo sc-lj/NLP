@@ -49,6 +49,7 @@ tf.flags.DEFINE_bool('use_bucketing', False,'Whether bucket articles of similar 
 tf.flags.DEFINE_bool('truncate_input', False,'Truncate inputs that are too long. If False,  examples that are too long are discarded.')
 tf.flags.DEFINE_integer('num_gpus', 0, 'Number of gpus used.')
 tf.flags.DEFINE_integer('random_seed', 111, 'A seed value for randomness.')
+tf.flags.DEFINE_integer('checkpoint_secs',60,'how often to save model')
 
 
 def _RunningAvgLoss(loss, running_avg_loss, summary_writer, step, decay=0.999):
