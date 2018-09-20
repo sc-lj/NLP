@@ -125,7 +125,7 @@ class BSDecoder(object):
       (article_batch, _, _, article_lens, _, _, origin_articles,
        origin_abstracts) = self._batch_reader.NextBatch()
       for i in xrange(self._hps.batch_size):
-        bs = beam_search.BeamSearch(
+        bs = beamSearch.BeamSearch(
             self._model, self._hps.batch_size,
             self._vocab.WordToId(Data.SENTENCE_START),
             self._vocab.WordToId(Data.SENTENCE_END),

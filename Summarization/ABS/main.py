@@ -2,6 +2,7 @@
 
 import ABS,BatchReader,Decode
 import tensorflow as tf
+import Data
 
 FLAGS=tf.flags.FLAGS
 tf.flags.DEFINE_string('data_path','', 'Path expression to tf.Example.')
@@ -60,21 +61,24 @@ def main():
                     emb_dim=200,
                     max_grad_norm=2,
                     C=5,
-                    Q=2)
-    vocab=None
+                    Q=2,
+                    dec_timesteps=90,
+                    enc_timesteps=520)
+    vocab=Data.Vocab(FLAGS.data_path)
     batcher=BatchReader.Batcher(vocab,hps,max_article_sentences=FLAGS.max_article_sentences,
                                 max_abstract_sentences=FLAGS.max_abstract_sentences,
                                 )
-    vocab_size=0
+    vocab_size=vocab.NumIds()
     tf.set_random_seed(FLAGS.random_seed)
     if hps.mode=='train':
-        model=ABS.ABS(hps,vocab_size,enc_timesteps=FLAGS.enc_timesteps,dec_timesteps=FLAGS.dec_timesteps)
+        model=ABS.ABS(hps,vocab_size)
         _Train(model,batcher)
     elif hps.mode=='decode':
-        newhps=hps._replace()
-        model=ABS.ABS(hps,vocab_size,enc_timesteps=FLAGS.enc_timesteps,dec_timesteps=hps.C)
-        decoder = Decode.BSDecoder(model, batcher, hps, vocab)
+        newhps=hps._replace(dec_timesteps=hps.C)
+        model=ABS.ABS(hps,vocab_size)
+        decoder = Decode.BSDecoder(model, batcher, newhps, vocab)
         decoder.DecodeLoop()
 
-
+if __name__ == '__main__':
+    tf.app.run()
 

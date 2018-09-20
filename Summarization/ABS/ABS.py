@@ -4,7 +4,7 @@ import tensorflow as tf
 import numpy as np
 from collections import namedtuple
 
-HParams=namedtuple("HParams","batch_size mode num_softmax_samples min_lr lr hid_dim emb_dim max_grad_norm Q C")
+HParams=namedtuple("HParams","batch_size mode num_softmax_samples min_lr lr hid_dim emb_dim max_grad_norm Q C dec_timesteps enc_timesteps")
 
 
 def sequence_loss_by_example(inputs,targets,weight,loss_function,name=None):
@@ -18,13 +18,11 @@ def sequence_loss_by_example(inputs,targets,weight,loss_function,name=None):
     return logperp
 
 class ABS():
-    def __init__(self, hps,vocab_size, enc_timesteps,dec_timesteps,L=3,Q=2,C=5, encoder_type='attention'):
+    def __init__(self, hps,vocab_size,L=3, encoder_type='attention'):
         self._hps=hps
         self.vocab_size=vocab_size
         self._l=L
         self.encoder_type=encoder_type
-        self.dec_timesteps=dec_timesteps
-        self.enc_timesteps=enc_timesteps
         self.num_softmax_samples=4056
 
 
@@ -42,12 +40,12 @@ class ABS():
 
     def _add_placeholder(self):
         hps = self._hps
-        self._articles = tf.placeholder(tf.int32,[hps.batch_size, self.enc_timesteps],name='articles')
+        self._articles = tf.placeholder(tf.int32,[hps.batch_size, hps.enc_timesteps],name='articles')
         self._articles_len=tf.placeholder(tf.int32,[hps.batch_size],name="article_len")
-        self._abstracts = tf.placeholder(tf.int32,[hps.batch_size, self.dec_timesteps],name='abstracts')
+        self._abstracts = tf.placeholder(tf.int32,[hps.batch_size, hps.dec_timesteps],name='abstracts')
         self._abstracts_len=tf.placeholder(tf.int32,[hps.batch_size],name="abstract_len")
-        self._targets = tf.placeholder(tf.int32,[hps.batch_size, self.dec_timesteps],name='targets')
-        self._loss_weight=tf.placeholder(tf.int32,[hps.batch_size,self.dec_timesteps],name="loss_weight")
+        self._targets = tf.placeholder(tf.int32,[hps.batch_size, hps.dec_timesteps],name='targets')
+        self._loss_weight=tf.placeholder(tf.int32,[hps.batch_size,hps.dec_timesteps],name="loss_weight")
 
     def _add_weight(self):
         hps=self._hps
@@ -93,12 +91,12 @@ class ABS():
                             outputs.append(output)
                     elif hps.mode=='decode':
                         outputs=[self.BowEncoder(self.decoder_embs)]
-                    else:raise("没有该mode")
+                    else:raise ValueError("没有该mode")
                     self._label=outputs
 
             elif self.encoder_type == 'attention':
                 with tf.variable_scope("attention"):
-                    x_bar = [tf.reduce_sum(self.encoder_embs[max(0, i - hps.Q):min(self.enc_timesteps, i + hps.Q)], 0) for i in range(self.enc_timesteps)]
+                    x_bar = [tf.reduce_sum(self.encoder_embs[max(0, i - hps.Q):min(hps.enc_timesteps, i + hps.Q)], 0) for i in range(hps.enc_timesteps)]
                     x_bar = [tf.divide(bar, hps.Q) for bar in x_bar]
                     self.x_bar = tf.concat( [tf.reshape(xbar, shape=[self._hps.batch_size, self._hps.hid_dim, 1]) for xbar in x_bar], 2)
                     if hps.mode=='train':
@@ -109,7 +107,7 @@ class ABS():
                             outputs.append(output)
                     elif hps.mode=='decode':
                         outputs =[self.AttentionEncoder(self.decoder_embs)]
-                    else:raise("没有该mode")
+                    else:raise ValueError("没有该mode")
                     self._label=outputs
             elif self.encoder_type=='conv':
                 with tf.variable_scope("conv"):
@@ -157,7 +155,7 @@ class ABS():
         hps=self._hps
         self._lr=tf.maximum(hps.min_lr,tf.train.exponential_decay(hps.lr,self.global_step,3000,0.98))
         vars=tf.trainable_variables()
-        grads,global_norm=tf.clip_by_global_norm(tf.gradients(self.cost,vars),)
+        grads,global_norm=tf.clip_by_global_norm(tf.gradients(self.cost,vars),hps.max_grad_norm)
         optimizer=tf.train.AdagradOptimizer(self._lr)
         self.train_op=optimizer.apply_gradients(zip(grads,vars),self.global_step,name="train_op")
 

@@ -18,7 +18,7 @@
 import os
 import time
 
-import beam_search
+import beamSearch
 import Data
 from six.moves import xrange
 import tensorflow as tf
@@ -125,7 +125,7 @@ class BSDecoder(object):
       (article_batch, _, _, article_lens, _, _, origin_articles,
        origin_abstracts) = self._batch_reader.NextBatch()
       for i in xrange(self._hps.batch_size):
-        bs = beam_search.BeamSearch(
+        bs = beamSearch.Beam(
             self._model, self._hps.batch_size,
             self._vocab.WordToId(Data.SENTENCE_START),
             self._vocab.WordToId(Data.SENTENCE_END),
@@ -135,7 +135,7 @@ class BSDecoder(object):
         article_batch_cp[:] = article_batch[i:i+1]
         article_lens_cp = article_lens.copy()
         article_lens_cp[:] = article_lens[i:i+1]
-        best_beam = bs.BeamSearch(sess, article_batch_cp, article_lens_cp)[0]
+        best_beam = bs.BeamSearch(sess, article_batch_cp, article_lens_cp,hps=self._hps)[0]
         decode_output = [int(t) for t in best_beam.tokens[1:]]
         self._DecodeBatch(
             origin_articles[i], origin_abstracts[i], decode_output)

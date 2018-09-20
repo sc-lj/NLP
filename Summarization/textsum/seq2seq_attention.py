@@ -71,22 +71,19 @@ def _Train(model, data_batcher):
   with tf.device('/cpu:0'):
     model.build_graph()
     saver = tf.train.Saver()
+    saver_hook = tf.train.CheckpointSaverHook(checkpoint_dir=FLAGS.log_root, saver=saver,
+                                              save_secs=FLAGS.checkpoint_secs)
     # Train dir is different from log_root to avoid summary directory
     # conflict with Supervisor.
     summary_writer = tf.summary.FileWriter(FLAGS.train_dir)
     # tf.train.Supervisor可以简化编程,避免显示地实现restore操作
-    sv = tf.train.MonitoredTrainingSession(logdir=FLAGS.log_root,
-                             is_chief=True,
-                             saver=saver,
-                             summary_op=None,
-                             save_summaries_secs=60,
-                             save_model_secs=FLAGS.checkpoint_secs,
-                             global_step=model.global_step)
-    sess = sv.prepare_or_wait_for_session(config=tf.ConfigProto(
-        allow_soft_placement=True))
+    sess = tf.train.MonitoredTrainingSession(checkpoint_dir=FLAGS.log_root,
+                                             is_chief=True,
+                                             hooks=[saver_hook],
+                                             config=tf.ConfigProto(allow_soft_placement=True))
     running_avg_loss = 0
     step = 0
-    while not sv.should_stop() and step < FLAGS.max_run_steps:
+    while not sess.should_stop() and step < FLAGS.max_run_steps:
       (article_batch, abstract_batch, targets, article_lens, abstract_lens,
        loss_weights, _, _) = data_batcher.NextBatch()
       (_, summaries, loss, train_step) = model.run_train_step(
@@ -98,7 +95,7 @@ def _Train(model, data_batcher):
       step += 1
       if step % 100 == 0:
         summary_writer.flush()
-    sv.Stop()
+    sess.Stop()
     return running_avg_loss
 
 
