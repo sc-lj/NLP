@@ -21,7 +21,6 @@ import numpy as np
 import seq2seq_lib
 from six.moves import xrange
 import tensorflow as tf
-from copy import deepcopy
 
 HParams = namedtuple('HParams',
                      'mode, min_lr, lr, batch_size, '
@@ -159,7 +158,7 @@ class Seq2SeqAttentionModel(object):
           # emb_encoder_inputs的shape是[batch_size,2*num_hidden]
           (emb_encoder_inputs, fw_state, _) = tf.nn.static_bidirectional_rnn(cell_fw, cell_bw, emb_encoder_inputs, dtype=tf.float32,sequence_length=article_lens)
 
-      encoder_outputs = deepcopy(emb_encoder_inputs)
+      encoder_outputs = emb_encoder_inputs
 
       with tf.variable_scope('output_projection'):
         w = tf.get_variable('w', [hps.num_hidden, vsize], dtype=tf.float32,initializer=tf.truncated_normal_initializer(stddev=1e-4))

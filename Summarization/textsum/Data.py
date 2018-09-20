@@ -161,7 +161,7 @@ def ExampleGen(num_epochs=None):
     for rows in cursor.fetchall():
         title, brief, content=rows
         content=extract_html(content)
-        brief=extract_html(brief)
+        brief=extract_html(brief,False)
         yield (content,brief)
 
     epoch += 1

@@ -23,10 +23,10 @@ import Data
 from six.moves import xrange
 import tensorflow as tf
 
-FLAGS = tf.app.flags.FLAGS
-tf.app.flags.DEFINE_integer('max_decode_steps', 1000000,
+FLAGS = tf.flags.FLAGS
+tf.flags.DEFINE_integer('max_decode_steps', 1000000,
                             'Number of decoding steps.')
-tf.app.flags.DEFINE_integer('decode_batches_per_ckpt', 8000,
+tf.flags.DEFINE_integer('decode_batches_per_ckpt', 8000,
                             'Number of batches to decode before restoring next '
                             'checkpoint')
 
