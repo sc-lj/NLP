@@ -24,4 +24,51 @@ ConvS2S架构包含了卷积神经网络模型(convolutional architecture)、输
 
 ConvS2S模型使用了两种卷积块，一个用于word-level embedding，一个用户topic-level embedding。
 
+<b>embedding</b>
+
+x = (x1, . . . , xm)表示输入的句子。输入元素的embed分布空间为 w = (w1,...,wm)，其中，wi ∈ R^d是随机初始化矩阵Dword ∈ R^{V ×d}中的一行；V是词典长度。
+为了保留输入元素的位置信息，增加了位置embed，p = (p1,...,pm)，其中，pi ∈ R^d。最终，输入元素的embed为e = (w1 + p1 , . . . , wm + pm )。
+用q = (q1 , . . . , qn )表示在decoder端输出元素的embedding。
+
+<b>卷积层</b>
+
+在encoder端和decoder端构建几层卷积神经网络，并且假设卷积核大小为k，输入元素的维度为d。那么卷积神经网络的将k个输入元素进行串联，得到X ∈ R^{kd}；映射得到的输出元素为Y ∈ R^{2d};
+即：
+![](images/公式1.png)
+
+其中：核矩阵为WY ∈ R^{2d×kd}。偏差bY∈ R^{2d}。
+
+重写输出Y为Y=\[A; B],其中 A, B ∈ R^d。这里引入一个新的概念--gated linear unit(GLU)，这类似于激活函数。
+
+g(\[A;B])=A ⊗ σ(B)
+
+其中，⊗ 表示矩阵的元素相乘，σ是sigmoid函数。GLU的输出空间为R^d。GLU相当于Relu激活单元：(X * W + b)，加上一个Sigmoid激活单元：O(X * V + c)组成的。
+
+我们用h^l =(h^l_1,...,h^l_n)表示decoder端第l层的输出， z^l = (z^l_1,...,z^l_m)表示encoder端的第l层输出。
+下面以encoder端为例，第l个卷积层的第i个单元的计算公式为：
+![](images/公式3.png)
+其中:h^l_i ∈ R^d，◦ 表示函数操作。
+
+<b>多步注意力机制</b>
+
+引入注意力机制是为了使模型获得更多文本的历史信息。
+先embed当前的decoder状态h^l_i:
+![](images/公式4.png)
+
+其中：q_i ∈ R^d 是先前decoded元素的embedding。权重 W_d^l ∈ R^{d×d}，偏差 b^l_d ∈ R^d。
+
+在状态i和输入元素j的注意力权重α^l_{ij}的计算公式为：
+![](images/公式5.png)
+
+其中：z^{u_o}_j表示最新encoder块uo的输出。
+
+当前decoder层的条件输入c^l_i ∈ R^d的计算公式：
+![](images/公式6.png)
+
+其中：ej表示输入元素的embedding，这样能够提供一些特别元素的位置信息。一旦c^l_i 被计算出来后，其将会作为decoder层h^l_i的输出，并应用到下一层h^{l+1}_i的输出。
+
+
+
+
+
 
