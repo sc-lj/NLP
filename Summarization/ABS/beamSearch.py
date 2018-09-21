@@ -2,33 +2,33 @@
 
 import numpy as np
 class Hypothesis(object):
-  """Defines a hypothesis during beam search."""
+    """Defines a hypothesis during beam search."""
 
-  def __init__(self, tokens, log_prob):
-    """Hypothesis constructor.
+    def __init__(self, tokens, log_prob):
+        """Hypothesis constructor.
 
-    Args:
-      tokens: start tokens for decoding.
-      log_prob: log prob of the start tokens, usually 1.
-      state: decoder initial states.
-    """
-    self.tokens = tokens
-    self.log_prob = log_prob
+        Args:
+          tokens: start tokens for decoding.
+          log_prob: log prob of the start tokens, usually 1.
+          state: decoder initial states.
+        """
+        self.tokens = tokens
+        self.log_prob = log_prob
 
-  def Extend(self, token, log_prob):
-    """Extend the hypothesis with result from latest step.
+    def Extend(self, token, log_prob):
+        """Extend the hypothesis with result from latest step.
 
-    Args:
-      token: latest token from decoding.
-      log_prob: log prob of the latest decoded tokens.
-      new_state: decoder output state. Fed to the decoder for next step.
-    Returns:
-      New Hypothesis with the results from latest step.
-    """
-    return Hypothesis(self.tokens + [token], self.log_prob + log_prob)
+        Args:
+          token: latest token from decoding.
+          log_prob: log prob of the latest decoded tokens.
+          new_state: decoder output state. Fed to the decoder for next step.
+        Returns:
+          New Hypothesis with the results from latest step.
+        """
+        return Hypothesis(self.tokens + [token], self.log_prob + log_prob)
 
-  def latest_token(self,c):
-    return self.tokens[-c:]
+    def latest_token(self,c):
+        return self.tokens[-c:]
 
 class Beam():
     def __init__(self,model,beam_size,start_token,end_token,max_steps):

@@ -146,128 +146,128 @@ def extract_html(content,is_content=True):
 
 
 def ExampleGen(num_epochs=None):
-  epoch = 0
-  mysql=MySQL()
-  mysql.login()
-  cursor=mysql.get_cursor()
-  while True:
-    if num_epochs is not None and epoch >= num_epochs:
-      break
+    epoch = 0
+    mysql=MySQL()
+    mysql.login()
+    cursor=mysql.get_cursor()
+    while True:
+        if num_epochs is not None and epoch >= num_epochs:
+            break
 
-    sent="select title,brief,content from news where brief !=''"
-    cursor.execute(sent)
-    for rows in cursor.fetchall():
-        title, brief, content=rows
-        content=extract_html(content)
-        brief=extract_html(brief,False)
-        yield (content,brief)
+        sent="select title,brief,content from news where brief !=''"
+        cursor.execute(sent)
+        for rows in cursor.fetchall():
+            title, brief, content=rows
+            content=extract_html(content)
+            brief=extract_html(brief,False)
+            yield (content,brief)
 
-    epoch += 1
+        epoch += 1
 
 
 def Pad(ids, pad_id, length):
-  """Pad or trim list to len length.
+    """Pad or trim list to len length.
 
-  Args:
+    Args:
     ids: list of ints to pad
     pad_id: what to pad with
     length: length to pad or trim to
 
-  Returns:
+    Returns:
     ids trimmed or padded with pad_id
-  """
-  assert pad_id is not None
-  assert length is not None
+    """
+    assert pad_id is not None
+    assert length is not None
 
-  if len(ids) < length:
-    a = [pad_id] * (length - len(ids))
-    return ids + a
-  else:
-    return ids[:length]
+    if len(ids) < length:
+        a = [pad_id] * (length - len(ids))
+        return ids + a
+    else:
+        return ids[:length]
 
 
 def GetWordIds(text, vocab, pad_len=None, pad_id=None):
-  """Get ids corresponding to words in text.
+    """Get ids corresponding to words in text.
 
-  Assumes tokens separated by space.
+    Assumes tokens separated by space.
 
-  Args:
+    Args:
     text: a string
     vocab: TextVocabularyFile object
     pad_len: int, length to pad to
     pad_id: int, word id for pad symbol
 
-  Returns:
+    Returns:
     A list of ints representing word ids.
-  """
-  ids = []
-  for w in text.split():
-    i = vocab.WordToId(w)
-    if i >= 0:
-      ids.append(i)
-    else:
-      ids.append(vocab.WordToId(UNKNOWN_TOKEN))
-  if pad_len is not None:
-    return Pad(ids, pad_id, pad_len)
-  return ids
+    """
+    ids = []
+    for w in text.split():
+        i = vocab.WordToId(w)
+        if i >= 0:
+            ids.append(i)
+        else:
+            ids.append(vocab.WordToId(UNKNOWN_TOKEN))
+    if pad_len is not None:
+        return Pad(ids, pad_id, pad_len)
+    return ids
 
 
 def Ids2Words(ids_list, vocab):
-  """Get words from ids.
+    """Get words from ids.
 
-  Args:
+    Args:
     ids_list: list of int32
     vocab: TextVocabulary object
 
-  Returns:
+    Returns:
     List of words corresponding to ids.
-  """
-  assert isinstance(ids_list, list), '%s  is not a list' % ids_list
-  return [vocab.IdToWord(i) for i in ids_list]
+    """
+    assert isinstance(ids_list, list), '%s  is not a list' % ids_list
+    return [vocab.IdToWord(i) for i in ids_list]
 
 
 def SnippetGen(text, start_tok, end_tok, inclusive=True):
-  """Generates consecutive snippets between start and end tokens.
+    """Generates consecutive snippets between start and end tokens.
 
-  Args:
+    Args:
     text: a string
     start_tok: a string denoting the start of snippets
     end_tok: a string denoting the end of snippets
     inclusive: Whether include the tokens in the returned snippets.
 
-  Yields:
+    Yields:
     String snippets
-  """
-  cur = 0
-  while True:
-    try:
-      start_p = text.index(start_tok, cur)
-      end_p = text.index(end_tok, start_p + 1)
-      cur = end_p + len(end_tok)
-      if inclusive:
-        yield text[start_p:cur]
-      else:
-        yield text[start_p+len(start_tok):end_p]
-    except ValueError as e:
-      raise StopIteration('no more snippets in text: %s' % e)
+    """
+    cur = 0
+    while True:
+        try:
+            start_p = text.index(start_tok, cur)
+            end_p = text.index(end_tok, start_p + 1)
+            cur = end_p + len(end_tok)
+            if inclusive:
+                yield text[start_p:cur]
+            else:
+                yield text[start_p+len(start_tok):end_p]
+        except ValueError as e:
+            raise StopIteration('no more snippets in text: %s' % e)
 
 
 def GetExFeatureText(ex, key):
-  return ex.features.feature[key].bytes_list.value[0]
+    return ex.features.feature[key].bytes_list.value[0]
 
 
 def ToSentences(paragraph, include_token=True):
-  """Takes tokens of a paragraph and returns list of sentences.
+    """Takes tokens of a paragraph and returns list of sentences.
 
-  Args:
+    Args:
     paragraph: string, text of paragraph
     include_token: Whether include the sentence separation tokens result.
 
-  Returns:
+    Returns:
     List of sentence strings.
-  """
-  s_gen = SnippetGen(paragraph, SENTENCE_START, SENTENCE_END, include_token)
-  return [s for s in s_gen]
+    """
+    s_gen = SnippetGen(paragraph, SENTENCE_START, SENTENCE_END, include_token)
+    return [s for s in s_gen]
 
 if __name__ == '__main__':
 
