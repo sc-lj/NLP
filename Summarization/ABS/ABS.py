@@ -89,8 +89,6 @@ class ABS():
                         outputs=[]
                         for i in range(1,len(self.decoder_embs)):
                             encoder=self.decoder_embs[max(0, i - hps.C):i]
-                            while len(encoder)<hps.C:
-                                encoder.insert(0,self.pad_emb)
                             output=self.BowEncoder(encoder)
                             outputs.append(output)
                     elif hps.mode=='decode':
@@ -173,6 +171,8 @@ class ABS():
 
     def BowEncoder(self,encoder):
         """BOW encoder"""
+        while len(encoder) < self._hps.C:
+            encoder.insert(0, self.pad_emb)
         NLM_y = tf.concat(encoder, 1)
         h = tf.nn.tanh(tf.matmul( NLM_y,self._U ,transpose_b=True))
         output = tf.nn.softmax(tf.matmul(h,self._V) + self.W_enc)
@@ -180,6 +180,8 @@ class ABS():
 
     def AttentionEncoder(self,encoder):
         """注意力Encoder"""
+        while len(encoder) < self._hps.C:
+            encoder.insert(0, self.pad_emb)
         encoder_y = tf.concat(encoder, 1)
         enc_exp = tf.matmul(encoder_y,self._P, transpose_b=True)
         exps=[tf.reduce_sum(tf.multiply(encoder_emb, enc_exp),axis=1) for encoder_emb in self.encoder_embs]
