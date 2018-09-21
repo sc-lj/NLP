@@ -40,9 +40,7 @@ def _Train(model,batcher):
         while not sess.should_stop() and step<FLAGS.max_run_steps:
             (article_batch, abstract_batch, targets, article_lens, abstract_lens,
              loss_weights, _, _) = batcher.NextBatch()
-            (_, summaries, loss, train_step) = model.run_train_step(
-                sess, article_batch, abstract_batch, targets, article_lens,
-                abstract_lens, loss_weights)
+            (_, summaries, loss, train_step) = model.run_train_step(sess, article_batch, abstract_batch, targets, article_lens,abstract_lens, loss_weights)
 
             summery_writer.add_summary(summaries,train_step)
             print(step)
@@ -54,7 +52,7 @@ def main(args):
     if FLAGS.mode=='decode':
         batch_size=FLAGS.beam_size
 
-    C=5
+
     hps=ABS.HParams(batch_size=batch_size,
                     mode=FLAGS.mode,
                     num_softmax_samples=4056,
@@ -64,22 +62,23 @@ def main(args):
                     emb_dim=200,
                     max_grad_norm=2,
                     min_input_len=2,  # discard articles/summaries < than this
-                    C=C,
+                    C=5,
                     Q=2,
-                    dec_timesteps=90+C-1,
+                    dec_timesteps=90,
                     enc_timesteps=520)
     vocab=Data.Vocab(FLAGS.vocab_path)
     batcher=BatchReader.Batcher(vocab,hps,max_article_sentences=FLAGS.max_article_sentences,
                                 max_abstract_sentences=FLAGS.max_abstract_sentences,
                                 )
     vocab_size=vocab.NumIds()
+    pad_id=vocab.WordToId(Data.PAD_TOKEN)
     tf.set_random_seed(FLAGS.random_seed)
     if hps.mode=='train':
-        model=ABS.ABS(hps,vocab_size)
+        model=ABS.ABS(hps,pad_id,vocab_size)
         _Train(model,batcher)
     elif hps.mode=='decode':
         newhps=hps._replace(dec_timesteps=hps.C)
-        model=ABS.ABS(hps,vocab_size)
+        model=ABS.ABS(hps,pad_id,vocab_size)
         decoder = Decode.BSDecoder(model, batcher, newhps, vocab)
         decoder.DecodeLoop()
 

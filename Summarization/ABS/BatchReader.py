@@ -108,7 +108,7 @@ class Batcher(object):
             enc_batch[i, :] = enc_inputs[:]
             dec_batch[i, :] = dec_inputs[:]
             target_batch[i, :] = targets[:]
-            for j in xrange(dec_output_len):
+            for j in range(dec_output_len):
                 loss_weights[i][j] = 1
         return (enc_batch, dec_batch, target_batch, enc_input_lens, dec_output_lens,loss_weights, origin_articles, origin_abstracts)
 
@@ -126,12 +126,6 @@ class Batcher(object):
             enc_inputs = []
             # Use the <s> as the <GO> symbol for decoder inputs.
             dec_inputs = [start_id]
-
-            # 对decoder输入的前面插入self._hps.C-1个pad
-            i=1
-            while self._hps.C>i:
-                dec_inputs.insert(0,pad_id)
-                i+=1
 
             # Convert first N sentences to word IDs, stripping existing <s> and </s>.
             for i in xrange(min(self._max_article_sentences,len(article_sentences))):

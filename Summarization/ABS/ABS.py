@@ -18,8 +18,9 @@ def sequence_loss_by_example(inputs,targets,weights,loss_function,name=None):
     return logperp
 
 class ABS():
-    def __init__(self, hps,vocab_size,L=3, encoder_type='attention'):
+    def __init__(self, hps,pad_id,vocab_size,L=3, encoder_type='attention'):
         self._hps=hps
+        self.pad_id=pad_id
         self.vocab_size=vocab_size
         self._l=L
         self.encoder_type=encoder_type
@@ -63,7 +64,8 @@ class ABS():
             # Attention-based encoder
             if self.encoder_type == 'attention':
                 self._P = tf.get_variable("P", shape=[hps.hid_dim, hps.C * hps.emb_dim], dtype=tf.float32)
-
+                pad_id=tf.concat([[self.pad_id]]*self._hps.batch_size,axis=0,name='pad_id')
+                self.pad_emb=tf.nn.embedding_lookup(self._E,pad_id)
 
 
     def _add_abs(self):
@@ -85,8 +87,10 @@ class ABS():
                     self.W_enc = tf.nn.xw_plus_b(tf.reduce_mean(xt_embs, 2), self._W, self.W_biase)
                     if hps.mode=="train":
                         outputs=[]
-                        for i in range(hps.C,len(self.decoder_embs)):
+                        for i in range(1,len(self.decoder_embs)):
                             encoder=self.decoder_embs[max(0, i - hps.C):i]
+                            while len(encoder)<hps.C:
+                                encoder.insert(0,self.pad_emb)
                             output=self.BowEncoder(encoder)
                             outputs.append(output)
                     elif hps.mode=='decode':
@@ -101,8 +105,10 @@ class ABS():
                     self.x_bar = tf.concat( [tf.reshape(xbar, shape=[self._hps.batch_size, self._hps.hid_dim, 1]) for xbar in x_bar], 2)
                     if hps.mode=='train':
                         outputs=[]
-                        for i in range(hps.C,len(self.decoder_embs)):
+                        for i in range(1,len(self.decoder_embs)):
                             encoder=self.decoder_embs[max(0, i - hps.C):i]
+                            while len(encoder)<hps.C:
+                                encoder.insert(0,self.pad_emb)
                             output=self.AttentionEncoder(encoder)
                             outputs.append(output)
                     elif hps.mode=='decode':
