@@ -91,37 +91,29 @@ class Batcher(object):
       origin_articles: original article words.
       origin_abstracts: original abstract words.
     """
-    enc_batch = np.zeros(
-        (self._hps.batch_size, self._hps.enc_timesteps), dtype=np.int32)
-    enc_input_lens = np.zeros(
-        (self._hps.batch_size), dtype=np.int32)
-    dec_batch = np.zeros(
-        (self._hps.batch_size, self._hps.dec_timesteps), dtype=np.int32)
-    dec_output_lens = np.zeros(
-        (self._hps.batch_size), dtype=np.int32)
-    target_batch = np.zeros(
-        (self._hps.batch_size, self._hps.dec_timesteps), dtype=np.int32)
-    loss_weights = np.zeros(
-        (self._hps.batch_size, self._hps.dec_timesteps), dtype=np.float32)
+    enc_batch = np.zeros((self._hps.batch_size, self._hps.enc_timesteps), dtype=np.int32)
+    enc_input_lens = np.zeros((self._hps.batch_size), dtype=np.int32)
+    dec_batch = np.zeros((self._hps.batch_size, self._hps.dec_timesteps), dtype=np.int32)
+    dec_output_lens = np.zeros((self._hps.batch_size), dtype=np.int32)
+    target_batch = np.zeros((self._hps.batch_size, self._hps.dec_timesteps), dtype=np.int32)
+    loss_weights = np.zeros((self._hps.batch_size, self._hps.dec_timesteps), dtype=np.float32)
     origin_articles = ['None'] * self._hps.batch_size
     origin_abstracts = ['None'] * self._hps.batch_size
 
     buckets = self._bucket_input_queue.get()
     for i in xrange(self._hps.batch_size):
-      (enc_inputs, dec_inputs, targets, enc_input_len, dec_output_len,
-       article, abstract) = buckets[i]
+        (enc_inputs, dec_inputs, targets, enc_input_len, dec_output_len,article, abstract) = buckets[i]
 
-      origin_articles[i] = article
-      origin_abstracts[i] = abstract
-      enc_input_lens[i] = enc_input_len
-      dec_output_lens[i] = dec_output_len
-      enc_batch[i, :] = enc_inputs[:]
-      dec_batch[i, :] = dec_inputs[:]
-      target_batch[i, :] = targets[:]
-      for j in xrange(dec_output_len):
-        loss_weights[i][j] = 1
-    return (enc_batch, dec_batch, target_batch, enc_input_lens, dec_output_lens,
-            loss_weights, origin_articles, origin_abstracts)
+        origin_articles[i] = article
+        origin_abstracts[i] = abstract
+        enc_input_lens[i] = enc_input_len
+        dec_output_lens[i] = dec_output_len
+        enc_batch[i, :] = enc_inputs[:]
+        dec_batch[i, :] = dec_inputs[:]
+        target_batch[i, :] = targets[:]
+        for j in xrange(dec_output_len):
+            loss_weights[i][j] = 1
+    return (enc_batch, dec_batch, target_batch, enc_input_lens, dec_output_lens,loss_weights, origin_articles, origin_abstracts)
 
   def _FillInputQueue(self):
     """Fill input queue with ModelInput."""
@@ -137,6 +129,12 @@ class Batcher(object):
       enc_inputs = []
       # Use the <s> as the <GO> symbol for decoder inputs.
       dec_inputs = [start_id]
+
+      # 对decoder输入的前面插入self._hps.C-1个pad
+      i=1
+      while self._hps.C>i:
+        dec_inputs.insert(0,pad_id)
+        i+=1
 
       # Convert first N sentences to word IDs, stripping existing <s> and </s>.
       for i in xrange(min(self._max_article_sentences,len(article_sentences))):
@@ -183,12 +181,6 @@ class Batcher(object):
         dec_inputs.append(end_id)
       while len(targets) < self._hps.dec_timesteps:
         targets.append(end_id)
-
-      # 对decoder输入的前面插入self._hps.C-1个pad
-      i=1
-      while self._hps.C>i:
-        dec_inputs.insert(0,pad_id)
-        i+=1
 
       element = ModelInput(enc_inputs, dec_inputs, targets, enc_input_len,
                            dec_output_len, ' '.join(article_sentences),

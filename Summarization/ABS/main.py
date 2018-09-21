@@ -45,6 +45,8 @@ def _Train(model,batcher):
                 abstract_lens, loss_weights)
 
             summery_writer.add_summary(summaries,train_step)
+            print(step)
+            step+=1
         sess.Stop()
 
 def main(args):
@@ -52,6 +54,7 @@ def main(args):
     if FLAGS.mode=='decode':
         batch_size=FLAGS.beam_size
 
+    C=5
     hps=ABS.HParams(batch_size=batch_size,
                     mode=FLAGS.mode,
                     num_softmax_samples=4056,
@@ -61,9 +64,9 @@ def main(args):
                     emb_dim=200,
                     max_grad_norm=2,
                     min_input_len=2,  # discard articles/summaries < than this
-                    C=5,
+                    C=C,
                     Q=2,
-                    dec_timesteps=90,
+                    dec_timesteps=90+C-1,
                     enc_timesteps=520)
     vocab=Data.Vocab(FLAGS.vocab_path)
     batcher=BatchReader.Batcher(vocab,hps,max_article_sentences=FLAGS.max_article_sentences,
