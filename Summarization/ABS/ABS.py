@@ -4,15 +4,17 @@ import tensorflow as tf
 import numpy as np
 from collections import namedtuple
 
-HParams=namedtuple("HParams","batch_size mode num_softmax_samples min_lr lr hid_dim emb_dim max_grad_norm Q C dec_timesteps enc_timesteps")
+HParams=namedtuple("HParams","batch_size mode num_softmax_samples min_lr lr hid_dim emb_dim max_grad_norm min_input_len Q C dec_timesteps enc_timesteps")
 
 
-def sequence_loss_by_example(inputs,targets,weight,loss_function,name=None):
+def sequence_loss_by_example(inputs,targets,weights,loss_function,name=None):
     with tf.name_scope(values=inputs + targets , name=name,
                        default_name='sequence_loss_by_example'):
         log_perp_list = []
-        for inp, target in zip(inputs, targets):
+        for inp, target,weight in zip(inputs, targets,weights):
             crossent = loss_function(inp, target)
+            print(crossent.get_shape().as_list())
+            print(weight.get_shape().as_list())
             log_perp_list.append(crossent*weight)
         logperp=tf.add_n(log_perp_list)
     return logperp
@@ -45,7 +47,7 @@ class ABS():
         self._abstracts = tf.placeholder(tf.int32,[hps.batch_size, hps.dec_timesteps],name='abstracts')
         self._abstracts_len=tf.placeholder(tf.int32,[hps.batch_size],name="abstract_len")
         self._targets = tf.placeholder(tf.int32,[hps.batch_size, hps.dec_timesteps],name='targets')
-        self._loss_weight=tf.placeholder(tf.int32,[hps.batch_size,hps.dec_timesteps],name="loss_weight")
+        self._loss_weight=tf.placeholder(tf.float32,[hps.batch_size,hps.dec_timesteps],name="loss_weight")
 
     def _add_weight(self):
         hps=self._hps
@@ -56,8 +58,8 @@ class ABS():
 
             # weight
             self._U = tf.get_variable("U", shape=[hps.hid_dim, hps.C * hps.emb_dim], dtype=tf.float32)
-            self._V = tf.get_variable("V", shape=[self.vocab_size, hps.hid_dim], dtype=tf.float32)
-            self._W = tf.get_variable("W", shape=[self.vocab_size, hps.hid_dim], dtype=tf.float32)
+            self._V = tf.get_variable("V", shape=[hps.hid_dim,self.vocab_size], dtype=tf.float32)
+            self._W = tf.get_variable("W", shape=[hps.hid_dim,self.vocab_size], dtype=tf.float32)
             self.W_biase=tf.get_variable("w_biase",shape=[self.vocab_size],dtype=tf.float32)
 
             # Attention-based encoder
@@ -85,8 +87,8 @@ class ABS():
                     self.W_enc = tf.nn.xw_plus_b(tf.reduce_mean(xt_embs, 2), self._W, self.W_biase)
                     if hps.mode=="train":
                         outputs=[]
-                        for i in range(len(self.decoder_embs)):
-                            encoder=self.decoder_embs[max(0, i - hps.C + 1):i]
+                        for i in range(hps.C,len(self.decoder_embs)):
+                            encoder=self.decoder_embs[max(0, i - hps.C):i]
                             output=self.BowEncoder(encoder)
                             outputs.append(output)
                     elif hps.mode=='decode':
@@ -101,19 +103,20 @@ class ABS():
                     self.x_bar = tf.concat( [tf.reshape(xbar, shape=[self._hps.batch_size, self._hps.hid_dim, 1]) for xbar in x_bar], 2)
                     if hps.mode=='train':
                         outputs=[]
-                        for i in range(len(self.decoder_embs)):
-                            encoder_y=self.decoder_embs[max(0, i - hps.C + 1):i]
-                            output=self.AttentionEncoder(encoder_y)
+                        for i in range(hps.C,len(self.decoder_embs)):
+                            encoder=self.decoder_embs[max(0, i - hps.C):i]
+                            output=self.AttentionEncoder(encoder)
                             outputs.append(output)
                     elif hps.mode=='decode':
                         outputs =[self.AttentionEncoder(self.decoder_embs)]
                     else:raise ValueError("没有该mode")
                     self._label=outputs
+
             elif self.encoder_type=='conv':
                 with tf.variable_scope("conv"):
                     self.ConvEncoder()
             else:
-                raise("没有提供该%s方法,请输入bow，attention，conv中的一种"%(self.encoder_type))
+                raise ValueError("没有提供该%s方法,请输入bow，attention，conv中的一种"%(self.encoder_type))
 
             with tf.variable_scope("output_project"):
                 w_t=tf.get_variable("w",shape=[hps.hid_dim,self.vocab_size],dtype=tf.float32,initializer=tf.truncated_normal_initializer(stddev=1e-4))
@@ -159,7 +162,6 @@ class ABS():
         optimizer=tf.train.AdagradOptimizer(self._lr)
         self.train_op=optimizer.apply_gradients(zip(grads,vars),self.global_step,name="train_op")
 
-
     def ConvEncoder(self):
         """卷积encoder"""
         pass
@@ -168,22 +170,23 @@ class ABS():
     def BowEncoder(self,encoder):
         """BOW encoder"""
         NLM_y = tf.concat(encoder, 1)
-        h = tf.nn.tanh(tf.matmul(self._U, NLM_y, transpose_b=True))
-        output = tf.nn.softmax(self._V * h + self.W_enc)
+        h = tf.nn.tanh(tf.matmul( NLM_y,self._U ,transpose_b=True))
+        output = tf.nn.softmax(tf.matmul(h,self._V) + self.W_enc)
         return output
 
     def AttentionEncoder(self,encoder):
         """注意力Encoder"""
         encoder_y = tf.concat(encoder, 1)
-        enc_exp = tf.matmul(self._P, encoder_y, transpose_b=True)
-        lowerp = tf.concat([tf.reduce_sum(tf.multiply(encoder_emb, enc_exp)) for encoder_emb in self.encoder_embs], 1)
+        enc_exp = tf.matmul(encoder_y,self._P, transpose_b=True)
+        exps=[tf.reduce_sum(tf.multiply(encoder_emb, enc_exp),axis=1) for encoder_emb in self.encoder_embs]
+        lowerp = tf.stack(exps, 1)
         lowerp = tf.nn.softmax(lowerp)
         W_encs = tf.reduce_sum(tf.multiply(self.x_bar, tf.reshape(lowerp, shape=[self._hps.batch_size, 1, -1])), 2)
         W_enc = tf.nn.xw_plus_b(W_encs, self._W, self.W_biase)
 
         NLM_y = tf.concat(encoder, 1)
-        h = tf.nn.tanh(tf.matmul(self._U , NLM_y,transpose_b=True))
-        output = tf.nn.softmax(self._V * h + W_enc)
+        h = tf.nn.tanh(tf.matmul( NLM_y,self._U ,transpose_b=True))
+        output = tf.nn.softmax(tf.matmul(h,self._V) + W_enc)
         return output
 
 
@@ -192,5 +195,3 @@ class ABS():
         self._add_abs()
         self.global_step=tf.Variable(0,trainable=False,name="global_step")
         self._summeries=tf.summary.merge_all()
-
-

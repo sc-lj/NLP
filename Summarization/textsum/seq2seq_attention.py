@@ -32,7 +32,7 @@ import seq2seq_attention_model
 
 FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_string('data_path','', 'Path expression to tf.Example.')
-tf.flags.DEFINE_string('vocab_path','data/chivocab', 'Path expression to text vocabulary file.')
+tf.flags.DEFINE_string('vocab_path','../data/chivocab', 'Path expression to text vocabulary file.')
 tf.flags.DEFINE_string('article_key', 'article','tf.Example feature key for article.')
 tf.flags.DEFINE_string('abstract_key', 'headline','tf.Example feature key for abstract.')
 tf.flags.DEFINE_string('log_root', 'model/log', 'Directory for model root.')

@@ -184,6 +184,12 @@ class Batcher(object):
       while len(targets) < self._hps.dec_timesteps:
         targets.append(end_id)
 
+      # 对decoder输入的前面插入self._hps.C-1个pad
+      i=1
+      while self._hps.C>i:
+        dec_inputs.insert(0,pad_id)
+        i+=1
+
       element = ModelInput(enc_inputs, dec_inputs, targets, enc_input_len,
                            dec_output_len, ' '.join(article_sentences),
                            ' '.join(abstract_sentences))

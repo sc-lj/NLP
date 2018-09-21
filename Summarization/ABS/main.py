@@ -6,7 +6,7 @@ import Data
 
 FLAGS=tf.flags.FLAGS
 tf.flags.DEFINE_string('data_path','', 'Path expression to tf.Example.')
-tf.flags.DEFINE_string('vocab_path','data/chivocab', 'Path expression to text vocabulary file.')
+tf.flags.DEFINE_string('vocab_path','../data/chivocab', 'Path expression to text vocabulary file.')
 tf.flags.DEFINE_string('article_key', 'article','tf.Example feature key for article.')
 tf.flags.DEFINE_string('abstract_key', 'headline','tf.Example feature key for abstract.')
 tf.flags.DEFINE_string('log_root', 'model/log', 'Directory for model root.')
@@ -47,7 +47,7 @@ def _Train(model,batcher):
             summery_writer.add_summary(summaries,train_step)
         sess.Stop()
 
-def main():
+def main(args):
     batch_size=6
     if FLAGS.mode=='decode':
         batch_size=FLAGS.beam_size
@@ -60,11 +60,12 @@ def main():
                     hid_dim=400,
                     emb_dim=200,
                     max_grad_norm=2,
+                    min_input_len=2,  # discard articles/summaries < than this
                     C=5,
                     Q=2,
                     dec_timesteps=90,
                     enc_timesteps=520)
-    vocab=Data.Vocab(FLAGS.data_path)
+    vocab=Data.Vocab(FLAGS.vocab_path)
     batcher=BatchReader.Batcher(vocab,hps,max_article_sentences=FLAGS.max_article_sentences,
                                 max_abstract_sentences=FLAGS.max_abstract_sentences,
                                 )
