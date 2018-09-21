@@ -13,8 +13,6 @@ def sequence_loss_by_example(inputs,targets,weights,loss_function,name=None):
         log_perp_list = []
         for inp, target,weight in zip(inputs, targets,weights):
             crossent = loss_function(inp, target)
-            print(crossent.get_shape().as_list())
-            print(weight.get_shape().as_list())
             log_perp_list.append(crossent*weight)
         logperp=tf.add_n(log_perp_list)
     return logperp
