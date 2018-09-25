@@ -60,15 +60,23 @@ class ConvS2SModel():
                 topic_emb=tf.get_variable(name='topic_emb',shape=[tsize,hps.emb_dim],dtype=tf.float32,initializer=tf.truncated_normal_initializer(0,stddev=0.1))
 
                 emb_encoder_inputs=[tf.nn.embedding_lookup(word_emb,encoder_input) for encoder_input in encoder_inputs]
-                emb_ebcoder_positions=[tf.nn.embedding_lookup(pos_emb,encoder_position) for encoder_position in encoder_positions]
+                emb_encoder_positions=[tf.nn.embedding_lookup(pos_emb,encoder_position) for encoder_position in encoder_positions]
+
+                emb_encoder=[]
+                for i in range(len(emb_encoder_inputs)):
+                    emb_encoder.append(tf.reduce_sum([emb_encoder_inputs[i],emb_encoder_positions[i]],axis=0))
 
                 emb_decoder_inputs=[tf.nn.embedding_lookup(topic_emb,decoder_input) for decoder_input in decoder_inputs]
                 emb_decoder_positions=[tf.nn.embedding_lookup(pos_emb,decoder_position) for decoder_position in decoder_positions]
 
+                emb_decoder=[]
+                for i in range(len(emb_decoder_inputs)):
+                    emb_decoder.append(tf.reduce_sum([emb_decoder_inputs[i],emb_decoder_positions[i]],axis=0))
 
+            encoder_output=[]
             for enc_layer in range(hps.con_layers):
                 with tf.variable_scope("encoder_%d"%enc_layer):
-
+                    output=self.con(emb_encoder)
 
                     pass
 
