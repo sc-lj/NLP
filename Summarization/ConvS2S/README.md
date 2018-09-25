@@ -34,6 +34,7 @@ ConvS2S模型使用了两种卷积块，一个用于word-level embedding，一�
 
 在encoder端和decoder端构建几层卷积神经网络，并且假设卷积核大小为k，输入元素的维度为d。那么卷积神经网络的将k个输入元素进行串联，得到X ∈ R^{kd}；映射得到的输出元素为Y ∈ R^{2d};
 即：
+
 ![](images/公式1.png)
 
 其中：核矩阵为WY ∈ R^{2d×kd}。偏差bY∈ R^{2d}。
@@ -46,7 +47,9 @@ g(\[A;B])=A ⊗ σ(B)
 
 我们用h^l =(h^l_1,...,h^l_n)表示decoder端第l层的输出， z^l = (z^l_1,...,z^l_m)表示encoder端的第l层输出。
 下面以encoder端为例，第l个卷积层的第i个单元的计算公式为：
+
 ![](images/公式3.png)
+
 其中:h^l_i ∈ R^d，◦ 表示复合函数。
 
 <b>多步注意力机制</b>
