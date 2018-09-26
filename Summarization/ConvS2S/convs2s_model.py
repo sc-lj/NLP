@@ -26,18 +26,6 @@ class ConvS2SModel():
         self.abstract_len=tf.placeholder(dtype=tf.int32,shape=[hps.batch_size],name='abstract_len')
 
 
-    def con(self,input_x):
-        hps=self._hps
-        weights = tf.get_variable("weight",shape=[hps.emb_dim*hps.kernel_size,2*hps.emb_dim],dtype=tf.float32,initializer=tf.truncated_normal_initializer(0,stddev=1e-4))
-        bias=tf.get_variable('bias',shape=[2*hps.emb_dim],dtype=tf.float32,initializer=tf.truncated_normal_initializer(stddev=1e-4))
-        convs=tf.nn.xw_plus_b(input_x,weights,bias,name="convolution")
-        convs=tf.reshape(convs,shape=[2,hps.emb_dim])
-        convsA=convs[1,:]
-        convsB=convs[2,:]
-        glu=tf.multiply(convsA,tf.nn.sigmoid(convsB),name="glu")
-        return glu
-
-
     def ConvS2S(self):
         hps=self._hps
         vsize=self._vsize
@@ -73,12 +61,20 @@ class ConvS2SModel():
                 for i in range(len(emb_decoder_inputs)):
                     emb_decoder.append(tf.reduce_sum([emb_decoder_inputs[i],emb_decoder_positions[i]],axis=0))
 
-            encoder_output=[]
+            emb_encoder=[tf.reshape(emb,shape=[hps.batch_size,1,hps.emb_dim,1]) for emb in emb_encoder]
+            emb_encoder=tf.concat(emb_encoder,axis=1)# batch_size,seq_len,emb_dim,1
+
+            filters=[hps.kernel_size,hps.emb_dim,1,2*hps.emb_dim]
             for enc_layer in range(hps.con_layers):
                 with tf.variable_scope("encoder_%d"%enc_layer):
-                    output=self.con(emb_encoder)
+                    emb_encoder=tf.nn.conv2d(emb_encoder,filter=filters,strides=[1,1,1,1],padding="VALID")
+                    emb_encoder=tf.reshape(emb_encoder,shape=[hps.batch_size,-1,hps.emb_dim*2])
 
-                    pass
+
+
+
+
+
 
 
 
