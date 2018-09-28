@@ -17,6 +17,14 @@
 - 提出了结合多步注意力机制和带偏置生成机制的方法，将主题信息整合进了自动摘要模型中，引入上下文信息来帮助模型生成更连贯、多样性更强和信息更丰富的摘要。
 - 使用了一种强化学习方法（SCST：self-critical sequence training），以针对文本摘要的指标 ROUGE 来直接优化模型，这也有助于缓解曝光偏差问题（exposure bias issue）。
 
+### 相关工作
+最先提出的ConvS2S模型是[《Convolutional Sequence to Sequence Learning》](https://arxiv.org/abs/1705.03122)这篇论文，网上有其[阅读笔记](https://zhuanlan.zhihu.com/p/26918935)。
+但是这篇文章有几个缺陷：
+
+- 其损失函数是通过最小化极大似然损失函数，这会使得生成摘要的质量和评估摘要的指标互相矛盾。
+- exposure bias：训练模型用的是训练数据的分布，而在预测的时候，却将模型暴露在模型预测的数据分布中。
+- 该论文提出的方法只使用词级的信息，而没有使用文章的其他信息，比如主题信息等。
+
 ### ConvS2S Architecture
 ![ConvS2S架构](images/ConvS2S架构.png)
 
