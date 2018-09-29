@@ -230,7 +230,10 @@ class ConvS2SModel():
         TAtten=tf.reshape(TAtten,shape=[hps.batch_size,-1,hps.top_word])
 
         _target=tf.exp(MAtten)+tf.multiply(tf.exp(TAtten),self.indicator)# batch,seq_len_tartget,top_word
-        _target=tf.reduce_mean(_target,axis=2)
+        # 标准化
+        _target=tf.nn.l2_normalize(_target,2)
+
+
 
 
 
