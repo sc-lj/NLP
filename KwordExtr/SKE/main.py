@@ -1,23 +1,33 @@
 #encoding=utf-8
 
-# 解决cmd命令行下输出中文字符乱码问题(必须放置在文本最前面)
-from __future__ import unicode_literals
-import sys
-import json
-import os
 
-import fileHandle
-import textPreprocessing
-import semanticsCount
-import statisticsCount
+try:
+    import textPreprocessing,semanticsCount,statisticsCount
+except:
+    from . import textPreprocessing, semanticsCount, statisticsCount
+
+from breadability.readable import Article
+import math
+
+def extract_html(content):
+    article = Article(content)
+    annotated_text=article.main_text
+    paragraphs=""
+    for paragraph in annotated_text:
+        sentences=""
+        for text, annotations in paragraph:
+            sentences+=text
+        paragraphs+=sentences
+    return paragraphs
 
 
-def main(fileName, path):
+def SemankeyWord(content, title,skenum=None):
+    content=extract_html(content)
     # 逻辑结构
     # 1、文本预处理(分词与词性标注、词语过滤、词语相关信息记录)
-    wordsStatisticsData, wordsData = textPreprocessing.word_segmentation(fileName, path)
+    wordsStatisticsData, wordsData = textPreprocessing.word_segmentation(content, title)
     # 2、词语语义贡献值计算(计算词语语义相似度、构建词语语义相思网络、计算词语居间度密度)
-    intermediaryDensity = semanticsCount.intermediaryDegreeDensity(fileName, path)
+    intermediaryDensity = semanticsCount.intermediaryDegreeDensity(content, title)
     # 3、计算词语统计特征值
     # keywordDatas = statisticsCount.tfidf()
     wordsStatisticsData = statisticsCount.wordsStatistics(wordsStatisticsData)
@@ -51,15 +61,19 @@ def main(fileName, path):
         ske[key] = score
 
     ske = sorted(ske.items(), key=lambda d: d[1], reverse=True)  # 降序排列
-    # print json.dumps(ske, ensure_ascii=False)
-    return ske
+    skelen=len(ske)
+    if skenum is None:
+        ske=ske[:math.ceil(skelen/3)]
+    else:
+        ske=ske[:skenum]
+    words=[word for word,_ in ske]
+    words=",".join(words)
+    return words
 
 if __name__ == "__main__":
     # 进行关键词提取的文章
-    # curPath = fileHandle.get_cur_path()
-    curPath = './corpus'
-    # fileName = '1351409.txt' # bug调试
-    fileName = '1000001.txt'
+    content="""<video id='video' src='http://vod-xhpfm.oss-cn-hangzhou.aliyuncs.com/NewsVideo/201809/20180914121600_7547.mp4' poster='http://img-xhpfm.oss-cn-hangzhou.aliyuncs.com/News/201809/20180914121606_1611.jpg'width='100%' controls='controls' ></video><img src="https://dot.xinhuazhiyun.com/logserver/1.gif?logtype=rss&amp;version=1.0.0&amp;id=4550093&amp;source=7fb40b54bd6a4550" hidden/><p style="">原标题:葫芦河之变</p>【简介】浇上好水才能种出好菜。断流３０多年的葫芦河在宁夏固原市西吉县的治理下通水了。一河清水将给两岸１４．２万人脱贫致富带来新希望。　<link href="https://dot.xinhuazhiyun.com/logserver/1.gif?logtype=rss&amp;version=1.0.0&amp;id=4550093&amp;source=7fb40b54bd6a4550" rel="stylesheet" type="text/css" /> """
 
-    print(json.dumps(main(fileName, curPath), ensure_ascii=False))
+    title="葫芦河之变"
+    print(SemankeyWord(content, title))
 

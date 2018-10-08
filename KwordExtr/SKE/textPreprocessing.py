@@ -5,21 +5,18 @@
 # 词语过滤
 # 词语相关信息记录
 
-# 解决cmd命令行下输出中文字符乱码问题(必须放置在文本最前面)
-from __future__ import unicode_literals
 import os
 import json
 import jieba
 import jieba.posseg as pseg
 
+dirname=os.path.dirname(__file__)
 # 加载分词字典
-jieba.set_dictionary("dict_file/dict.txt.big")
+jieba.set_dictionary(dirname+"/dict_file/dict.txt.big")
 # 加载用户自定义词典
-jieba.load_userdict("dict_file/user_dict.txt")
+jieba.load_userdict(dirname+"/dict_file/user_dict.txt")
 
-# 加载自定义模块
-import fileHandle
-
+stop_word_file=dirname+'/dict_file/stop_words.txt'
 # 词性过滤文件(保留形容词、副形词、名形词、成语、简称略语、习用语、动词、动语素、副动词、名动词、名词)
 ALLOW_SPEECH_TAGS = ['a', 'ad', 'an', 'i', 'j', 'l', 'v', 'vg', 'vd', 'vn', 'n']
 
@@ -29,22 +26,19 @@ Word_Location = {'title': 1, 'section-start': 2, 'section-end':3, 'content': 4}
 # 分词&词性标注
 # 去除停用词
 # 保留指定词性词语
-def word_segmentation(fileName, path):
+def word_segmentation(content, title):
     # 加载停用词文件
     # jieba.analyse.set_stop_words('dict_file/stop_words.txt')
-    stopWords = [line.strip().encode('utf-8') for line in open('dict_file/stop_words.txt').readlines()]
+    stopWords = [line.strip().encode('utf-8') for line in open(stop_word_file).readlines()]
 
-    # 获取文件数据
-    fileData = fileHandle.get_file_data(fileName, path)
     # jieba分词&词性标注
-    psegDataList = pseg.cut(fileData)
+    psegDataList = pseg.cut(content)
 
     # 词语集合
     wordsData = []
     # 词语统计数据
     wordsStatisticsData= {}
-    # 获取文章的标题信息
-    title = fileHandle.get_file_line_details(fileName, path)
+
     # 词性过滤&停用词过滤
     for data in psegDataList:
         # 添加单词长度限制(至少为2)
@@ -62,13 +56,4 @@ def word_segmentation(fileName, path):
     return wordsStatisticsData, wordsData
 
 if __name__ == "__main__":
-    curPath = fileHandle.get_cur_path()
-    fileName = 'article2.txt'
-    wordsStatisticsData, wordsData = word_segmentation(fileName, curPath)
-
-    # 进行词语位置的查找测试
-    # print json.dumps(wordsStatisticsData, ensure_ascii=False)
-    print(json.dumps(wordsData, ensure_ascii=False))
-
-    # # 词语位置和词语词性
-    # data = {'我': [], '你': {}}
+    pass
