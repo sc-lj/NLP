@@ -2,18 +2,16 @@
 
 # 词语统计特征值计算
 
-# 解决cmd命令行下输出中文字符乱码问题(必须放置在文本最前面)
-from __future__ import unicode_literals
 import os
 import json
 import jieba
 import jieba.posseg as pseg
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.feature_extraction.text import CountVectorizer
-
-import textPreprocessing
-import fileHandle
-
+try:
+    import textPreprocessing
+except:
+    from . import textPreprocessing
 # 词语词性值权重分配
 pos = {
     'a':  0.5,
@@ -150,5 +148,3 @@ def Tfidf(segFileNameList, count = 10, segFilePath = 'segFile'):
 
 if __name__ == "__main__":
     pass
-    keywordDatas = tfidf()
-    print(keywordDatas)

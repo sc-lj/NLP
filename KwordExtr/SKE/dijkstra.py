@@ -5,14 +5,6 @@
 # 词语过滤
 # 词语相关信息记录
 
-# 解决cmd命令行下输出中文字符乱码问题(必须放置在文本最前面)
-from __future__ import unicode_literals
-import os
-import json
-import sys
-
-import json
-from sys import argv
 
 # 完成距离计算(当前中心点标记值+中心点到此点的权值)
 def dijkstra_score(G, shortest_distances, v, w):

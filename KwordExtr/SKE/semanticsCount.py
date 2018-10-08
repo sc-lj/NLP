@@ -5,28 +5,21 @@
 # 词语过滤
 # 词语相关信息记录
 
-# 解决cmd命令行下输出中文字符乱码问题(必须放置在文本最前面)
-from __future__ import unicode_literals
-# 除法运算
-from __future__ import division
-import os
-import json
-import sys
-
-import fileHandle
-import textPreprocessing
-import dijkstra
-
+try:
+    from . import textPreprocessing,dijkstra
+except:
+    import textPreprocessing, dijkstra
 # 词语语义贡献值计算
 # 计算词语语义相似度
 # 构建词语语义相似度网络
 # 计算词语居间度密度
-
+import os,time
+dirname=os.path.dirname(__file__)
 
 # 《同义词词林》的读入
 # 返回格式{code: '文字字符串', }
 def cilin():
-    cilinFilePath = 'dict_file/cilin.txt'
+    cilinFilePath = dirname+'/dict_file/cilin.txt'
     cilinFileObject = open(cilinFilePath, 'r')  # 进行分词文件的读取
     cilinDatas = {}
     for line in cilinFileObject:
@@ -122,9 +115,9 @@ def codeCmp(code1, code2):
 #   "词1": {"词2": "词1和词2的语义相似度", "词3": "词1和词3的语义相似度",...}
 #   "词2": {"词1": "词2和词1的语义相似度", "词3": "词2和词3的语义相似度",...}
 # }
-def wordSemanticSimilarityGraph(fileName, path):
+def wordSemanticSimilarityGraph(content, title):
     # 图G的顶点集合
-    wordsStatisticsData, wordsData = textPreprocessing.word_segmentation(fileName, path)
+    wordsStatisticsData, wordsData = textPreprocessing.word_segmentation(content, title)
     # 词语编码的统计
     wordsEncodingData = {}
     for word in wordsData:
@@ -148,9 +141,9 @@ def wordSemanticSimilarityGraph(fileName, path):
 
 
 # 居间度集合
-def intermediaryDegreeInterval(fileName, path):
+def intermediaryDegreeInterval(content, title):
     # 获取语义相似度网络图
-    graphDatas = wordSemanticSimilarityGraph(fileName, path)
+    graphDatas = wordSemanticSimilarityGraph(content, title)
 
     # 获取最短路径数据集合
     shortestDatas = {}
@@ -161,8 +154,9 @@ def intermediaryDegreeInterval(fileName, path):
     # 构建居间度集合
     interval = {}
     for key in graphDatas.keys():
-        score = intermediaryDegreeScore(key, shortestDatas)
-        interval[key] = score
+        score1 = intermediaryDegreeScore(key, shortestDatas)
+        time.sleep(0.00001)#应该是变量名冲突，导致后面本来有数字的，变为0，停顿一下
+        interval[key] = score1
 
     return interval
 
@@ -196,9 +190,9 @@ def intermediaryDegreeScore(word, shortestDatas):
 
 
 # 计算居间度密度
-def intermediaryDegreeDensity(fileName, path):
+def intermediaryDegreeDensity(content, title):
     # 顶点集合V对应的居间度集合bc
-    interval = intermediaryDegreeInterval(fileName, path)
+    interval = intermediaryDegreeInterval(content, title)
 
     # 顶点个数
     wordCount = len(interval)
@@ -246,7 +240,7 @@ def refinementBC(sortedInterval, s):
     wordCount = len(sortedInterval)
     # 居间度最大值&最小值
     maxIntermediaryDegree = sortedInterval[0][1]
-    minIntermediaryDegree = sortedInterval[wordCount - 1][1]
+    minIntermediaryDegree = sortedInterval[-1][1]
     # print maxIntermediaryDegree, minIntermediaryDegree
     # 居间度划分区间长度
     intervalScore = (maxIntermediaryDegree - minIntermediaryDegree) / s
@@ -276,10 +270,4 @@ def refinementBC(sortedInterval, s):
 
 
 if __name__ == "__main__":
-    curPath = fileHandle.get_cur_path()
-    fileName = 'article.txt'
-
-    # 返回单词居间度密度集合
-    intermediaryDensity = intermediaryDegreeDensity(fileName, curPath)
-    print(json.dumps(intermediaryDensity, ensure_ascii=False))
-
+    pass
