@@ -240,7 +240,7 @@ def refinementBC(sortedInterval, s):
     wordCount = len(sortedInterval)
     # 居间度最大值&最小值
     maxIntermediaryDegree = sortedInterval[0][1]
-    minIntermediaryDegree = sortedInterval[wordCount - 1][1]
+    minIntermediaryDegree = sortedInterval[- 1][1]
     # print maxIntermediaryDegree, minIntermediaryDegree
     # 居间度划分区间长度
     intervalScore = (maxIntermediaryDegree - minIntermediaryDegree) / s
