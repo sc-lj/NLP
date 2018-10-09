@@ -1,6 +1,15 @@
 ## 实体关系抽取 entity relation extraction 文献阅读总结
 这篇文章[《CIPS青工委学术专栏第3期 | 基于深度学习的关系抽取》](http://www.cipsc.org.cn/qngw/?p=890)有关实体关系抽取总结的很好。
 
+现有主流的关系抽取技术分为有监督的学习方法、半监督的学习方法和无监督的学习方法三种：
+
+1、有监督的学习方法将关系抽取任务当做**分类问题**，根据训练数据设计有效的特征，从而学习各种分类模型，然后使用训练好的分类器预测关系。该方法的问题在于需要大量的人工标注训练语料，而语料标注工作通常非常耗时耗力。
+
+2、半监督的学习方法主要采用Bootstrapping进行关系抽取。对于要抽取的关系，该方法首先手工设定若干种子实例，然后迭代地从数据从抽取关系对应的关系模板和更多的实例。
+
+3、无监督的学习方法假设拥有相同语义关系的实体对拥有相似的上下文信息。因此可以利用每个实体对对应上下文信息来代表该实体对的语义关系，并对所有实体对的语义关系进行聚类。
+
+
 传统的关系抽取方法总结：
 - 基于句法解析增强的方法，Milleret al. 2000
 - 基于逻辑回归的方法，Kambhatla 2004
@@ -125,7 +134,7 @@ Socher et al. 2012  [Semantic compositionality through recursive matrix-vector s
 
 论文名称：CoType: Joint Extraction of Typed Entities and Relations with Knowledge Bases
 
-论文内容：坦白地说没有太看懂。才疏学浅。 https://zhuanlan.zhihu.com/p/23635696
+论文内容：https://zhuanlan.zhihu.com/p/23635696
 
 github有源代码： https://github.com/shanzhenren/CoType
 
