@@ -29,14 +29,14 @@ class Rouge():
         total_rouge=tf.constant([0.])
         _,total_rouge=tf.while_loop(
             cond=lambda k,*_:k<batch_size,
-            body=self.step,
+            body=self.step_n,
             loop_vars=[k,n,total_rouge]
         )
         rouge = total_rouge / tf.cast(batch_size, tf.float32)
         return rouge
 
 
-    def step(self,k,n,total_rouge):
+    def step_n(self,k,n,total_rouge):
         """calculate rouge-n"""
         target,refer,m1,n1=self.target[k],self.refer[k],self.m[k],self.n[k]
 
@@ -118,10 +118,9 @@ class Rouge():
         table = tf.TensorArray(tf.int32, table_size, clear_after_read=False, element_shape=[])
 
         def loop_step(k, table):
-            # get col and row index at current step (table is a 1d array but we treat it as a 2d array)
             j = tf.cast(k % (n + 1), tf.int32)
             i = tf.cast((k - j) / (n + 1), tf.int32)
-            # get and write value for current index
+            # 获取和写入当前的index的值
             val = tf.cond(tf.logical_or(tf.equal(i, 0), tf.equal(j, 0)),
                           lambda: 0,
                           lambda: tf.cond(tf.equal(x[i - 1], y[j - 1]),
@@ -131,12 +130,11 @@ class Rouge():
             table = table.write(k, val)
             return k + 1, table
 
-        # run loop
+        # 循环
         _, table = tf.while_loop(
             cond=lambda k, *_: k < table_size,
             body=loop_step,
             loop_vars=[k, table])
-        # stack and reshape table to 2d shape
         table = tf.reshape(table.stack(), [m + 1, n + 1])
         return table
 
