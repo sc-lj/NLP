@@ -60,7 +60,6 @@ class ConvS2SModel():
                 _emb_topic=tf.reduce_sum([emb_topic_inputs,emb_topic_position],axis=0)
 
 
-
             self.filters=[hps.kernel_size,hps.emb_dim,1,2*hps.emb_dim]
             padsize=int(hps.kernel_size/2)
             self.PAD_emb=tf.nn.embedding_lookup(self.vocab_emb,[1])
@@ -221,17 +220,32 @@ class ConvS2SModel():
     def BiasedProGen(self):
         """Biased Probability Generation"""
         hps=self._hps
-        MAtten=tf.reshape(self.MAttenOut,shape=[-1,hps.emb_dim])
-        MAtten=self.xw_plus_b(MAtten,shapes=[hps.emb_dim,hps.top_word])
-        MAtten=tf.reshape(MAtten,shape=[hps.batch_size,-1,hps.top_word])
+        with tf.variable_scope("bias_pro_gen"):
+            MAtten=tf.reshape(self.MAttenOut,shape=[-1,hps.emb_dim])
+            MAtten=self.xw_plus_b(MAtten,shapes=[hps.emb_dim,hps.top_word])
+            MAtten=tf.reshape(MAtten,shape=[hps.batch_size,-1,hps.top_word])
 
-        TAtten=tf.reshape(self.TAttenOut,shape=[-1,hps.emb_dim])
-        TAtten=self.xw_plus_b(TAtten,shapes=[hps.emb_dim,hps.top_word])
-        TAtten=tf.reshape(TAtten,shape=[hps.batch_size,-1,hps.top_word])
+            TAtten=tf.reshape(self.TAttenOut,shape=[-1,hps.emb_dim])
+            TAtten=self.xw_plus_b(TAtten,shapes=[hps.emb_dim,hps.top_word])
+            TAtten=tf.reshape(TAtten,shape=[hps.batch_size,-1,hps.top_word])
 
-        _target=tf.exp(MAtten)+tf.multiply(tf.exp(TAtten),self.indicator)# batch,seq_len_tartget,top_word
-        # 标准化
-        _target=tf.nn.l2_normalize(_target,2)
+            _target=tf.exp(MAtten)+tf.multiply(tf.exp(TAtten),self.indicator)# batch,seq_len_tartget,top_word
+            # 标准化
+            _target=tf.nn.l2_normalize(_target,2)
+
+    def _sample(self,max_len=20):
+        """sampling from the distribution"""
+        hps=self._hps
+        for i in range(max_len):
+            if i==0:
+                pass
+
+
+
+    def _greed_sample(self):
+        """greedily selecting words"""
+        hps=self._hps
+
 
 
 
