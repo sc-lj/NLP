@@ -4,7 +4,7 @@ from sklearn.decomposition import LatentDirichletAllocation,NMF
 from sklearn.feature_extraction.text import TfidfVectorizer,CountVectorizer
 from sklearn.externals import joblib
 from database import *
-import jieba,re
+import jieba,re,os
 from multiprocessing import Pool,cpu_count
 
 
@@ -37,7 +37,7 @@ class LDAModel():
         self.feature_names=vectorizer.get_feature_names()
 
         if lda:
-            lda = LatentDirichletAllocation(n_topics=n_topics,
+            lda = LatentDirichletAllocation(n_components=n_topics,
                                             max_iter=1000,  # 迭代次数
                                             learning_method='online',
                                             learning_offset=50.,
@@ -51,6 +51,9 @@ class LDAModel():
         model.fit(self.feature_vectorizer)
         self.model=model
         # joblib.dump(self.model,"./model/")
+
+    def get_topic_distrbution(self):
+        return self.model.components_
 
     def get_topic_words(self):
         corpus=[]
@@ -83,24 +86,32 @@ def cut_words(content):
     return content
 
 def main():
-    mongo=MySQL()
-    mongo.login()
-    cursor=mongo.get_cursor()
-    sent="select content from news where 1"
-    cursor.execute(sent)
-    pool=Pool(cpu_count()-1)
-    contentwords=[]
-    for content in cursor.fetchall():
-        words = pool.apply_async(func=cut_words, args=(content[0],))
-        contentwords.append(words.get())
+    contentwords = []
+    if not os.path.isfile('./corpus.txt'):
+        mongo=MySQL()
+        mongo.login()
+        cursor=mongo.get_cursor()
+        sent="select content from news where 1"
+        cursor.execute(sent)
+        pool=Pool(cpu_count()-1)
+        for content in cursor.fetchall():
+            words = pool.apply_async(func=cut_words, args=(content[0],))
+            contentwords.append(words.get())
 
-    print(len(contentwords))
-    contentwords=[" ".join(word) for word in contentwords]
-    with open("./test.txt",'w') as f:
-        for content in contentwords:
-            f.write(content+"\n")
-    look_best_topic_num(contentwords)
-    # lda=LDAModel(contentwords)
+        print(len(contentwords))
+        contentwords=[" ".join(word) for word in contentwords]
+        with open("./corpus.txt",'w') as f:
+            for content in contentwords:
+                f.write(content+"\n")
+    else:
+        with open("./corpus.txt",'r') as f:
+            contents=f.readlines()
+            for content in contents:
+                contentwords.append(content)
+    # look_best_topic_num(contentwords)
+    lda=LDAModel(contentwords)
+    distrbution=lda.get_topic_distrbution()
+    print(distrbution)
     # doc_topic=lda.get_topic_words()
     # corpus=set()
     # for topic in doc_topic:
@@ -121,7 +132,7 @@ def look_best_topic_num(content):
                                        min_df=10)
     tfidf = tfidf_vectorizer.fit_transform(content)
     for idx, n_topic in enumerate(n_topics):
-        lda = LatentDirichletAllocation(n_topics=n_topic,
+        lda = LatentDirichletAllocation(n_components=n_topic,
                                         max_iter=1000,
                                         learning_method='batch',
                                         evaluate_every=200,

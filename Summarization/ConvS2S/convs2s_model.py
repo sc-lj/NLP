@@ -8,8 +8,8 @@ HParams=namedtuple("HParams","batch_size enc_timesteps dec_timesteps emb_dim con
 class ConvS2SModel():
     def __init__(self,vsize,tsize,hps):
         self._hps=hps
-        self._vsize=vsize
-        self._tsize=tsize
+        self._vsize=vsize#词汇量大小
+        self._tsize=tsize#主题词汇量大小
 
     def _add_placeholder(self):
         hps=self._hps
@@ -34,7 +34,7 @@ class ConvS2SModel():
         self.indicator=tf.placeholder(dtype=tf.float32,shape=[hps.batch_size,hps.dec_timesteps],name="indicator")
 
 
-    def ConvS2S(self):
+    def Encoder(self):
         hps=self._hps
         vsize=self._vsize
         tsize=self._tsize
@@ -160,7 +160,7 @@ class ConvS2SModel():
 
             self.MAttenOut=emb_decoder
 
-    def topic_decoder(self):
+    def decoder_topic(self):
         """对文本摘要的topic的decoder端计算"""
         hps=self._hps
         padsize = int(hps.kernel_size / 2)
@@ -231,14 +231,14 @@ class ConvS2SModel():
 
             _target=tf.exp(MAtten)+tf.multiply(tf.exp(TAtten),self.indicator)# batch,seq_len_tartget,top_word
             # 标准化
-            _target=tf.nn.l2_normalize(_target,2)
+            self.loss=tf.nn.l2_normalize(_target,2)
 
     def _sample(self,max_len=20):
         """sampling from the distribution"""
         hps=self._hps
-        for i in range(max_len):
+        for i in range(hps.dec_timesteps):
             if i==0:
-                pass
+                x=''
 
 
 
