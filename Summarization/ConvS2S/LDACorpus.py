@@ -1,5 +1,5 @@
 # coding:utf-8
-
+"""生成主题语料库"""
 from sklearn.decomposition import LatentDirichletAllocation,NMF
 from sklearn.feature_extraction.text import TfidfVectorizer,CountVectorizer
 from sklearn.externals import joblib
