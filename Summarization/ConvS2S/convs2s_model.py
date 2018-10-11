@@ -20,8 +20,6 @@ class ConvS2SModel():
 
         # 摘要数据，及其位置、topic的输入
         self.abstract=tf.placeholder(dtype=tf.int32,shape=[hps.batch_size,hps.dec_timesteps],name='abstracts')
-        self.abstract_position=tf.placeholder(dtype=tf.int32,shape=[hps.batch_size,hps.dec_timesteps],name='abstract_position')
-        self.abstract_topic=tf.placeholder(dtype=tf.int32,shape=[hps.batch_size,hps.dec_timesteps],name="abstract_topic")
 
         #
         self.target=tf.placeholder(dtype=tf.int32,shape=[hps.batch_size,hps,hps.dec_timesteps],name='targets')
@@ -33,31 +31,37 @@ class ConvS2SModel():
         # 组成摘要的词是否在topic中
         self.indicator=tf.placeholder(dtype=tf.float32,shape=[hps.batch_size,hps.dec_timesteps],name="indicator")
 
-
-    def Encoder(self):
+    def _embedding(self):
         hps=self._hps
         vsize=self._vsize
         tsize=self._tsize
 
+        with tf.variable_scope("embedding"):
+            self.vocab_emb = tf.get_variable(name='word_emb', shape=[vsize, hps.emb_dim], dtype=tf.float32,
+                                             initializer=tf.truncated_normal_initializer(mean=0, stddev=0.1))
+            self.pos_emb = tf.get_variable(name='position_emb', shape=[hps.enc_timesteps, hps.emb_dim],
+                                           dtype=tf.float32,
+                                           initializer=tf.truncated_normal_initializer(mean=0, stddev=0.1))
+            topic_emb = tf.get_variable(name='topic_emb', shape=[tsize, hps.emb_dim], dtype=tf.float32,
+                                        initializer=tf.truncated_normal_initializer(0, stddev=0.1))
+            # 将主题词的embedding和vocab的embedding进行合并，如果词汇在主题词表中，那么其id大于vocab的长度
+            self.topic_emb = tf.concat([self.vocab_emb, topic_emb], axis=0)
+
+    def Encoder(self):
+        hps=self._hps
+
         with tf.variable_scope('convs2s'):
-            with tf.variable_scope("embedding"):
-                self.vocab_emb=tf.get_variable(name='word_emb',shape=[vsize,hps.emb_dim],dtype=tf.float32,initializer=tf.truncated_normal_initializer(mean=0,stddev=0.1))
-                self.pos_emb=tf.get_variable(name='position_emb',shape=[hps.enc_timesteps,hps.emb_dim],dtype=tf.float32,initializer=tf.truncated_normal_initializer(mean=0,stddev=0.1))
-                topic_emb=tf.get_variable(name='topic_emb',shape=[tsize,hps.emb_dim],dtype=tf.float32,initializer=tf.truncated_normal_initializer(0,stddev=0.1))
-                # 将主题词的embedding和vocab的embedding进行合并，如果词汇在主题词表中，那么其id大于vocab的长度
-                self.topic_emb=tf.concat([self.vocab_emb,topic_emb],axis=0)
+            # encoder端文章的embedding
+            emb_encoder_inputs=tf.nn.embedding_lookup(self.vocab_emb,self.article)
+            emb_encoder_positions=tf.nn.embedding_lookup(self.pos_emb,self.article_position)
 
-                # encoder端文章的embedding
-                emb_encoder_inputs=tf.nn.embedding_lookup(self.vocab_emb,self.article)
-                emb_encoder_positions=tf.nn.embedding_lookup(self.pos_emb,self.article_position)
+            _emb_encoder=tf.reduce_sum([emb_encoder_inputs,emb_encoder_positions],axis=0)
 
-                _emb_encoder=tf.reduce_sum([emb_encoder_inputs,emb_encoder_positions],axis=0)
+            # encoder端文章主题词的embedding
+            emb_topic_inputs=tf.nn.embedding_lookup(self.topic_emb,self.article_topic)
+            emb_topic_position=tf.nn.embedding_lookup(self.pos_emb,self.article_position)
 
-                # encoder端文章主题词的embedding
-                emb_topic_inputs=tf.nn.embedding_lookup(self.topic_emb,self.article_topic)
-                emb_topic_position=tf.nn.embedding_lookup(self.pos_emb,self.article_position)
-
-                _emb_topic=tf.reduce_sum([emb_topic_inputs,emb_topic_position],axis=0)
+            _emb_topic=tf.reduce_sum([emb_topic_inputs,emb_topic_position],axis=0)
 
 
             self.filters=[hps.kernel_size,hps.emb_dim,1,2*hps.emb_dim]
@@ -111,14 +115,14 @@ class ConvS2SModel():
                 self.topic_outputs=emb_topic
                 self.topic_out=emb_topic+_emb_topic
 
-    def decoder(self):
+    def Decoder(self,abstract_position,abstract_topic):
         """对文本摘要的decoder端的计算"""
         hps=self._hps
         padsize = int(hps.kernel_size / 2)
         with tf.variable_scope("text_decoder"):
             # decoder端文本摘要的embedding
             emb_decoder_inputs = tf.nn.embedding_lookup(self.vocab_emb, self.abstract)
-            emb_decoder_positions = tf.nn.embedding_lookup(self.pos_emb, self.abstract_position)
+            emb_decoder_positions = tf.nn.embedding_lookup(self.pos_emb, abstract_position)
 
             _emb_decoder = tf.reduce_sum([emb_decoder_inputs, emb_decoder_positions], axis=0)
             last_decoder_outputs =emb_decoder= _emb_decoder# batch,seq_len_target,dim
@@ -160,15 +164,12 @@ class ConvS2SModel():
 
             self.MAttenOut=emb_decoder
 
-    def decoder_topic(self):
-        """对文本摘要的topic的decoder端计算"""
-        hps=self._hps
-        padsize = int(hps.kernel_size / 2)
 
+        """对文本摘要的topic的decoder端计算"""
         with tf.variable_scope("topic_decoder"):
             # decoder端文本摘要的topic的embedding
-            topic_decoder_outputs=tf.nn.embedding_lookup(self.topic_emb,self.abstract_topic)
-            topic_decoder_position=tf.nn.embedding_lookup(self.pos_emb,self.abstract_position)
+            topic_decoder_outputs=tf.nn.embedding_lookup(self.topic_emb,abstract_topic)
+            topic_decoder_position=tf.nn.embedding_lookup(self.pos_emb,abstract_position)
 
             _topic_emb=tf.reduce_sum([topic_decoder_outputs,topic_decoder_position],axis=0)
 

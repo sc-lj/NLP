@@ -9,7 +9,7 @@ from threading import Thread
 import time
 import numpy as np
 
-ModelInput=namedtuple("ModelInput",'enc_input enc_position enc_topic dec_input dec_position dec_topic target enc_len dec_len')
+ModelInput=namedtuple("ModelInput",'enc_input enc_position enc_topic dec_input target enc_len dec_len')
 
 BUCKET_CACHE_BATCH = 100
 QUEUE_NUM_BATCH = 100
@@ -50,24 +50,22 @@ class Batcher():
         enc_lens=np.zeros([hps.batch_size],dtype=np.int32)
 
         dec_input_batch=np.zeros([hps.batch_size,hps.dec_timesteps],dtype=np.int32)
-        dec_position_batch=np.zeros([hps.batch_size,hps.dec_timesteps],dtype=np.int32)
-        dec_topic_batch=np.zeros([hps.batch_size,hps.dec_timesteps],dtype=np.int32)
         dec_lens=np.zeros([hps.batch_size],dtype=np.int32)
+        target_batch=np.zeros([hps.batch_size,])
 
         buckets=self.bucket_input_queue.get()
         for i in range(hps.batch_size):
-            enc_input,enc_position,enc_topic,dec_input,dec_position,dec_topic,target,enc_len,dec_len=buckets[i]
+            enc_input,enc_position,enc_topic,dec_input,target,enc_len,dec_len=buckets[i]
             enc_input_batch[i,:]=enc_input[:]
             enc_position_batch[i,:]=enc_position
             enc_topic_batch[i,:]=enc_topic
             enc_lens[i]=enc_len
 
             dec_input_batch[i,:]=dec_input
-            dec_position_batch[i,:]=dec_position
-            dec_topic_batch[i,:]=dec_topic
             dec_lens[i]=dec_len
 
-        return (enc_input_batch,enc_position_batch,enc_topic_batch,enc_lens,dec_input_batch,dec_position_batch,dec_topic_batch,dec_lens)
+
+        return (enc_input_batch,enc_position_batch,enc_topic_batch,enc_lens,dec_input_batch,dec_lens)
 
 
     def _WatchThreads(self):
@@ -118,6 +116,8 @@ class Batcher():
 
     def _InputQueue(self):
         hps=self._hps
+        start_id=self._vocab.WordToId(PARAGRAPH_START)
+        end_id=self._vocab.WordToId(PARAGRAPH_END)
         pad_id=self._vocab.WordToId(PAD_TOKEN)
         input_gen=ExampleGen()
         while True:
@@ -125,13 +125,11 @@ class Batcher():
             article_sentence=[sent.strip() for sent in ToSentences(article,include_token=False)]
             abstract_sentence=[sent.strip() for sent in ToSentences(abstract,include_token=False)]
 
-            enc_input=[]
-            enc_position=[]
-            enc_topic=[]
+            enc_input=[start_id]
+            enc_position=[0]
+            enc_topic=[0]
 
             dec_input=[]
-            dec_position=[]
-            dec_topic=[]
 
             for i in range(min(self.max_article_length,len(article_sentence))):
                 if article_sentence[i] in self._tvocab._word_to_id:
@@ -143,10 +141,6 @@ class Batcher():
 
             for i in range(min(self.max_abstract_lenght,len(abstract_sentence))):
                 dec_input+=GetWordIds(abstract_sentence[i],self._vocab)
-                dec_position.append(i)
-                if abstract_sentence[i] in self._tvocab._word_to_id:
-                    dec_topic.append(1)
-                else:dec_topic.append(0)
 
             if (len(enc_input)<hps.min_input_len or len(dec_input)<hps.min_input_len):
                 tf.logging.warning("丢掉文本的长度或者摘要的长度太短的样本,\nenc:%d\ndec:%d",len(enc_input),len(dec_input))
@@ -163,10 +157,9 @@ class Batcher():
                     enc_topic=enc_topic[:hps.enc_timesteps]
                 if len(dec_input)>hps.dec_timesteps:
                     dec_input=dec_input[:hps.dec_timesteps]
-                    dec_position=dec_position[:hps.dec_timesteps]
-                    dec_topic=dec_topic[:hps.dec_timesteps]
 
             target=dec_input[1:]
+            target.append(end_id)
 
             enc_input_len=len(enc_input)
             dec_output_len=len(target)
@@ -178,13 +171,11 @@ class Batcher():
 
             while len(dec_input)<hps.dec_timesteps:
                 dec_input.append(pad_id)
-                dec_position.append(len(dec_position))
-                dec_topic.append(0)
 
             while len(target)<hps.dec_timesteps:
                 target.append(pad_id)
 
-            element=ModelInput(enc_input,enc_position,enc_topic,dec_input,dec_position,dec_topic,target,enc_input_len,dec_output_len)
+            element=ModelInput(enc_input,enc_position,enc_topic,dec_input,target,enc_input_len,dec_output_len)
             self.input_queue.put(element)
 
 
