@@ -18,11 +18,15 @@ DOCUMENT_END = '</d>'
 
 
 class Vocab(object):
-    def __init__(self, vocab_file):
+    def __init__(self, vocab_file,tvocab_file):
         self._word_to_id = {}
         self._id_to_word = {}
         self._count = 0
+        self._id_to_topic={}
 
+        tvocab_f=open(tvocab_file,'r')
+        t_lines=tvocab_f.readlines()
+        t_lines=[line.strip() for line in t_lines]
         with open(vocab_file, 'r',encoding='utf-8') as vocab_f:
             for line in vocab_f:
                 pieces = line.split()
@@ -31,6 +35,10 @@ class Vocab(object):
                     continue
                 if pieces[0] in self._word_to_id:
                     raise ValueError('Duplicated word: %s.' % pieces[0])
+                if pieces[0] in t_lines:
+                    self._id_to_topic[self._count]=1
+                else:
+                    self._id_to_topic[self._count]=0
                 self._word_to_id[pieces[0]] = self._count
                 self._id_to_word[self._count] = pieces[0]
                 self._count += 1
@@ -238,4 +246,3 @@ if __name__ == '__main__':
             </div>"""
     tosentence=extract_html(content,False)
     a=ToSentences(tosentence)
-    print(a)

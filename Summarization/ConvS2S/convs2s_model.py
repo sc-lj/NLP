@@ -2,14 +2,17 @@
 
 import tensorflow as tf
 from collections import namedtuple
+import numpy as np
+from Data import *
 
 HParams=namedtuple("HParams","batch_size enc_timesteps dec_timesteps emb_dim con_layers kernel_size topic_size top_word")
 
 class ConvS2SModel():
-    def __init__(self,vsize,tsize,hps):
+    def __init__(self,vsize,tsize,hps,vocab):
         self._hps=hps
         self._vsize=vsize#词汇量大小
         self._tsize=tsize#主题词汇量大小
+        self._vocab=vocab
 
     def _add_placeholder(self):
         hps=self._hps
@@ -20,6 +23,7 @@ class ConvS2SModel():
 
         # 摘要数据，及其位置、topic的输入
         self.abstract=tf.placeholder(dtype=tf.int32,shape=[hps.batch_size,hps.dec_timesteps],name='abstracts')
+        self.topic_to_vocab=tf.placeholder(dtype=tf.int32,shape=[self._tsize,2],name="abstractIsTopic")
 
         #
         self.target=tf.placeholder(dtype=tf.int32,shape=[hps.batch_size,hps,hps.dec_timesteps],name='targets')
@@ -47,7 +51,7 @@ class ConvS2SModel():
             # 将主题词的embedding和vocab的embedding进行合并，如果词汇在主题词表中，那么其id大于vocab的长度
             self.topic_emb = tf.concat([self.vocab_emb, topic_emb], axis=0)
 
-    def Encoder(self):
+    def _Encoder(self):
         hps=self._hps
 
         with tf.variable_scope('convs2s'):
@@ -115,13 +119,13 @@ class ConvS2SModel():
                 self.topic_outputs=emb_topic
                 self.topic_out=emb_topic+_emb_topic
 
-    def Decoder(self,abstract_position,abstract_topic):
+    def _Decoder(self,abstract,abstract_position,abstract_topic,reuse=False):
         """对文本摘要的decoder端的计算"""
         hps=self._hps
         padsize = int(hps.kernel_size / 2)
-        with tf.variable_scope("text_decoder"):
+        with tf.variable_scope("text_decoder",reuse=reuse):
             # decoder端文本摘要的embedding
-            emb_decoder_inputs = tf.nn.embedding_lookup(self.vocab_emb, self.abstract)
+            emb_decoder_inputs = tf.nn.embedding_lookup(self.vocab_emb, abstract)
             emb_decoder_positions = tf.nn.embedding_lookup(self.pos_emb, abstract_position)
 
             _emb_decoder = tf.reduce_sum([emb_decoder_inputs, emb_decoder_positions], axis=0)
@@ -166,8 +170,9 @@ class ConvS2SModel():
 
 
         """对文本摘要的topic的decoder端计算"""
-        with tf.variable_scope("topic_decoder"):
+        with tf.variable_scope("topic_decoder",reuse=reuse):
             # decoder端文本摘要的topic的embedding
+            abstract_topic=''
             topic_decoder_outputs=tf.nn.embedding_lookup(self.topic_emb,abstract_topic)
             topic_decoder_position=tf.nn.embedding_lookup(self.pos_emb,abstract_position)
 
@@ -218,35 +223,80 @@ class ConvS2SModel():
         attn = tf.nn.xw_plus_b(emb, weight, bias)
         return attn
 
-    def BiasedProGen(self):
+    def _BiasedProGen(self,reuse=False):
         """Biased Probability Generation"""
         hps=self._hps
-        with tf.variable_scope("bias_pro_gen"):
+        vsize = self._vsize
+        with tf.variable_scope("bias_pro_gen",reuse=reuse):
             MAtten=tf.reshape(self.MAttenOut,shape=[-1,hps.emb_dim])
-            MAtten=self.xw_plus_b(MAtten,shapes=[hps.emb_dim,hps.top_word])
-            MAtten=tf.reshape(MAtten,shape=[hps.batch_size,-1,hps.top_word])
+            MAtten=self.xw_plus_b(MAtten,shapes=[hps.emb_dim,vsize])
+            MAtten=tf.reshape(MAtten,shape=[hps.batch_size,-1,vsize])
 
             TAtten=tf.reshape(self.TAttenOut,shape=[-1,hps.emb_dim])
-            TAtten=self.xw_plus_b(TAtten,shapes=[hps.emb_dim,hps.top_word])
-            TAtten=tf.reshape(TAtten,shape=[hps.batch_size,-1,hps.top_word])
+            TAtten=self.xw_plus_b(TAtten,shapes=[hps.emb_dim,vsize])
+            TAtten=tf.reshape(TAtten,shape=[hps.batch_size,-1,vsize])
 
-            _target=tf.exp(MAtten)+tf.multiply(tf.exp(TAtten),self.indicator)# batch,seq_len_tartget,top_word
-            # 标准化
-            self.loss=tf.nn.l2_normalize(_target,2)
+            _target=tf.exp(MAtten)+tf.multiply(tf.exp(TAtten),self.indicator)# batch,seq_len_tartget,vsize
+            return _target
 
-    def _sample(self,max_len=20):
+
+    def _sample(self):
         """sampling from the distribution"""
         hps=self._hps
-        for i in range(hps.dec_timesteps):
-            if i==0:
-                x=''
+        sample_words_list=[]
+        start_id=self._vocab.WordToId(PARAGRAPH_START)
+        end_id=self._vocab.WordToId(PARAGRAPH_END)
+        self._Encoder()
+        for t in range(hps.dec_timesteps):
+            if t==0:
+                abstract=tf.fill([hps.batch_size,1],start_id)
+                abstract_position=tf.fill([hps.batch_size,1],0)
+                abstract_topic=tf.fill([hps.batch_size,1],start_id)
+            else:
+                abstract=sample_words
+                abstract_position=sample_word_position
+                abstract_topic=sample_words_topic
 
+            self._Decoder(abstract,abstract_position,abstract_topic,reuse=(t!=0))
+            logits=self._BiasedProGen(reuse=(t!=0))
+            softmax = tf.nn.softmax(logits, dim=-1, name=None)
+            sample_word = tf.multinomial(tf.log(tf.clip_by_value(softmax, 1e-20, 1.0)), 1)
+            sample_word = tf.reshape(sample_word, [-1])
+            sample_words_list.append(sample_word)
+            sample_words=tf.concat(sample_words_list,1)
+
+            sample_word_position=tf.concat([abstract_position,tf.fill([hps.batch_size,1],t)],1)
+
+            sample_word_topic=tf.nn.embedding_lookup(self.abstract_is_topic,sample_word)
+            sample_words_topic=tf.concat([abstract_topic,sample_word_topic])
 
 
     def _greed_sample(self):
         """greedily selecting words"""
         hps=self._hps
+        sample_words_list=[]
+        start_id = self._vocab.WordToId(PARAGRAPH_START)
+        end_id = self._vocab.WordToId(PARAGRAPH_END)
+        self._Encoder()
+        for t in range(hps.dec_timesteps):
+            if t == 0:
+                abstract = tf.fill([hps.batch_size, 1], start_id)
+                abstract_position = tf.fill([hps.batch_size, 1], 0)
+                abstract_topic=tf.fill([hps.batch_size,1],start_id)
+            else:
+                abstract = sample_words
+                abstract_position = sample_word_position
+                abstract_topic=sample_words_topic
 
+            self._Decoder(abstract, abstract_position, abstract_topic, reuse=(t != 0))
+            logits = self._BiasedProGen(reuse=(t != 0))
+
+            sample_word = tf.argmax(logits, axis=1)
+            sample_words_list.append(sample_word)
+            sample_words = tf.concat(sample_words_list, 1)
+            sample_word_position = tf.concat([abstract_position, tf.fill([hps.batch_size, 1], t)], 1)
+
+            sample_words_topic=''
 
 
 

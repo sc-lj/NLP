@@ -63,9 +63,9 @@ class Batcher():
 
             dec_input_batch[i,:]=dec_input
             dec_lens[i]=dec_len
+            target_batch[i]=target
 
-
-        return (enc_input_batch,enc_position_batch,enc_topic_batch,enc_lens,dec_input_batch,dec_lens)
+        return (enc_input_batch,enc_position_batch,enc_topic_batch,enc_lens,dec_input_batch,dec_lens,target_batch)
 
 
     def _WatchThreads(self):
