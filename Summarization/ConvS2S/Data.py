@@ -21,12 +21,18 @@ class Vocab(object):
     def __init__(self, vocab_file,tvocab_file):
         self._word_to_id = {}
         self._id_to_word = {}
-        self._count = 0
-        self._id_to_topic={}
+        self._word_count = 0
+        self._topic_to_id={}
+        self._topic_count=0
+        self._word_to_topic=[]# 词汇表和主题词汇表的映射关系
 
         tvocab_f=open(tvocab_file,'r')
         t_lines=tvocab_f.readlines()
         t_lines=[line.strip() for line in t_lines]
+        for t_line in t_lines:
+            self._topic_to_id[t_line]=self._topic_count
+            self._topic_count+=1
+
         with open(vocab_file, 'r',encoding='utf-8') as vocab_f:
             for line in vocab_f:
                 pieces = line.split()
@@ -36,12 +42,11 @@ class Vocab(object):
                 if pieces[0] in self._word_to_id:
                     raise ValueError('Duplicated word: %s.' % pieces[0])
                 if pieces[0] in t_lines:
-                    self._id_to_topic[self._count]=1
-                else:
-                    self._id_to_topic[self._count]=0
-                self._word_to_id[pieces[0]] = self._count
-                self._id_to_word[self._count] = pieces[0]
-                self._count += 1
+                    self._word_to_topic.append([self._word_count,self._topic_to_id[pieces[0]]])
+
+                self._word_to_id[pieces[0]] = self._word_count
+                self._id_to_word[self._word_count] = pieces[0]
+                self._word_count += 1
 
     def CheckVocab(self, word):
         if word not in self._word_to_id:
@@ -59,7 +64,10 @@ class Vocab(object):
         return self._id_to_word[word_id]
 
     def NumIds(self):
-        return self._count
+        return self._word_count
+
+    def WordToTopic(self):
+        return self._word_to_topic
 
 
 def check_html(content):
