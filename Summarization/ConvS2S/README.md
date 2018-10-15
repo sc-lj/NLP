@@ -177,7 +177,7 @@ python LDACorpus.py
 
 生成语料库
 ```
-
+python genVocab.py
 ```
 
 训练程序
