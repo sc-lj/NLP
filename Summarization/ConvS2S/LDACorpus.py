@@ -110,16 +110,16 @@ def main():
                 contentwords.append(content)
     # look_best_topic_num(contentwords)
     lda=LDAModel(contentwords)
-    distrbution=lda.get_topic_distrbution()
-    print(distrbution)
-    # doc_topic=lda.get_topic_words()
-    # corpus=set()
-    # for topic in doc_topic:
-    #     for a in topic.split(','):
-    #         corpus.add(a)
-    # f=open('./corpus.txt','w')
-    # for cor in corpus:
-    #     f.write(cor+"\n")
+    # distrbution=lda.get_topic_distrbution()
+    # print(distrbution)
+    doc_topic=lda.get_topic_words()
+    corpus=set()
+    for topic in doc_topic:
+        for a in topic.split(','):
+            corpus.add(a)
+    f=open('../data/topic_vocab.txt','w')
+    for cor in corpus:
+        f.write(cor+"\n")
 
 
 def look_best_topic_num(content):

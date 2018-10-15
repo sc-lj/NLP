@@ -69,6 +69,9 @@ class Vocab(object):
     def WordToTopic(self):
         return self._word_to_topic
 
+    def TopicIds(self):
+        return self._topic_count
+
 
 def check_html(content):
     rec=re.compile("<.*>")

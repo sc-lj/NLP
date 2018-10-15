@@ -168,7 +168,7 @@ mini-batch 大小为32，学习率为0.0001。（两个学习率？）
 
 
 # 程序运行
-参考程序：https://github.com/weili-ict/SelfCriticalSequenceTraining-tensorflow.git
+对模型中强化学习部分的编程参考程序：https://github.com/weili-ict/SelfCriticalSequenceTraining-tensorflow.git  (个人感觉这个程序有很多错误的地方)
 
 生成主题词语料库：
 ```

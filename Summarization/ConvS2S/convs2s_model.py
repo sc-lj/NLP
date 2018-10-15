@@ -5,13 +5,13 @@ from collections import namedtuple
 import numpy as np
 from Data import *
 
-HParams=namedtuple("HParams","batch_size enc_timesteps dec_timesteps emb_dim con_layers kernel_size top_word")
+HParams=namedtuple("HParams","batch_size enc_timesteps dec_timesteps emb_dim con_layers kernel_size")
 
 class ConvS2SModel():
-    def __init__(self,vsize,tsize,hps,vocab):
+    def __init__(self,hps,vocab):
         self._hps=hps
-        self._vsize=vsize#词汇量大小
-        self._tsize=tsize#主题词汇量大小
+        self._vsize=vocab.NumIds()#词汇量大小
+        self._tsize=vocab.TopicIds()#主题词汇量大小
         self._vocab=vocab
 
         self._add_placeholder()
@@ -25,6 +25,7 @@ class ConvS2SModel():
 
         # 摘要数据，及其位置、topic的输入
         self.abstract=tf.placeholder(dtype=tf.int32,shape=[hps.batch_size,hps.dec_timesteps],name='abstracts')
+        self.abstract_position=tf.placeholder(dtype=tf.int32,shape=[hps.batch_size,hps.dec_timesteps],name='abstracts_position')
         self.topic_to_vocab=tf.placeholder(dtype=tf.int32,shape=[self._tsize,2],name="abstractIsTopic")
 
         #
@@ -240,6 +241,23 @@ class ConvS2SModel():
 
             _target=tf.exp(MAtten)+tf.multiply(tf.exp(TAtten),self.indicator)# batch,seq_len_tartget,vsize
             return _target
+
+    def _build_graph(self):
+        """只是为了建立tensorflow流程图"""
+        hps = self._hps
+        loss = []
+        pad_id = self._vocab.WordToId(PAD_TOKEN)
+        mask=tf.to_float(tf.not_equal(self.target,pad_id))
+        self._Encoder()
+        for t in range(hps.dec_timesteps):
+            abstract = self.abstract[:,:t]
+            abstract_position = self.abstract_position[:,:t]
+
+            self._Decoder(abstract, abstract_position, reuse=(t != 0))
+            logits = self._BiasedProGen(reuse=(t != 0))
+            # softmax = tf.nn.softmax(logits, dim=-1, name=None)
+            loss += tf.reduce_sum(
+                tf.nn.sparse_softmax_cross_entropy_with_logits(logits, self.target[:, t]) * mask[:, t])
 
 
     def _sample(self):

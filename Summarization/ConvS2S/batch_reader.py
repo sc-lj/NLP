@@ -9,15 +9,14 @@ from threading import Thread
 import time
 import numpy as np
 
-ModelInput=namedtuple("ModelInput",'enc_input enc_position dec_input target enc_len dec_len')
+ModelInput=namedtuple("ModelInput",'enc_input enc_position dec_input dec_position target enc_len dec_len')
 
 BUCKET_CACHE_BATCH = 100
 QUEUE_NUM_BATCH = 100
 
 class Batcher():
-    def __init__(self,vocab,tvocab,hps,max_article_length,max_abstract_length,bucketing=True,truncate_input=False):
+    def __init__(self,vocab,hps,max_article_length,max_abstract_length,bucketing=True,truncate_input=False):
         self._vocab=vocab # 词汇表
-        self._tvocab=tvocab # 主题词汇表
         self._hps=hps
         self.max_article_length=max_article_length
         self.max_abstract_lenght=max_abstract_length
@@ -42,28 +41,34 @@ class Batcher():
         self.watch_thread.start()
 
 
-    def NextBatch(self):
-        hps=self._hps
-        enc_input_batch=np.zeros([hps.batch_size,hps.enc_timesteps],dtype=np.int32)
-        enc_position_batch=np.zeros([hps.batch_size,hps.enc_timesteps],dtype=np.int32)
-        enc_lens=np.zeros([hps.batch_size],dtype=np.int32)
+    def NextBatch(self,batch=None):
+        hps = self._hps
+        if batch is None:
+            batch_size=hps.batch_size
+        else:batch_size=batch
 
-        dec_input_batch=np.zeros([hps.batch_size,hps.dec_timesteps],dtype=np.int32)
-        dec_lens=np.zeros([hps.batch_size],dtype=np.int32)
-        target_batch=np.zeros([hps.batch_size,])
+        enc_input_batch=np.zeros([batch_size,hps.enc_timesteps],dtype=np.int32)
+        enc_position_batch=np.zeros([batch_size,hps.enc_timesteps],dtype=np.int32)
+        enc_lens=np.zeros([batch_size],dtype=np.int32)
+
+        dec_input_batch=np.zeros([batch_size,hps.dec_timesteps],dtype=np.int32)
+        dec_position_batch=np.zeros([batch_size,hps.enc_timesteps],dtype=np.int32)
+        dec_lens=np.zeros([batch_size],dtype=np.int32)
+        target_batch=np.zeros([batch_size,])
 
         buckets=self.bucket_input_queue.get()
-        for i in range(hps.batch_size):
-            enc_input,enc_position,enc_topic,dec_input,target,enc_len,dec_len=buckets[i]
+        for i in range(batch_size):
+            enc_input,enc_position,enc_topic,dec_input,dec_position,target,enc_len,dec_len=buckets[i]
             enc_input_batch[i,:]=enc_input[:]
             enc_position_batch[i,:]=enc_position
             enc_lens[i]=enc_len
 
             dec_input_batch[i,:]=dec_input
+            dec_position_batch[i,:]=dec_position
             dec_lens[i]=dec_len
             target_batch[i]=target
 
-        return (enc_input_batch,enc_position_batch,enc_lens,dec_input_batch,dec_lens,target_batch)
+        return (enc_input_batch,enc_position_batch,enc_lens,dec_input_batch,dec_lens,dec_position_batch,target_batch)
 
 
     def _WatchThreads(self):
@@ -127,6 +132,7 @@ class Batcher():
             enc_position=[0]
 
             dec_input=[]
+            dec_position=[0]
 
             for i in range(min(self.max_article_length,len(article_sentence))):
                 enc_input+=GetWordIds(article_sentence[i],self._vocab)
@@ -134,6 +140,7 @@ class Batcher():
 
             for i in range(min(self.max_abstract_lenght,len(abstract_sentence))):
                 dec_input+=GetWordIds(abstract_sentence[i],self._vocab)
+                dec_position.append(i)
 
             if (len(enc_input)<hps.min_input_len or len(dec_input)<hps.min_input_len):
                 tf.logging.warning("丢掉文本的长度或者摘要的长度太短的样本,\nenc:%d\ndec:%d",len(enc_input),len(dec_input))
@@ -149,6 +156,7 @@ class Batcher():
                     enc_position=enc_position[:hps.enc_timesteps]
                 if len(dec_input)>hps.dec_timesteps:
                     dec_input=dec_input[:hps.dec_timesteps]
+                    dec_position=dec_input[:hps.dec_timesteps]
 
             target=dec_input[1:]
             target.append(end_id)
@@ -162,11 +170,12 @@ class Batcher():
 
             while len(dec_input)<hps.dec_timesteps:
                 dec_input.append(pad_id)
+                dec_position.append(len(dec_position))
 
             while len(target)<hps.dec_timesteps:
                 target.append(pad_id)
 
-            element=ModelInput(enc_input,enc_position,dec_input,target,enc_input_len,dec_output_len)
+            element=ModelInput(enc_input,enc_position,dec_input,dec_position,target,enc_input_len,dec_output_len)
             self.input_queue.put(element)
 
 

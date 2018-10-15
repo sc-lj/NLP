@@ -34,6 +34,7 @@ class Rouge():
 
     def rouge_n(self,n=2):
         """rouge-n
+        :return  length of predicted target
         :return  [batch_size]
         """
         batch_size=self.batch_size
@@ -45,7 +46,7 @@ class Rouge():
             loop_vars=[k,n,total_rouge]
         )
         rouge = tf.reshape(total_rouge,shape=[-1,1])
-        return rouge
+        return self.m,rouge
 
 
     def step_n(self,k,n,total_rouge):
@@ -97,7 +98,8 @@ class Rouge():
           end_id: end token, used to truncate sequences before calculating ROUGE-L
 
         Returns:
-          1-D Tensor. Average ROUGE-L values
+            length of predicted target
+            1-D Tensor. Average ROUGE-L values
         """
         batch_size=self.batch_size
         k = 0
@@ -108,7 +110,7 @@ class Rouge():
             loop_vars=[k, total_rouge])
         # get average ROUGE-L values
         rouge = tf.reshape(total_rouge,shape=[-1,1])
-        return rouge
+        return self.m,rouge
 
 
     def _step(self,k, total_rouge):
