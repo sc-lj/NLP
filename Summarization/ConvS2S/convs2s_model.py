@@ -8,12 +8,12 @@ from Data import *
 HParams=namedtuple("HParams","batch_size enc_timesteps dec_timesteps emb_dim con_layers kernel_size")
 
 class ConvS2SModel():
-    def __init__(self,hps,vocab):
+    def __init__(self,hps,vocab,num_gpus=0):
         self._hps=hps
         self._vsize=vocab.NumIds()#词汇量大小
         self._tsize=vocab.TopicIds()#主题词汇量大小
         self._vocab=vocab
-
+        self._num_gpus = num_gpus
         self._add_placeholder()
         self._embedding()
 
@@ -53,10 +53,24 @@ class ConvS2SModel():
             self.topic_emb = tf.get_variable(name='topic_emb', shape=[tsize, hps.emb_dim], dtype=tf.float32,
                                         initializer=tf.truncated_normal_initializer(0, stddev=0.1))
 
+    def _next_device(self):
+        """Round robin the gpu device. (Reserve last gpu for expensive op)."""
+        if self._num_gpus == 0:
+            return ''
+        dev = '/gpu:%d' % self._cur_gpu
+        if self._num_gpus > 1:
+            self._cur_gpu = (self._cur_gpu + 1) % (self._num_gpus - 1)
+        return dev
+
+    def _get_gpu(self, gpu_id):
+        if self._num_gpus <= 0 or gpu_id >= self._num_gpus:
+            return ''
+        return '/gpu:%d' % gpu_id
+
     def _Encoder(self):
         hps=self._hps
 
-        with tf.variable_scope('convs2s'):
+        with tf.variable_scope('convs2s'),tf.device(self._next_device()):
             # encoder端文章的embedding
             emb_encoder_inputs=tf.nn.embedding_lookup(self.vocab_emb,self.article)
             emb_encoder_positions=tf.nn.embedding_lookup(self.pos_emb,self.article_position)
@@ -78,7 +92,7 @@ class ConvS2SModel():
                 # encoder端的卷积
                 last_encoder_outputs=emb_encoder=_emb_encoder
                 for enc_layer in range(hps.con_layers):
-                    with tf.variable_scope("encoder_%d"%enc_layer):
+                    with tf.variable_scope("encoder_%d"%enc_layer),tf.device(self._next_device()):
                         # 对attn进行padding，使用PAD的emb进行padding，但是文献中建议使用0向量padding。
                         emb_encoder = tf.pad(emb_encoder, paddings=[[0, 0], [padsize, padsize], [0, 0]], constant_values=self.PAD_emb)
                         encoder_shape = emb_encoder.shape.as_list()
@@ -101,7 +115,7 @@ class ConvS2SModel():
                 # topic 的卷积
                 last_topic_outputs=emb_topic=_emb_topic
                 for topic_layer in range(hps.con_layers):
-                    with tf.variable_scope("topic_%d"%topic_layer):
+                    with tf.variable_scope("topic_%d"%topic_layer),tf.device(self._next_device()):
                         # 对attn进行padding，使用PAD的emb进行padding，但是文献中建议使用0向量padding。
                         emb_topic = tf.pad(emb_topic, paddings=[[0, 0], [padsize, padsize], [0, 0]], constant_values=self.PAD_emb)
                         topic_shape = emb_topic.shape.as_list()
@@ -134,7 +148,7 @@ class ConvS2SModel():
             last_decoder_outputs =emb_decoder= _emb_decoder# batch,seq_len_target,dim
             self.attn_c=[]# 用于加到topic端的h
             for dec_layer in range(hps.con_layers):
-                with tf.variable_scope("decoder_%d" % dec_layer):
+                with tf.variable_scope("decoder_%d" % dec_layer),tf.device(self._next_device()):
                     # 对attn进行padding，使用PAD的emb进行padding，但是文献中建议使用0向量padding。
                     emb_decoder = tf.pad(emb_decoder, paddings=[[0, 0], [padsize, padsize], [0, 0]], constant_values=self.PAD_emb)
                     decoder_shape = emb_decoder.shape.as_list()
@@ -182,7 +196,7 @@ class ConvS2SModel():
             last_topic_outputs=topic_emb=_topic_emb
 
             for topic_layer in range(hps.con_layers):
-                with tf.variable_scope("decoder_%d"%topic_layer):
+                with tf.variable_scope("decoder_%d"%topic_layer),tf.device(self._next_device()):
                     topic_emb = tf.pad(topic_emb, paddings=[[0, 0], [padsize, padsize], [0, 0]], constant_values=self.PAD_emb)
                     topic_shape=topic_emb.shape.as_list()
                     topic_emb=tf.reshape(topic_emb,shape=[topic_shape[0],topic_shape[1],topic_shape[2],1])
@@ -228,7 +242,7 @@ class ConvS2SModel():
         """Biased Probability Generation"""
         hps=self._hps
         vsize = self._vsize
-        with tf.variable_scope("bias_pro_gen",reuse=reuse):
+        with tf.variable_scope("bias_pro_gen",reuse=reuse),tf.device(self._next_device()):
             # 词汇的atten机制
             MAtten=tf.reshape(self.MAttenOut,shape=[-1,hps.emb_dim])
             MAtten=self.xw_plus_b(MAtten,shapes=[hps.emb_dim,vsize])

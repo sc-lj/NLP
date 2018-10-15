@@ -26,6 +26,26 @@ tf.flags.DEFINE_string("update_rule","adam","update model rule")
 tf.flags.DEFINE_integer("lr",0.01,"learning rate")
 tf.flags.DEFINE_string("rouge","rouge_l","Abstract summary evaluation method")
 
+tf.flags.DEFINE_string("job_name", "worker", "One of 'ps', 'worker'")#worker和ps
+tf.flags.DEFINE_integer("task_index", 0, "Index of task within the job") #index有三个task_index，即0，1，2
+tf.flags.DEFINE_integer("num_gpus", 1,"Total number of gpus for each machine. If you don't use GPU, please set it to '0'")
+
+# 同步训练模型下，设置收集工作节点数量。默认工作节点总数
+tf.flags.DEFINE_integer("replicas_to_aggregate", None,"Number of replicas to aggregate before parameter update"
+                     "is applied (For sync_replicas mode only; default: num_workers)")
+
+# 使用同步训练、异步训练
+tf.flags.DEFINE_boolean("sync_replicas", False,"Use the sync_replicas (synchronized replicas) mode, "
+                     "wherein the parameter updates from workers are aggregated before applied to avoid stale gradients")
+# 定义集群
+ps_hosts = ["xx.xxx.xx.xxxx:oooo", "xx.xxx.xx.xxxx:oooo"]  # 两个参数服务器
+worker_hosts = ["xx.xxx.xx.xxxx:oooo", "xx.xxx.xx.xxxx:oooo", "xx.xxx.xx.xxxx:oooo"]  # 两个计算服务器
+cluster = tf.train.ClusterSpec({"ps": ps_hosts, "worker": worker_hosts})
+server = tf.train.Server(cluster,
+                         job_name=FLAGS.job_name,
+                         task_index=FLAGS.task_index)
+server.join()
+
 
 class ConS2S():
     def __init__(self,model,hps,batch_reader,vocab):
@@ -52,72 +72,106 @@ class ConS2S():
         self.lr=FLAGS.lr
         self.rouge=FLAGS.rouge
 
-
     def train(self):
-        self.model._build_graph()
-        summaries = tf.summary.merge_all()
-        tf.get_variable_scope().reuse_variables()
-        sampled_captions, _ = self.model._sample()
-        greedy_caption = self.model._greed_sample()
+        num_workers = len(worker_hosts)
+        # tf.train.Server定义开始，每个节点就不一样了。根据执行的命令参数不同，决定了这个任务是哪个任务。
+        # 如果任务名字是ps的话，程序就join到这里，作为参数更新的服务，等待其他worker节点给他提交参数更新的数据。
+        # 如果是worker任务，就继续执行后面的计算任务。
+        server = tf.train.Server(cluster,job_name=FLAGS.job_name,task_index=FLAGS.task_index)
+        if FLAGS.job_name == "ps":
+            server.join()
 
-        rewards = tf.placeholder(tf.float32, [None])
-        base_line = tf.placeholder(tf.float32, [None])
+        # 函数replica_deviec_setter会自动分配到参数服务器上去定义，如果有多个参数服务器，就轮流循环分配
+        with tf.device(tf.train.replica_device_setter(worker_device="/job:worker/task:%d" % FLAGS.task_index,ps_device="/job:ps/cpu:0",cluster=cluster)):
+            self.model._build_graph()
+            summaries = tf.summary.merge_all()
+            global_step = tf.Variable(0,trainable=False,name="global_step")
+            tf.get_variable_scope().reuse_variables()
+            sampled_captions, _ = self.model._sample()
+            greedy_caption = self.model._greed_sample()
 
-        grad_mask = tf.placeholder(tf.int32, [None])
-        t1_mul = tf.to_float(grad_mask)
+            rewards = tf.placeholder(tf.float32, [None])
+            base_line = tf.placeholder(tf.float32, [None])
 
-        loss = self.model._build_loss()
+            grad_mask = tf.placeholder(tf.int32, [None])
+            t1_mul = tf.to_float(grad_mask)
 
-        with tf.name_scope('optimizer'):
-            optimizer = self.optimizer(learning_rate=self.lr)
-            norm = tf.reduce_sum(t1_mul)
-            r = rewards - base_line
-            sum_loss = -tf.reduce_sum(tf.transpose(tf.multiply(tf.transpose(loss, [1, 0]),r), [1, 0]))/ norm
-            grad_rl,_=tf.clip_by_global_norm(tf.gradients(sum_loss,tf.trainable_variables(),aggregation_method=tf.AggregationMethod.EXPERIMENTAL_ACCUMULATE_N),5.0)
-            grads_and_vars=list(zip(grad_rl,tf.trainable_variables()))
-            train_op=optimizer.apply_gradients(grads_and_vars=grads_and_vars)
+            loss = self.model._build_loss()
 
-        # allow_soft_placement能让tensorflow遇到无法用GPU跑的数据时，自动切换成CPU进行。
-        config=tf.ConfigProto(allow_soft_placement=True)
-        config.gpu_options.allow_growth=True # 程序按需申请内存
-        config.gpu_options.allocator_type="BFC" # 使用BFC算法
+            with tf.name_scope('optimizer'):
+                # 异步训练模式：自己计算完成梯度就去更新参数，不同副本之间不会去协调进度
+                optimizer = self.optimizer(learning_rate=self.lr)
+                # 同步训练模式
+                if FLAGS.sync_replicas:
+                    if FLAGS.replicas_to_aggregate is None:
+                        replicas_to_aggregate = num_workers
+                    else:
+                        replicas_to_aggregate = FLAGS.replicas_to_aggregate
+                    # 使用SyncReplicasOptimizer作优化器，并且是在图间复制情况下
+                    # 在图内复制情况下将所有梯度平均
+                    optimizer = tf.train.SyncReplicasOptimizer(
+                        optimizer,
+                        replicas_to_aggregate=replicas_to_aggregate,
+                        total_num_replicas=num_workers,
+                        name="mnist_sync_replicas")
+                norm = tf.reduce_sum(t1_mul)
+                r = rewards - base_line
+                sum_loss = -tf.reduce_sum(tf.transpose(tf.multiply(tf.transpose(loss, [1, 0]),r), [1, 0]))/ norm
+                grad_rl,_=tf.clip_by_global_norm(tf.gradients(sum_loss,tf.trainable_variables(),aggregation_method=tf.AggregationMethod.EXPERIMENTAL_ACCUMULATE_N),5.0)
+                grads_and_vars=list(zip(grad_rl,tf.trainable_variables()))
+                train_op=optimizer.apply_gradients(grads_and_vars=grads_and_vars,global_step=global_step)
 
-        saver = tf.train.Saver()
-        saver_hook = tf.train.CheckpointSaverHook(checkpoint_dir=FLAGS.log_root, saver=saver,
-                                                  save_secs=FLAGS.checkpoint_secs)
-        # Train dir is different from log_root to avoid summary directory
-        # conflict with Supervisor.
-        summary_writer = tf.summary.FileWriter(FLAGS.train_dir)
-        # tf.train.Supervisor可以简化编程,避免显示地实现restore操作
-        sess = tf.train.MonitoredTrainingSession(checkpoint_dir=FLAGS.log_root,
-                                                 is_chief=True,
-                                                 hooks=[saver_hook],
-                                                 config=config)
+            # allow_soft_placement能让tensorflow遇到无法用GPU跑的数据时，自动切换成CPU进行。
+            config=tf.ConfigProto(allow_soft_placement=True,device_filters=["/job:ps", "/job:worker/task:%d" % FLAGS.task_index])
+            config.gpu_options.allow_growth=True # 程序按需申请内存
+            config.gpu_options.allocator_type="BFC" # 使用BFC算法
 
-        step=0
-        while not sess.should_stop() and step < FLAGS.max_run_steps:
-            (enc_input_batch,enc_position_batch,enc_lens,dec_input_batch,dec_lens,dec_position_batch,target_batch) = self.batch_reader.NextBatch()
-            ref_decoded =target_batch
-            feed_dict = {self.model.article: enc_input_batch, self.model.article_position: enc_position_batch,
-                         self.model.abstract:dec_input_batch,self.model.topic_to_vocab:self.word_to_topic,
-                         self.model.abstract_position:dec_position_batch}
+            saver = tf.train.Saver()
+            # saver_hook = tf.train.CheckpointSaverHook(checkpoint_dir=FLAGS.log_root, saver=saver,save_secs=FLAGS.checkpoint_secs)
 
-            samples, greedy_words = sess.run([sampled_captions, greedy_caption],feed_dict)
+            # Train dir is different from log_root to avoid summary directory conflict with Supervisor.
+            summary_writer = tf.summary.FileWriter(FLAGS.train_dir)
+            # tf.train.Supervisor可以简化编程,避免显示地实现restore操作
+            # sess = tf.train.MonitoredTrainingSession(checkpoint_dir=FLAGS.log_root,
+            #                                          is_chief=True,
+            #                                          hooks=[saver_hook],
+            #                                          config=config)
 
-            r_rouge=Rouge(samples,ref_decoded,self.end_id)
-            b_rouge=Rouge(greedy_words,ref_decoded,self.end_id)
-            mask,r = r_rouge(self.rouge)
-            _,b = b_rouge(self.rouge)
+            init= tf.initialize_all_variables()
+            sv = tf.train.Supervisor(is_chief=(FLAGS.task_index == 0),
+                                     logdir=FLAGS.log_root,
+                                     init_op=init,
+                                     summary_op=summaries,
+                                     saver=saver,
+                                     global_step=global_step,
+                                     save_model_secs=600)
 
-            feed_dict = {grad_mask: mask, self.model.sample_caption:samples ,rewards: r, base_line: b,
-                         self.model.article: enc_input_batch, self.model.article_position: enc_position_batch,
-                         self.model.abstract: dec_input_batch, self.model.topic_to_vocab: self.word_to_topic,
-                         self.model.abstract_position: dec_position_batch
-                         }  # write summary for tensorboard visualization
-            train_step = sess.run([train_op], feed_dict)
-            summary_writer.add_summary(summaries, train_step)
+            sess=sv.managed_session(server.target,config=config)
+            step=0
+            while not sv.should_stop() and step < FLAGS.max_run_steps:
+                (enc_input_batch,enc_position_batch,enc_lens,dec_input_batch,dec_lens,dec_position_batch,target_batch) = self.batch_reader.NextBatch()
+                ref_decoded =target_batch
+                feed_dict = {self.model.article: enc_input_batch, self.model.article_position: enc_position_batch,
+                             self.model.abstract:dec_input_batch,self.model.topic_to_vocab:self.word_to_topic,
+                             self.model.abstract_position:dec_position_batch}
 
-            step+=1
+                samples, greedy_words = sess.run([sampled_captions, greedy_caption],feed_dict)
+
+                r_rouge=Rouge(samples,ref_decoded,self.end_id)
+                b_rouge=Rouge(greedy_words,ref_decoded,self.end_id)
+                mask,r = r_rouge(self.rouge)
+                _,b = b_rouge(self.rouge)
+
+                feed_dict = {grad_mask: mask, self.model.sample_caption:samples ,rewards: r, base_line: b,
+                             self.model.article: enc_input_batch, self.model.article_position: enc_position_batch,
+                             self.model.abstract: dec_input_batch, self.model.topic_to_vocab: self.word_to_topic,
+                             self.model.abstract_position: dec_position_batch
+                             }  # write summary for tensorboard visualization
+                train_step,_ = sess.run([train_op,global_step], feed_dict)
+                summary_writer.add_summary(summaries, train_step)
+                step+=1
+
+            sv.stop()
 
     def eval(self):
         sampled_captions, _ = self.model._sample()
