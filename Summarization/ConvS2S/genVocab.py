@@ -114,9 +114,9 @@ def genVocab(vocabfile):
             contentlen=len(content)
             dalist.append([brieflen,contentlen])
 
-    data = pd.DataFrame(columns=["brief", "content"],data=dalist)
-    data=data[data['brief']>0]
-    data.to_csv("../data/len.csv",index=False)
+    # data = pd.DataFrame(columns=["brief", "content"],data=dalist)
+    # data=data[data['brief']>0]
+    # data.to_csv("../data/len.csv",index=False)
     mysql.close()
     newvocab={Data.UNKNOWN_TOKEN:0,Data.PAD_TOKEN:-1,Data.SENTENCE_START:-1,Data.SENTENCE_END:-1}
     for key, value in vocab.items():
