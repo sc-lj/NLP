@@ -1,4 +1,5 @@
 # coding:utf-8
+"""自动文本摘要评测方法"""
 
 import tensorflow as tf
 
@@ -22,17 +23,28 @@ class Rouge():
         self.n=tf.where(tf.equal(n,0),tf.fill([self.batch_size],tf.shape(self.refer)[1]-1),m)
 
 
+    def __call__(self, rouge_type,n=2):
+        if "rouge_l" ==rouge_type:
+            return self.rouge_l()
+        elif "rouge_n" ==rouge_type:
+            return self.rouge_n(n=n)
+        else:
+            raise ValueError("请选择正确的摘要评测方法，目前提供了rouge_l和rouge_n两种方法。")
+
+
     def rouge_n(self,n=2):
-        """rouge-n"""
+        """rouge-n
+        :return  [batch_size]
+        """
         batch_size=self.batch_size
         k=0
-        total_rouge=tf.constant([0.])
-        _,total_rouge=tf.while_loop(
+        total_rouge=tf.Variable([])
+        _,_,total_rouge=tf.while_loop(
             cond=lambda k,*_:k<batch_size,
             body=self.step_n,
             loop_vars=[k,n,total_rouge]
         )
-        rouge = total_rouge / tf.cast(batch_size, tf.float32)
+        rouge = tf.reshape(total_rouge,shape=[-1,1])
         return rouge
 
 
@@ -63,7 +75,7 @@ class Rouge():
         )
         m1=tf.cast(m1,tf.float32)
         value=value/m1
-        total_rouge+=value
+        total_rouge=tf.concat([total_rouge,value],0)
         return k,n,total_rouge
 
 
@@ -89,13 +101,13 @@ class Rouge():
         """
         batch_size=self.batch_size
         k = 0
-        total_rouge = tf.constant([0., 0., 0.])
+        total_rouge = tf.Variable([])
         _, total_rouge = tf.while_loop(
             cond=lambda k, *_: k < batch_size,
             body=self._step,
             loop_vars=[k, total_rouge])
         # get average ROUGE-L values
-        rouge = total_rouge / tf.cast(batch_size, tf.float32)
+        rouge = tf.reshape(total_rouge,shape=[-1,1])
         return rouge
 
 
@@ -103,8 +115,10 @@ class Rouge():
         # calculate ROUGE-L for every element
         llcs = self._tf_len_lcs(self.target[k], self.refer[k], self.m[k], self.n[k])
         res = self._f_p_r_lcs(llcs, self.m[k], self.n[k])
+        res= tf.reshape(res, shape=[1])
         res = tf.cast(res, tf.float32)
-        return k + 1, total_rouge + res
+        total_rouge =tf.concat([total_rouge,res],0)
+        return k + 1, total_rouge
 
 
     def _tf_len_lcs(self,x, y, m, n):
@@ -146,6 +160,6 @@ class Rouge():
         num = (1 + (beta**2)) * r_lcs * p_lcs
         denom = r_lcs + ((beta**2) * p_lcs)
         f_lcs = num / (denom + 1e-12)
-        return f_lcs, p_lcs, r_lcs
+        return f_lcs
 
 

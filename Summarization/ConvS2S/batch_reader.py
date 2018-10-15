@@ -9,7 +9,7 @@ from threading import Thread
 import time
 import numpy as np
 
-ModelInput=namedtuple("ModelInput",'enc_input enc_position enc_topic dec_input target enc_len dec_len')
+ModelInput=namedtuple("ModelInput",'enc_input enc_position dec_input target enc_len dec_len')
 
 BUCKET_CACHE_BATCH = 100
 QUEUE_NUM_BATCH = 100
@@ -46,7 +46,6 @@ class Batcher():
         hps=self._hps
         enc_input_batch=np.zeros([hps.batch_size,hps.enc_timesteps],dtype=np.int32)
         enc_position_batch=np.zeros([hps.batch_size,hps.enc_timesteps],dtype=np.int32)
-        enc_topic_batch=np.zeros([hps.batch_size,hps.enc_timesteps],dtype=np.int32)
         enc_lens=np.zeros([hps.batch_size],dtype=np.int32)
 
         dec_input_batch=np.zeros([hps.batch_size,hps.dec_timesteps],dtype=np.int32)
@@ -58,14 +57,13 @@ class Batcher():
             enc_input,enc_position,enc_topic,dec_input,target,enc_len,dec_len=buckets[i]
             enc_input_batch[i,:]=enc_input[:]
             enc_position_batch[i,:]=enc_position
-            enc_topic_batch[i,:]=enc_topic
             enc_lens[i]=enc_len
 
             dec_input_batch[i,:]=dec_input
             dec_lens[i]=dec_len
             target_batch[i]=target
 
-        return (enc_input_batch,enc_position_batch,enc_topic_batch,enc_lens,dec_input_batch,dec_lens,target_batch)
+        return (enc_input_batch,enc_position_batch,enc_lens,dec_input_batch,dec_lens,target_batch)
 
 
     def _WatchThreads(self):
@@ -127,15 +125,10 @@ class Batcher():
 
             enc_input=[start_id]
             enc_position=[0]
-            enc_topic=[0]
 
             dec_input=[]
 
             for i in range(min(self.max_article_length,len(article_sentence))):
-                if article_sentence[i] in self._tvocab._word_to_id:
-                    enc_topic.append(1)
-                else:
-                    enc_topic.append(0)
                 enc_input+=GetWordIds(article_sentence[i],self._vocab)
                 enc_position.append(i)
 
@@ -154,7 +147,6 @@ class Batcher():
                 if len(enc_input)>hps.enc_timesteps:
                     enc_input=enc_input[:hps.enc_timesteps]
                     enc_position=enc_position[:hps.enc_timesteps]
-                    enc_topic=enc_topic[:hps.enc_timesteps]
                 if len(dec_input)>hps.dec_timesteps:
                     dec_input=dec_input[:hps.dec_timesteps]
 
@@ -167,7 +159,6 @@ class Batcher():
             while len(enc_input)<hps.enc_timesteps:
                 enc_input.append(pad_id)
                 enc_position.append(len(enc_position))
-                enc_topic.append(0)
 
             while len(dec_input)<hps.dec_timesteps:
                 dec_input.append(pad_id)
@@ -175,7 +166,7 @@ class Batcher():
             while len(target)<hps.dec_timesteps:
                 target.append(pad_id)
 
-            element=ModelInput(enc_input,enc_position,enc_topic,dec_input,target,enc_input_len,dec_output_len)
+            element=ModelInput(enc_input,enc_position,dec_input,target,enc_input_len,dec_output_len)
             self.input_queue.put(element)
 
 

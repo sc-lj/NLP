@@ -47,8 +47,7 @@ class ConvS2SModel():
         with tf.variable_scope("embedding"):
             self.vocab_emb = tf.get_variable(name='word_emb', shape=[vsize, hps.emb_dim], dtype=tf.float32,
                                              initializer=tf.truncated_normal_initializer(mean=0, stddev=0.1))
-            self.pos_emb = tf.get_variable(name='position_emb', shape=[hps.enc_timesteps, hps.emb_dim],
-                                           dtype=tf.float32,
+            self.pos_emb = tf.get_variable(name='position_emb', shape=[hps.enc_timesteps, hps.emb_dim],dtype=tf.float32,
                                            initializer=tf.truncated_normal_initializer(mean=0, stddev=0.1))
             self.topic_emb = tf.get_variable(name='topic_emb', shape=[tsize, hps.emb_dim], dtype=tf.float32,
                                         initializer=tf.truncated_normal_initializer(0, stddev=0.1))
@@ -229,10 +228,12 @@ class ConvS2SModel():
         hps=self._hps
         vsize = self._vsize
         with tf.variable_scope("bias_pro_gen",reuse=reuse):
+            # 词汇的atten机制
             MAtten=tf.reshape(self.MAttenOut,shape=[-1,hps.emb_dim])
             MAtten=self.xw_plus_b(MAtten,shapes=[hps.emb_dim,vsize])
             MAtten=tf.reshape(MAtten,shape=[hps.batch_size,-1,vsize])
 
+            # 主题词汇表的atten机制
             TAtten=tf.reshape(self.TAttenOut,shape=[-1,hps.emb_dim])
             TAtten=self.xw_plus_b(TAtten,shapes=[hps.emb_dim,vsize])
             TAtten=tf.reshape(TAtten,shape=[hps.batch_size,-1,vsize])
@@ -299,6 +300,7 @@ class ConvS2SModel():
 
 
     def _build_loss(self):
+        """建立损失函数"""
         hps=self._hps
         loss=[]
         start_id = self._vocab.WordToId(PARAGRAPH_START)
@@ -319,7 +321,7 @@ class ConvS2SModel():
             logits = self._BiasedProGen(reuse=(t != 0))
             softmax = tf.nn.softmax(logits, dim=-1, name=None)
 
-            loss.append(tf.transpose(tf.mul(tf.transpose(tf.log(tf.clip_by_value(softmax, 1e-20, 1.0)) * tf.one_hot(abstract[:, t], self._vsize), [1, 0]),  mask[:, t]), [1, 0]))
+            loss.append(tf.transpose(tf.multiply(tf.transpose(tf.log(tf.clip_by_value(softmax, 1e-20, 1.0)) * tf.one_hot(abstract[:, t], self._vsize), [1, 0]),  mask[:, t]), [1, 0]))
 
         loss_out = tf.concat(loss,-1)
 
@@ -332,6 +334,7 @@ class ConvS2SModel():
         return tf.logical_or(g, t[0]),tf.maximum(t[1],index), single, k1 + 1
 
     def _look(self,single):
+        """返回single是否在主题词汇表中，并返回在主题词汇表中的index"""
         g = False
         k1 = 0
         index=-1
@@ -353,6 +356,7 @@ class ConvS2SModel():
         return k + 1,topic, matrix
 
     def topic_embbeding(self,topic):
+        """条件embedding"""
         topic_shape=topic.get_shape()
         topics=tf.reshape(topic,[-1])
         k = tf.constant(1)
@@ -364,7 +368,7 @@ class ConvS2SModel():
             cond=lambda k, *_: k < size,
             body=self.loop_step,
             loop_vars=[k,topics, matrix],
-            shape_invariants=[k.get_shape(),tf.TensorShape([None]), tf.TensorShape([None, 1, 5])]
+            shape_invariants=[k.get_shape(),tf.TensorShape([None]), tf.TensorShape([None, 1, 5])]#对于shape可变的variable需要定义的
 
         )
         matrix = tf.reshape(matrix, shape=[-1, topic_shape[1], 5])

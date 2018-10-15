@@ -166,3 +166,22 @@ mini-batch 大小为32，学习率为0.0001。（两个学习率？）
 
 但是最后实验结果表明，基于字符级的方法比基于单词级的方法，能够得到更高的ROUGE分数。
 
+
+# 程序运行
+参考程序：https://github.com/weili-ict/SelfCriticalSequenceTraining-tensorflow.git
+
+生成主题词语料库：
+```
+python LDACorpus.py
+```
+
+生成语料库
+```
+
+```
+
+训练程序
+```
+python train.py
+```
+
