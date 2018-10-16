@@ -89,8 +89,8 @@ class ConS2S():
             summaries = tf.summary.merge_all()
             global_step = tf.Variable(0,trainable=False,name="global_step")
             tf.get_variable_scope().reuse_variables()
-            # sampled_captions, _ = self.model._sample()
-            # greedy_caption = self.model._greed_sample()
+            sampled_captions, _ = self.model._sample()
+            greedy_caption = self.model._greed_sample()
 
             rewards = tf.placeholder(tf.float32, [None])
             base_line = tf.placeholder(tf.float32, [None])
@@ -99,7 +99,7 @@ class ConS2S():
             t1_mul = tf.to_float(grad_mask)
 
             loss = self.model._build_loss()
-            print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+
             with tf.name_scope('optimizer'):
                 # 异步训练模式：自己计算完成梯度就去更新参数，不同副本之间不会去协调进度
                 optimizer = self.optimizer(learning_rate=self.lr)
