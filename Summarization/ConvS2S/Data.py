@@ -25,6 +25,7 @@ class Vocab(object):
         self._topic_to_id={}
         self._topic_count=0
         self._word_to_topic=[]# 词汇表和主题词汇表的映射关系
+        self.indicator=[]
 
         tvocab_f=open(tvocab_file,'r')
         t_lines=tvocab_f.readlines()
@@ -43,6 +44,9 @@ class Vocab(object):
                     raise ValueError('Duplicated word: %s.' % pieces[0])
                 if pieces[0] in t_lines:
                     self._word_to_topic.append([self._word_count,self._topic_to_id[pieces[0]]])
+                    self.indicator.append(1)
+                else:
+                    self.indicator.append(0)
 
                 self._word_to_id[pieces[0]] = self._word_count
                 self._id_to_word[self._word_count] = pieces[0]

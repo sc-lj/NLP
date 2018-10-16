@@ -5,7 +5,7 @@ from collections import namedtuple
 import numpy as np
 from Data import *
 
-HParams=namedtuple("HParams","batch_size enc_timesteps dec_timesteps emb_dim con_layers kernel_size")
+HParams=namedtuple("HParams","batch_size enc_timesteps dec_timesteps emb_dim con_layers kernel_size min_input_len")
 
 class ConvS2SModel():
     def __init__(self,hps,vocab,num_gpus=0):
@@ -29,16 +29,16 @@ class ConvS2SModel():
         self.topic_to_vocab=tf.placeholder(dtype=tf.int32,shape=[self._tsize,2],name="abstractIsTopic")
 
         #
-        self.target=tf.placeholder(dtype=tf.int32,shape=[hps.batch_size,hps,hps.dec_timesteps],name='targets')
+        self.target=tf.placeholder(dtype=tf.int32,shape=[hps.batch_size,hps.dec_timesteps],name='targets')
         self.loss_weight=tf.placeholder(dtype=tf.float32,shape=[hps.batch_size,hps.dec_timesteps],name='loss_weight')
 
         # 文本和摘要的实际长度
         self.article_len=tf.placeholder(dtype=tf.int32,shape=[hps.batch_size],name='article_len')
         self.abstract_len=tf.placeholder(dtype=tf.int32,shape=[hps.batch_size],name='abstract_len')
         # 组成摘要的词是否在topic中
-        self.indicator=tf.placeholder(dtype=tf.float32,shape=[hps.batch_size,hps.dec_timesteps],name="indicator")
+        self.indicator=tf.placeholder(dtype=tf.float32,shape=[self._vsize],name="indicator")
 
-        self.sample_caption=tf.placeholder(dtype=tf.float32,shape=[hps.batch_size,hps.dec_timesteps],name='sample_caption')
+        self.sample_caption=tf.placeholder(dtype=tf.int32,shape=[hps.batch_size,hps.dec_timesteps],name='sample_caption')
 
     def _embedding(self):
         hps=self._hps
@@ -94,13 +94,11 @@ class ConvS2SModel():
                 for enc_layer in range(hps.con_layers):
                     with tf.variable_scope("encoder_%d"%enc_layer),tf.device(self._next_device()):
                         # 对attn进行padding，使用PAD的emb进行padding，但是文献中建议使用0向量padding。
-                        emb_encoder = tf.pad(emb_encoder, paddings=[[0, 0], [padsize, padsize], [0, 0]], constant_values=self.PAD_emb)
-                        encoder_shape = emb_encoder.shape.as_list()
-                        emb_encoder = tf.reshape(emb_encoder, shape=[encoder_shape[0], encoder_shape[1], encoder_shape[2],1])  # batch_size,seq_len,emb_dim,1
+                        emb_encoder = tf.pad(emb_encoder, paddings=[[0, 0], [padsize, padsize-1], [0, 0]], constant_values=self.PAD_emb)
+                        emb_encoder = tf.expand_dims(emb_encoder,-1) # batch_size,seq_len,emb_dim,1
                         filter=tf.Variable(initial_value=tf.truncated_normal(self.filters,stddev=0.01),name="filter")
                         emb_encoder=tf.nn.conv2d(emb_encoder,filter=filter,strides=[1,1,1,1],padding="VALID")
                         emb_encoder=tf.reshape(emb_encoder,shape=[hps.batch_size,-1,hps.emb_dim*2])
-
                         A,B=tf.split(emb_encoder,2,axis=2)
                         attn=tf.multiply(A,tf.nn.softmax(B))
 
@@ -117,9 +115,8 @@ class ConvS2SModel():
                 for topic_layer in range(hps.con_layers):
                     with tf.variable_scope("topic_%d"%topic_layer),tf.device(self._next_device()):
                         # 对attn进行padding，使用PAD的emb进行padding，但是文献中建议使用0向量padding。
-                        emb_topic = tf.pad(emb_topic, paddings=[[0, 0], [padsize, padsize], [0, 0]], constant_values=self.PAD_emb)
-                        topic_shape = emb_topic.shape.as_list()
-                        emb_topic = tf.reshape(emb_topic, shape=[topic_shape[0], topic_shape[1], topic_shape[2],1])  # batch_size,seq_len,emb_dim,1
+                        emb_topic = tf.pad(emb_topic, paddings=[[0, 0], [padsize, padsize-1], [0, 0]], constant_values=self.PAD_emb)
+                        emb_topic = tf.expand_dims(emb_topic,-1)  # batch_size,seq_len,emb_dim,1
                         # the convolution
                         filter=tf.Variable(initial_value=tf.truncated_normal(self.filters,stddev=0.01),name="filter")
                         emb_topic=tf.nn.conv2d(emb_topic,filter=filter,strides=[1,1,1,1],padding='VALID')
@@ -146,13 +143,12 @@ class ConvS2SModel():
 
             _emb_decoder = tf.reduce_sum([emb_decoder_inputs, emb_decoder_positions], axis=0)
             last_decoder_outputs =emb_decoder= _emb_decoder# batch,seq_len_target,dim
-            self.attn_c=[]# 用于加到topic端的h
+            attn_c=[]# 用于加到topic端的h
             for dec_layer in range(hps.con_layers):
                 with tf.variable_scope("decoder_%d" % dec_layer),tf.device(self._next_device()):
                     # 对attn进行padding，使用PAD的emb进行padding，但是文献中建议使用0向量padding。
-                    emb_decoder = tf.pad(emb_decoder, paddings=[[0, 0], [padsize, padsize], [0, 0]], constant_values=self.PAD_emb)
-                    decoder_shape = emb_decoder.shape.as_list()
-                    emb_decoder = tf.reshape(emb_decoder, shape=[decoder_shape[0], decoder_shape[1], decoder_shape[2],1])  # batch_size,seq_len,emb_dim,1
+                    emb_decoder = tf.pad(emb_decoder, paddings=[[0, 0], [padsize, padsize-1], [0, 0]], constant_values=self.PAD_emb)
+                    emb_decoder = tf.expand_dims(emb_decoder,-1)  # batch_size,seq_len,emb_dim,1
                     # convolution
                     filter = tf.Variable(initial_value=tf.truncated_normal(self.filters, stddev=0.01), name="filter")
                     emb_decoder = tf.nn.conv2d(emb_decoder, filter=filter, strides=[1, 1, 1, 1], padding='VALID')
@@ -160,25 +156,20 @@ class ConvS2SModel():
                     # the gate linear unit
                     A, B = tf.split(emb_decoder, 2, axis=2)
                     attn_h = tf.multiply(A, tf.nn.softmax(B))
-
                     # residual connections
                     attn_h = attn_h + last_decoder_outputs # batch,seq_len_target,dim
-
                     # attention mechanism
                     emb_decoder=tf.reshape(attn_h,shape=[-1,hps.emb_dim]) # batch*seq_len,dim
                     attn_d=self.xw_plus_b(emb_decoder,shapes=[hps.emb_dim,hps.emb_dim])
                     attn_d=tf.reshape(attn_d,shape=[hps.batch_size,-1,hps.emb_dim])+_emb_decoder
 
                     # the attention weights
-                    _attn_weight=tf.matmul(attn_d,tf.transpose(self.encoder_outputs,[0,2,1])) #batch,decoder_seq_len,encoder_seq_len
-                    _attn_weight=tf.reshape(_attn_weight,shape=[-1,_attn_weight.shape[2]])
-                    attn_weight=tf.nn.softmax(_attn_weight,axis=1)
-                    attn_weight=tf.reshape(attn_weight,shape=[hps.batch_size,attn_weight.shape[1],-1])#batch,seq_len_target,encoder_seq_len
-
+                    _attn_weight=tf.matmul(attn_d,tf.transpose(self.encoder_outputs,[0,2,1])) #batch,dec_timesteps,enc_timesteps
+                    attn_weight=tf.nn.softmax(_attn_weight,axis=-1)#batch,dec_timesteps,enc_timesteps
                     # the conditional input
                     attns=tf.matmul(attn_weight,self.encoder_out)# batch,seq_len_target,dim
 
-                    self.attn_c.append(attns)
+                    attn_c.append(attns)
                     emb_decoder=attn_h+attns
                     last_decoder_outputs=emb_decoder
 
@@ -197,9 +188,8 @@ class ConvS2SModel():
 
             for topic_layer in range(hps.con_layers):
                 with tf.variable_scope("decoder_%d"%topic_layer),tf.device(self._next_device()):
-                    topic_emb = tf.pad(topic_emb, paddings=[[0, 0], [padsize, padsize], [0, 0]], constant_values=self.PAD_emb)
-                    topic_shape=topic_emb.shape.as_list()
-                    topic_emb=tf.reshape(topic_emb,shape=[topic_shape[0],topic_shape[1],topic_shape[2],1])
+                    topic_emb = tf.pad(topic_emb, paddings=[[0, 0], [padsize, padsize-1], [0, 0]], constant_values=self.PAD_emb)
+                    topic_emb=tf.expand_dims(topic_emb,-1)
                     # the convolution
                     filter = tf.Variable(initial_value=tf.truncated_normal(self.filters, stddev=0.01), name="filter")
                     conv_h=tf.nn.conv2d(topic_emb,filter,strides=[1,1,1,1],padding="VALID")
@@ -217,17 +207,15 @@ class ConvS2SModel():
                     attn_d = tf.reshape(attn_d, shape=[hps.batch_size, -1, hps.emb_dim]) + _topic_emb
 
                     # the attention weights
-                    _attn_weight1 = tf.matmul(attn_d, tf.transpose(self.encoder_outputs,[0, 2, 1]))  # batch,decoder_seq_len,encoder_seq_len
+                    _attn_weight1 = tf.matmul(attn_d, tf.transpose(self.encoder_outputs,[0, 2, 1]))  #batch,dec_timesteps,enc_timesteps
                     _attn_weight2=tf.matmul(attn_d,tf.transpose(self.topic_outputs,[0,2,1]))
                     _attn_weight=_attn_weight1+_attn_weight2
-                    _attn_weight = tf.reshape(_attn_weight, shape=[-1, _attn_weight.shape[2]])
-                    attn_weight = tf.nn.softmax(_attn_weight, axis=1)
-                    attn_weight = tf.reshape(attn_weight, shape=[hps.batch_size, attn_weight.shape[1],-1])  # batch,seq_len_target,encoder_seq_len
+                    attn_weight = tf.nn.softmax(_attn_weight, axis=-1) #batch,dec_timesteps,enc_timesteps
 
                     # the conditional input
                     attns=tf.matmul(attn_weight,self.topic_out)# batch,seq_len_target,dim
 
-                    topic_emb=attn_h+attns+self.attn_c[topic_layer]
+                    topic_emb=attn_h+attns+attn_c[topic_layer]
                     last_topic_outputs=topic_emb
 
             self.TAttenOut = topic_emb# batch,seq_len_target,dim
@@ -243,15 +231,17 @@ class ConvS2SModel():
         hps=self._hps
         vsize = self._vsize
         with tf.variable_scope("bias_pro_gen",reuse=reuse),tf.device(self._next_device()):
-            # 词汇的atten机制
-            MAtten=tf.reshape(self.MAttenOut,shape=[-1,hps.emb_dim])
-            MAtten=self.xw_plus_b(MAtten,shapes=[hps.emb_dim,vsize])
-            MAtten=tf.reshape(MAtten,shape=[hps.batch_size,-1,vsize])
+            with tf.variable_scope("wordAtten"):
+                # 词汇的atten机制
+                MAtten=tf.reshape(self.MAttenOut,shape=[-1,hps.emb_dim])
+                MAtten=self.xw_plus_b(MAtten,shapes=[hps.emb_dim,vsize])
+                MAtten=tf.reshape(MAtten,shape=[hps.batch_size,-1,vsize])
 
-            # 主题词汇表的atten机制
-            TAtten=tf.reshape(self.TAttenOut,shape=[-1,hps.emb_dim])
-            TAtten=self.xw_plus_b(TAtten,shapes=[hps.emb_dim,vsize])
-            TAtten=tf.reshape(TAtten,shape=[hps.batch_size,-1,vsize])
+            with tf.variable_scope("topicAtten"):
+                # 主题词汇表的atten机制
+                TAtten=tf.reshape(self.TAttenOut,shape=[-1,hps.emb_dim])
+                TAtten=self.xw_plus_b(TAtten,shapes=[hps.emb_dim,vsize])
+                TAtten=tf.reshape(TAtten,shape=[hps.batch_size,-1,vsize])
 
             _target=tf.exp(MAtten)+tf.multiply(tf.exp(TAtten),self.indicator)# batch,seq_len_tartget,vsize
             return _target
@@ -264,14 +254,18 @@ class ConvS2SModel():
         mask=tf.to_float(tf.not_equal(self.target,pad_id))
         self._Encoder()
         for t in range(hps.dec_timesteps):
-            abstract = self.abstract[:,:t]
-            abstract_position = self.abstract_position[:,:t]
+            abstract = self.abstract[:,:t+1]
+            abstract_position = self.abstract_position[:,:t+1]
 
             self._Decoder(abstract, abstract_position, reuse=(t != 0))
             logits = self._BiasedProGen(reuse=(t != 0))
-            # softmax = tf.nn.softmax(logits, dim=-1, name=None)
-            loss += tf.reduce_sum(
-                tf.nn.sparse_softmax_cross_entropy_with_logits(logits, self.target[:, t]) * mask[:, t])
+            # softmax = tf.nn.softmax(logits, axis=-1, name=None)
+            logits= tf.argmax(logits, axis=-1)
+            logits=tf.expand_dims(logits[:,-1],1)
+            logits=tf.cast(logits,tf.float32)
+            target = self.target[:, t]
+            loss1=tf.nn.sparse_softmax_cross_entropy_with_logits(labels=target,logits=logits)
+            loss += tf.reduce_sum(loss1 * mask[:, t])
 
 
     def _sample(self):
@@ -280,6 +274,7 @@ class ConvS2SModel():
         sample_words_list=[]
         loss=[]
         start_id=self._vocab.WordToId(PARAGRAPH_START)
+        sample_words_list.append(tf.fill([hps.batch_size,1],start_id))
         end_id=self._vocab.WordToId(PARAGRAPH_END)
         self._Encoder()
         for t in range(hps.dec_timesteps):
@@ -289,11 +284,13 @@ class ConvS2SModel():
             else:
                 abstract=sample_words
                 abstract_position=sample_word_position
-
             self._Decoder(abstract,abstract_position,reuse=(t!=0))
             logits=self._BiasedProGen(reuse=(t!=0))
-            softmax = tf.nn.softmax(logits, dim=-1, name=None)
+            softmax = tf.nn.softmax(logits, axis=-1, name=None)
+            softmax=tf.expand_dims(softmax[:,-1,:],axis=1)
+            # softmax=tf.reshape(softmax,[hps.batch_size,-1])
             sample_word = tf.multinomial(tf.log(tf.clip_by_value(softmax, 1e-20, 1.0)), 1)
+            sample_word=tf.cast(sample_word,dtype=tf.int32)
             sample_words_list.append(sample_word)
             sample_words=tf.concat(sample_words_list,1)
 
@@ -309,6 +306,7 @@ class ConvS2SModel():
         hps=self._hps
         sample_words_list=[]
         start_id = self._vocab.WordToId(PARAGRAPH_START)
+        sample_words_list.append(tf.fill([hps.batch_size,1],start_id))
         end_id = self._vocab.WordToId(PARAGRAPH_END)
         self._Encoder()
         for t in range(hps.dec_timesteps):
@@ -321,8 +319,9 @@ class ConvS2SModel():
 
             self._Decoder(abstract, abstract_position, reuse=(t != 0))
             logits = self._BiasedProGen(reuse=(t != 0))
-
             sample_word = tf.argmax(logits, axis=-1)
+            sample_word=tf.expand_dims(sample_word[:,-1],1)
+            sample_word=tf.cast(sample_word,dtype=tf.int32)
             sample_words_list.append(sample_word)
             sample_words = tf.concat(sample_words_list, 1)
             sample_word_position = tf.concat([abstract_position, tf.fill([hps.batch_size, 1], t)], 1)
@@ -337,23 +336,24 @@ class ConvS2SModel():
         loss=[]
         start_id = self._vocab.WordToId(PARAGRAPH_START)
         pad_id = self._vocab.WordToId(PAD_TOKEN)
-        abstract=self.sample_caption
-        mask = tf.to_float(tf.not_equal(abstract, pad_id))
+        sample_caption=self.sample_caption
+        mask = tf.to_float(tf.not_equal(sample_caption, pad_id))
 
         self._Encoder()
         for t in range(hps.dec_timesteps):
+            abstract = sample_caption[:, :t + 1]
             if t == 0:
-                abstract = tf.fill([hps.batch_size, 1], start_id)
                 abstract_position = tf.fill([hps.batch_size, 1], 0)
             else:
-                abstract= abstract[:, :t]
                 abstract_position = tf.concat([abstract_position, tf.fill([hps.batch_size, 1], t)], 1)
 
             self._Decoder(abstract, abstract_position, reuse=(t != 0))
             logits = self._BiasedProGen(reuse=(t != 0))
-            softmax = tf.nn.softmax(logits, dim=-1, name=None)
-
-            loss.append(tf.transpose(tf.multiply(tf.transpose(tf.log(tf.clip_by_value(softmax, 1e-20, 1.0)) * tf.one_hot(abstract[:, t], self._vsize), [1, 0]),  mask[:, t]), [1, 0]))
+            softmax = tf.nn.softmax(logits, axis=-1, name=None)
+            softmax=tf.reduce_max(softmax,-1)
+            softmax=tf.expand_dims(softmax[:,-1],1)
+            loss1=tf.transpose(tf.log(tf.clip_by_value(softmax, 1e-20, 1.0)) * tf.one_hot(abstract[:, t], self._vsize),[1, 0])
+            loss.append(tf.transpose(tf.multiply(loss1,  mask[:, t]), [1, 0]))
 
         loss_out = tf.concat(loss,-1)
 
@@ -400,10 +400,10 @@ class ConvS2SModel():
             cond=lambda k, *_: k < size,
             body=self.loop_step,
             loop_vars=[k,topics, matrix],
-            shape_invariants=[k.get_shape(),tf.TensorShape([None]), tf.TensorShape([None, 1, 5])]#对于shape可变的variable需要定义的
+            shape_invariants=[k.get_shape(),tf.TensorShape([None]), tf.TensorShape([None, 1, self._hps.emb_dim])]#对于shape可变的variable需要定义的
 
         )
-        matrix = tf.reshape(matrix, shape=[-1, topic_shape[1], 5])
+        matrix = tf.reshape(matrix, shape=[-1, topic_shape[1], self._hps.emb_dim])
         return matrix
 
 
