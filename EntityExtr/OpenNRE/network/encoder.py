@@ -119,7 +119,7 @@ class Encoder(object):
             outputs = gamma * normalized + beta
         return outputs
 
-    def __multihead_attention__(self,
+    def multihead_attention(self,
                                 queries, 
                                 keys, 
                                 num_units=None, 
@@ -199,7 +199,7 @@ class Encoder(object):
             outputs = self.__normalize__(outputs) # (N, T_q, C)
         return outputs
 
-    def __feedforward__(self, 
+    def feedforward(self,
                         inputs, 
                         num_units=[2048, 512],
                         scope="multihead_attention", 
@@ -238,7 +238,7 @@ class Encoder(object):
         for i in range(num_blocks):
             with tf.variable_scope("num_blocks_{}".format(i)):
                 ### Multihead Attention
-                self.enc = multihead_attention(queries = self.enc, 
+                self.enc = self.multihead_attention(queries = self.enc,
                                                 keys = self.enc, 
                                                 num_units = hidden_size, 
                                                 num_heads = num_heads, 
@@ -246,7 +246,7 @@ class Encoder(object):
                                                 is_training = self.is_training,
                                                 causality = False)
                 ### Feed Forward
-                self.enc = feedforward(self.enc, num_units=[4 * hidden_size, hidden_size])
+                self.enc = self.feedforward(self.enc, num_units=[4 * hidden_size, hidden_size])
         # piece-wise pooling
         x = self.__piece_pooling__(self.enc, max_length, hidden_size, self.mask)
         x = activation(x)
