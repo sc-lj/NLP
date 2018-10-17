@@ -384,7 +384,8 @@ class ConvS2SModel():
                        lambda: tf.gather(self.vocab_emb, [topic[k]]))
 
         matr = tf.reshape(matr, [1, 1, -1])
-        matrix = tf.concat([matrix, matr], 0)
+        # matrix = tf.concat([matrix, matr], 0)
+        matrix=matrix.write(k,matr)
         return k + 1,topic, matrix
 
     def topic_embbeding(self,topic):
@@ -393,16 +394,17 @@ class ConvS2SModel():
         topics=tf.reshape(topic,[-1])
         k = tf.constant(1)
         size=topic_shape[0]*topic_shape[1]
-        start_id = self._vocab.WordToId(PARAGRAPH_START)
-        matrix = tf.nn.embedding_lookup(self.vocab_emb, [start_id])
-        matrix = tf.reshape(matrix, [1, 1, -1])
+        # start_id = self._vocab.WordToId(PARAGRAPH_START)
+        # matrix = tf.nn.embedding_lookup(self.vocab_emb, [start_id])
+        # matrix = tf.reshape(matrix, [1, 1, -1])
+        loop_vars=[tf.constant(0),tf.reshape(topic,[-1]),tf.TensorArray(tf.float32,size=size)]
         _,_, matrix1 = tf.while_loop(
             cond=lambda k, *_: k < size,
             body=self.loop_step,
-            loop_vars=[k,topics, matrix],
-            shape_invariants=[k.get_shape(),tf.TensorShape([None]), tf.TensorShape([None, 1, self._hps.emb_dim])]#对于shape可变的variable需要定义的
+            loop_vars=loop_vars,
+            # shape_invariants=[k.get_shape(),tf.TensorShape([None]), tf.TensorShape([None, 1, self._hps.emb_dim])]#对于shape可变的variable需要定义的
         )
-        matrix1 = tf.reshape(matrix1, shape=[self._hps.batch_size, topic_shape[1], self._hps.emb_dim])
+        matrix1 = tf.reshape(matrix1.stack(), shape=[self._hps.batch_size, topic_shape[1], self._hps.emb_dim])
         return matrix1
 
 
