@@ -85,12 +85,12 @@ class ConS2S():
         # 函数replica_deviec_setter会自动分配到参数服务器上去定义，如果有多个参数服务器，就轮流循环分配
         # with tf.device(tf.train.replica_device_setter(worker_device="/job:worker/task:%d" % FLAGS.task_index,ps_device="/job:ps/cpu:0",cluster=cluster)):
         with tf.variable_scope("train"):
-            self.model._build_graph()
+            # self.model._build_graph()
             summaries = tf.summary.merge_all()
             global_step = tf.Variable(0,trainable=False,name="global_step")
             tf.get_variable_scope().reuse_variables()
-            sampled_captions, _ = self.model._sample()
-            greedy_caption = self.model._greed_sample()
+            # sampled_captions, _ = self.model._sample()
+            # greedy_caption = self.model._greed_sample()
 
             rewards = tf.placeholder(tf.float32, [None])
             base_line = tf.placeholder(tf.float32, [None])
@@ -119,7 +119,8 @@ class ConS2S():
                 norm = tf.reduce_sum(t1_mul)
                 r = rewards - base_line
                 sum_loss = -tf.reduce_sum(tf.transpose(tf.multiply(tf.transpose(loss, [1, 0]),r), [1, 0]))/ norm
-                grad_rl,_=tf.clip_by_global_norm(tf.gradients(sum_loss,tf.trainable_variables(),aggregation_method=tf.AggregationMethod.EXPERIMENTAL_ACCUMULATE_N),5.0)
+                print(sum_loss)
+                grad_rl,_=tf.clip_by_global_norm(tf.gradients(sum_loss,tf.trainable_variables()),5.0)
                 grads_and_vars=list(zip(grad_rl,tf.trainable_variables()))
                 train_op=optimizer.apply_gradients(grads_and_vars=grads_and_vars,global_step=global_step)
 

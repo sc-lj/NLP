@@ -288,7 +288,7 @@ class ConvS2SModel():
             logits=self._BiasedProGen(reuse=(t!=0))
             softmax = tf.nn.softmax(logits, axis=-1, name=None)
             softmax=tf.expand_dims(softmax[:,-1,:],axis=1)
-            # softmax=tf.reshape(softmax,[hps.batch_size,-1])
+            softmax=tf.reshape(softmax,[hps.batch_size,-1])
             sample_word = tf.multinomial(tf.log(tf.clip_by_value(softmax, 1e-20, 1.0)), 1)
             sample_word=tf.cast(sample_word,dtype=tf.int32)
             sample_words_list.append(sample_word)
@@ -396,15 +396,14 @@ class ConvS2SModel():
         start_id = self._vocab.WordToId(PARAGRAPH_START)
         matrix = tf.nn.embedding_lookup(self.vocab_emb, [start_id])
         matrix = tf.reshape(matrix, [1, 1, -1])
-        _,_, matrix = tf.while_loop(
+        _,_, matrix1 = tf.while_loop(
             cond=lambda k, *_: k < size,
             body=self.loop_step,
             loop_vars=[k,topics, matrix],
             shape_invariants=[k.get_shape(),tf.TensorShape([None]), tf.TensorShape([None, 1, self._hps.emb_dim])]#对于shape可变的variable需要定义的
-
         )
-        matrix = tf.reshape(matrix, shape=[-1, topic_shape[1], self._hps.emb_dim])
-        return matrix
+        matrix1 = tf.reshape(matrix1, shape=[self._hps.batch_size, topic_shape[1], self._hps.emb_dim])
+        return matrix1
 
 
 
