@@ -3,17 +3,20 @@ import numpy as np
 import time
 import datetime
 import os
+
+from numpy.core.multiarray import ndarray
+
 import network
 from tensorflow.contrib.tensorboard.plugins import projector
 
 
-FLAGS = tf.app.flags.FLAGS
+FLAGS = tf.flags.FLAGS
 
-tf.app.flags.DEFINE_string('summary_dir', '.','path to store summary')
+tf.flags.DEFINE_string('summary_dir', '.','path to store summary')
 
 #change the name to who you want to send
 #tf.app.flags.DEFINE_string('wechat_name', 'Tang-24-0325','the user you want to send info to')
-tf.app.flags.DEFINE_string('wechat_name', 'filehelper','the user you want to send info to')
+tf.flags.DEFINE_string('wechat_name', 'filehelper','the user you want to send info to')
 
 #if you want to try itchat, please set it to True
 itchat_run = False
@@ -24,10 +27,10 @@ def main(_):
 	# the path to save models
 	save_path = './model/'
 
-	print 'reading wordembedding'
+	print('reading wordembedding')
 	wordembedding = np.load('./data/vec.npy')
 
-	print 'reading training data'
+	print('reading training data')
 	train_y = np.load('./data/small_y.npy')
 	train_word = np.load('./data/small_word.npy')
 	train_pos1 = np.load('./data/small_pos1.npy')
@@ -101,19 +104,17 @@ def main(_):
 				feed_dict[m.input_y] = y_batch
 
 				temp, step, loss, accuracy,summary,l2_loss,final_loss= sess.run([train_op, global_step, m.total_loss, m.accuracy,merged_summary,m.l2_loss,m.final_loss], feed_dict)
-				time_str = datetime.datetime.now().isoformat()
 				accuracy = np.reshape(np.array(accuracy),(big_num))
-				acc = np.mean(accuracy)
-				summary_writer.add_summary(summary,step)
+                acc = np.mean(accuracy)  # type: ndarray
+                if step % 50==0:
+                    time_str = datetime.datetime.now().isoformat()
+                    tempstr = "{}: step {}, softmax_loss {:g}, acc {:g}".format(time_str, step, loss, acc)
+                    print(tempstr)
+                    if itchat_run:
+                        itchat.send(tempstr,FLAGS.wechat_name)
+                summary_writer.add_summary(summary, step)
 
-				if step % 50 == 0:
-					tempstr = "{}: step {}, softmax_loss {:g}, acc {:g}".format(time_str, step, loss, acc)
-	 				print(tempstr)
-	 				if itchat_run:
-	 					itchat.send(tempstr,FLAGS.wechat_name)
-
-
-			for one_epoch in range(settings.num_epochs):
+            for one_epoch in range(settings.num_epochs):
 				if itchat_run:
 					itchat.send('epoch '+str(one_epoch)+' starts!',FLAGS.wechat_name)				
 				
@@ -137,7 +138,7 @@ def main(_):
 						num += len(single_word)
 					
 					if num > 1500:
-						print 'out of range'
+						print('out of range')
 						continue
 
 					temp_word = np.array(temp_word)
@@ -150,10 +151,10 @@ def main(_):
 					current_step = tf.train.global_step(sess, global_step)
 					if current_step > 9000 and current_step%500==0:
 					#if current_step == 50:
-						print 'saving model'
+						print('saving model')
 						path = saver.save(sess,save_path +'ATT_GRU_model',global_step=current_step)
 						tempstr = 'have saved model to '+path
-						print tempstr
+						print(tempstr)
 
 			if itchat_run:
 				itchat.send('training has been finished!',FLAGS.wechat_name)
