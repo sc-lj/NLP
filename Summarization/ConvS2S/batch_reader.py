@@ -132,11 +132,11 @@ class Batcher():
             enc_position=[0]
 
             dec_input=[]
-            dec_position=[0]
+            dec_position=[]
 
             for i in range(min(self.max_article_length,len(article_sentence))):
                 enc_input+=GetWordIds(article_sentence[i],self._vocab)
-                enc_position.append(i)
+                enc_position.append(i+1)
 
             for i in range(min(self.max_abstract_lenght,len(abstract_sentence))):
                 dec_input+=GetWordIds(abstract_sentence[i],self._vocab)
