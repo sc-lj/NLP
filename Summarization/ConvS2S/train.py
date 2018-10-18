@@ -225,7 +225,7 @@ def main(argv):
     tf.set_random_seed(FLAGS.random_seed)
 
     model=ConvS2SModel(hps,vocab)
-    for enc_input_batch,enc_position_batch,enc_lens,dec_input_batch,dec_lens,dec_position_batch,target_batch in model.NextBatch():
+    for enc_input_batch,enc_position_batch,enc_lens,dec_input_batch,dec_lens,dec_position_batch,target_batch in batcher.NextBatch():
         pass
     # cons2s=ConS2S(model,hps,batcher,vocab)
     # cons2s.train()
