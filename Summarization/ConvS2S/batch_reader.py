@@ -58,7 +58,7 @@ class Batcher():
 
         buckets=self.bucket_input_queue.get()
         for i in range(batch_size):
-            enc_input,enc_position,enc_topic,dec_input,dec_position,target,enc_len,dec_len=buckets[i]
+            enc_input,enc_position,dec_input,dec_position,target,enc_len,dec_len=buckets[i]
             enc_input_batch[i,:]=enc_input[:]
             enc_position_batch[i,:]=enc_position
             enc_lens[i]=enc_len
