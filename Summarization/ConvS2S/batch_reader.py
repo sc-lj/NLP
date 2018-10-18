@@ -60,11 +60,11 @@ class Batcher():
         for i in range(batch_size):
             enc_input,enc_position,dec_input,dec_position,target,enc_len,dec_len=buckets[i]
             enc_input_batch[i,:]=enc_input[:]
-            enc_position_batch[i,:]=enc_position
+            enc_position_batch[i,:]=enc_position[:]
             enc_lens[i]=enc_len
 
-            dec_input_batch[i,:]=dec_input
-            dec_position_batch[i,:]=dec_position
+            dec_input_batch[i,:]=dec_input[:]
+            dec_position_batch[i,:]=dec_position[:]
             dec_lens[i]=dec_len
             target_batch[i]=target
 
