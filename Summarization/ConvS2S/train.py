@@ -84,13 +84,14 @@ class ConS2S():
 
         # 函数replica_deviec_setter会自动分配到参数服务器上去定义，如果有多个参数服务器，就轮流循环分配
         # with tf.device(tf.train.replica_device_setter(worker_device="/job:worker/task:%d" % FLAGS.task_index,ps_device="/job:ps/cpu:0",cluster=cluster)):
-        with tf.variable_scope("train"):
-            # self.model._build_graph()
+        with tf.variable_scope("train") as scope:
+            # 这一步是建立tensor流程图，至关重要
+            self.model.build_graph(self.optimizer)
+            tf.get_variable_scope().reuse_variables()# 重用变量
             summaries = tf.summary.merge_all()
             global_step = tf.Variable(0,trainable=False,name="global_step")
-            tf.get_variable_scope().reuse_variables()
-            # sampled_captions, _ = self.model._sample()
-            # greedy_caption = self.model._greed_sample()
+            sampled_captions, _ = self.model._sample()
+            greedy_caption = self.model._greed_sample()
 
             rewards = tf.placeholder(tf.float32, [None])
             base_line = tf.placeholder(tf.float32, [None])
@@ -100,7 +101,7 @@ class ConS2S():
 
             loss = self.model._build_loss()
 
-            with tf.name_scope('optimizer'):
+            with tf.variable_scope('optimizer',reuse=tf.AUTO_REUSE):
                 # 异步训练模式：自己计算完成梯度就去更新参数，不同副本之间不会去协调进度
                 optimizer = self.optimizer(learning_rate=self.lr)
                 # 同步训练模式
@@ -118,11 +119,10 @@ class ConS2S():
                         name="mnist_sync_replicas")
                 norm = tf.reduce_sum(t1_mul)
                 r = rewards - base_line
-                sum_loss = -tf.reduce_sum(tf.transpose(tf.multiply(tf.transpose(loss, [1, 0]),r), [1, 0]))/ norm
-                print(sum_loss)
+                sum_loss = - tf.reduce_sum(tf.transpose(tf.multiply(tf.transpose(loss, [1, 0]),r), [1, 0]))/ norm
                 grad_rl,_=tf.clip_by_global_norm(tf.gradients(sum_loss,tf.trainable_variables()),5.0)
-                grads_and_vars=list(zip(grad_rl,tf.trainable_variables()))
-                train_op=optimizer.apply_gradients(grads_and_vars=grads_and_vars,global_step=global_step)
+                grads_and_vars=zip(grad_rl,tf.trainable_variables())
+                train_op=optimizer.apply_gradients(grads_and_vars=grads_and_vars,global_step=tf.train.get_or_create_global_step())
 
             # allow_soft_placement能让tensorflow遇到无法用GPU跑的数据时，自动切换成CPU进行。
             # config=tf.ConfigProto(allow_soft_placement=True,device_filters=["/job:ps", "/job:worker/task:%d" % FLAGS.task_index])
@@ -136,13 +136,14 @@ class ConS2S():
             # Train dir is different from log_root to avoid summary directory conflict with Supervisor.
             summary_writer = tf.summary.FileWriter(FLAGS.train_dir)
             # tf.train.Supervisor可以简化编程,避免显示地实现restore操作
+            # MonitoredTrainingSession已经初始化所有变量了，不用在tf.initialize_all_variables()
             sess = tf.train.MonitoredTrainingSession(checkpoint_dir=FLAGS.log_root,
                                                      is_chief=True,
                                                      hooks=[saver_hook],
                                                      config=config)
 
-            init= tf.initialize_all_variables()
-            sess.run(init)
+            # init= tf.initialize_all_variables()
+            # sess.run(init)
             # sv = tf.train.Supervisor(is_chief=(FLAGS.task_index == 0),
             #                          logdir=FLAGS.log_root,
             #                          init_op=init,

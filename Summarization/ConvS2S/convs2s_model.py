@@ -6,6 +6,7 @@ import numpy as np
 from Data import *
 
 HParams=namedtuple("HParams","batch_size enc_timesteps dec_timesteps emb_dim con_layers kernel_size min_input_len")
+FLAGS=tf.flags.FLAGS
 
 class ConvS2SModel():
     def __init__(self,hps,vocab,num_gpus=0):
@@ -14,8 +15,8 @@ class ConvS2SModel():
         self._tsize=vocab.TopicIds()#主题词汇量大小
         self._vocab=vocab
         self._num_gpus = num_gpus
-        self._add_placeholder()
-        self._embedding()
+        # self._add_placeholder()
+        # self._embedding()
 
     def _add_placeholder(self):
         hps=self._hps
@@ -45,13 +46,14 @@ class ConvS2SModel():
         vsize=self._vsize
         tsize=self._tsize
 
-        with tf.variable_scope("embedding"):
+        with tf.variable_scope("embedding") as scope:
             self.vocab_emb = tf.get_variable(name='word_emb', shape=[vsize, hps.emb_dim], dtype=tf.float32,
                                              initializer=tf.truncated_normal_initializer(mean=0, stddev=0.1))
             self.pos_emb = tf.get_variable(name='position_emb', shape=[hps.enc_timesteps, hps.emb_dim],dtype=tf.float32,
                                            initializer=tf.truncated_normal_initializer(mean=0, stddev=0.1))
             self.topic_emb = tf.get_variable(name='topic_emb', shape=[tsize, hps.emb_dim], dtype=tf.float32,
                                         initializer=tf.truncated_normal_initializer(0, stddev=0.1))
+            scope.reuse_variables()
 
     def _next_device(self):
         """Round robin the gpu device. (Reserve last gpu for expensive op)."""
@@ -246,10 +248,10 @@ class ConvS2SModel():
             _target=tf.exp(MAtten)+tf.multiply(tf.exp(TAtten),self.indicator)# batch,seq_len_tartget,vsize
             return _target
 
-    def _build_graph(self):
+    def _build_graph(self,optimizer):
         """只是为了建立tensorflow流程图"""
         hps = self._hps
-        loss = []
+        loss = 0
         pad_id = self._vocab.WordToId(PAD_TOKEN)
         mask=tf.to_float(tf.not_equal(self.target,pad_id))
         self._Encoder()
@@ -265,8 +267,12 @@ class ConvS2SModel():
             logits=tf.cast(logits,tf.float32)
             target = self.target[:, t]
             loss1=tf.nn.sparse_softmax_cross_entropy_with_logits(labels=target,logits=logits)
-            loss += tf.reduce_sum(loss1 * mask[:, t])
-
+            loss += -tf.reduce_sum(loss1 * mask[:, t])
+        # print(loss)
+        # optimizer().minimize(loss)
+        # grad_rl, _ = tf.clip_by_global_norm(tf.gradients(-loss, tf.trainable_variables()), 5.0)
+        # grads_and_vars = list(zip(grad_rl, tf.trainable_variables()))
+        # train_op = optimizer.apply_gradients(grads_and_vars=grads_and_vars)
 
     def _sample(self):
         """sampling from the distribution and compute loss"""
@@ -407,6 +413,9 @@ class ConvS2SModel():
         matrix1 = tf.reshape(matrix1.stack(), shape=[self._hps.batch_size, topic_shape[1], self._hps.emb_dim])
         return matrix1
 
-
-
+    def build_graph(self,optimizer):
+        self._add_placeholder()
+        self._embedding()
+        self._build_graph(optimizer)
+        # self._build_loss()
 
