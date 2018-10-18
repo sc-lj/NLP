@@ -248,7 +248,7 @@ class ConvS2SModel():
             _target=tf.exp(MAtten)+tf.multiply(tf.exp(TAtten),self.indicator)# batch,seq_len_tartget,vsize
             return _target
 
-    def _build_graph(self,optimizer):
+    def _build_graph(self):
         """只是为了建立tensorflow流程图"""
         hps = self._hps
         loss = 0
@@ -413,9 +413,9 @@ class ConvS2SModel():
         matrix1 = tf.reshape(matrix1.stack(), shape=[self._hps.batch_size, topic_shape[1], self._hps.emb_dim])
         return matrix1
 
-    def build_graph(self,optimizer):
+    def build_graph(self):
         self._add_placeholder()
         self._embedding()
-        self._build_graph(optimizer)
+        self._build_graph()
         # self._build_loss()
 

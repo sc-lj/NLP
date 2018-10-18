@@ -86,7 +86,7 @@ class ConS2S():
         # with tf.device(tf.train.replica_device_setter(worker_device="/job:worker/task:%d" % FLAGS.task_index,ps_device="/job:ps/cpu:0",cluster=cluster)):
         with tf.variable_scope("train") as scope:
             # 这一步是建立tensor流程图，至关重要
-            self.model.build_graph(self.optimizer)
+            self.model.build_graph()
             tf.get_variable_scope().reuse_variables()# 重用变量
             summaries = tf.summary.merge_all()
             global_step = tf.Variable(0,trainable=False,name="global_step")
