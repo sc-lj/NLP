@@ -49,8 +49,9 @@ class ConvS2SModel():
         with tf.variable_scope("embedding") as scope:
             self.vocab_emb = tf.get_variable(name='word_emb', shape=[vsize, hps.emb_dim], dtype=tf.float32,
                                              initializer=tf.truncated_normal_initializer(mean=0, stddev=0.1))
-            self.pos_emb = tf.get_variable(name='position_emb', shape=[hps.enc_timesteps, hps.emb_dim],dtype=tf.float32,
+            pos_emb = tf.get_variable(name='position_emb', shape=[hps.enc_timesteps, hps.emb_dim],dtype=tf.float32,
                                            initializer=tf.truncated_normal_initializer(mean=0, stddev=0.1))
+            self.pos_emb=tf.concat([pos_emb,tf.constant(np.zeros(shape=[1,hps.emb_dim],dtype=np.float32),dtype=tf.float32)],axis=0)
             self.topic_emb = tf.get_variable(name='topic_emb', shape=[tsize, hps.emb_dim], dtype=tf.float32,
                                         initializer=tf.truncated_normal_initializer(0, stddev=0.1))
             scope.reuse_variables()
