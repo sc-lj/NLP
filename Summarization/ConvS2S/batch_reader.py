@@ -12,7 +12,7 @@ import numpy as np
 ModelInput=namedtuple("ModelInput",'enc_input enc_position dec_input dec_position target enc_len dec_len')
 
 BUCKET_CACHE_BATCH = 100
-QUEUE_NUM_BATCH = 100
+QUEUE_NUM_BATCH = 10
 
 class Batcher():
     def __init__(self,vocab,hps,max_article_length,max_abstract_length,bucketing=True,truncate_input=False):
@@ -135,12 +135,18 @@ class Batcher():
             dec_position=[]
 
             for i in range(min(self.max_article_length,len(article_sentence))):
-                enc_input+=GetWordIds(article_sentence[i],self._vocab)
-                enc_position.append(i+1)
+                wordIds=GetWordIds(article_sentence[i],self._vocab)
+                enc_input+=wordIds
+                ii=0
+                while ii<len(wordIds):
+                    enc_position.append(len(enc_position))
 
-            for i in range(min(self.max_abstract_lenght,len(abstract_sentence))):
-                dec_input+=GetWordIds(abstract_sentence[i],self._vocab)
-                dec_position.append(i)
+            for j in range(min(self.max_abstract_lenght,len(abstract_sentence))):
+                wordIds=GetWordIds(abstract_sentence[j],self._vocab)
+                dec_input+=wordIds
+                jj=0
+                while jj<len(wordIds):
+                    dec_position.append(len(dec_position))
 
             if (len(enc_input)<hps.min_input_len or len(dec_input)<hps.min_input_len):
                 tf.logging.warning("丢掉文本的长度或者摘要的长度太短的样本,\nenc:%d\ndec:%d",len(enc_input),len(dec_input))
@@ -166,15 +172,19 @@ class Batcher():
 
             while len(enc_input)<hps.enc_timesteps:
                 enc_input.append(pad_id)
-                enc_position.append(len(enc_position))
+                enc_position.append(hps.enc_timesteps+1)
 
             while len(dec_input)<hps.dec_timesteps:
                 dec_input.append(pad_id)
-                dec_position.append(len(dec_position))
+                dec_position.append(hps.enc_timesteps+1)
 
             while len(target)<hps.dec_timesteps:
                 target.append(pad_id)
 
+            if len(enc_input)!=len(enc_position):
+                print(len(enc_position),len(enc_input))
+            if len(dec_position)!=len(dec_input):
+                print(len(dec_input),len(dec_position))
             element=ModelInput(enc_input,enc_position,dec_input,dec_position,target,enc_input_len,dec_output_len)
             self.input_queue.put(element)
 
