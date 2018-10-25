@@ -94,7 +94,6 @@ class Corpus():
             line=compile_4.sub('',line)
             cuts=list(jieba.cut(line))
             for cut in cuts:
-
                 pass
 
 
