@@ -1,4 +1,4 @@
-语料库说明
+BosonNLP_NER语料库说明
 
 time: 时间实体
 location: 地点实体
@@ -10,3 +10,8 @@ product_name: 产品实体
 
 网址：
 http://bosonnlp.com
+
+xinhua_dict.txt文件是保存了提取新华词典里面的所有单词。
+
+
+
