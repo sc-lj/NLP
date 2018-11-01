@@ -9,6 +9,8 @@ class Corpus():
         self.path=root_path
         self.corpus='../data/BosonNLP_NER.txt'
         self.ner='../data/NER.json'
+        self.files = './data/BosonNLP_NER_6C.txt'
+        self.entity_tag = {"TIME": "time", "LOC": "location", "PER": "person_name", "ORG": "org_name", "COMP": "company_name","PRO": "product_name"}
 
     def read_corpus(self):
         """去掉命名实体标志"""
@@ -27,81 +29,129 @@ class Corpus():
         f.writelines(newlines)
         f.close()
 
-    def gen_ner_corpus(self):
-        """产生各类命名实体集"""
-        f=open(self.path,'r')
-        data=f.read()
-        compile_3=re.compile("{{(.*?)}}")
-        newdata=compile_3.findall(data)
-        nerdict=defaultdict(list)
-
-        for da in newdata:
-            name,entity=da.split(":",maxsplit=1)
-            if name =="location":
-                nerdict["loc"].append(entity)
-            elif name=="person_name":
-                nerdict["person"].append(entity)
-            elif name in ['company_name','org_name']:
-                nerdict['org'].append(entity)
+    def drop_tag(self,seqence, tag):
+        compiles = re.compile("{{(.*?)}}")
+        filter_compile = re.compile("[a-zA-Z_]+:")
+        seqences = compiles.split(seqence)
+        seqs = []
+        for seq in seqences:
+            if len(seq.strip()) == 0:
+                continue
+            if filter_compile.match(seq):
+                name, entity = seq.split(":", 1)
+                if name == self.entity_tag[tag]:
+                    seqs.append(" START " + entity + " END ")
+                else:
+                    seqs.append(entity)
             else:
-                pass
+                seqs.append(seq)
+        return "".join(seqs)
 
-        nerdict=dict(nerdict)
-        for key,value in nerdict.items():
-            nerdict[key]=list(set(value))
-        nerdict=json.dumps(nerdict)
-        f=open(self.ner,'w')
-        f.write(nerdict)
-        f.close()
+    def cut_seq(self,seqence):
+        compile_url = re.compile("(http[s]?:[a-zA-Z0-9\.\/\?#&\+=]+)")
+        seqence = compile_url.sub("URL", seqence)
+        cuts = list(jieba.cut(seqence, HMM=False))
+        cut = [a.strip() for a in cuts if len(a.strip()) != 0]
+        return cut
 
-    def _static(self):
-        f=open(self.path,'r')
-        lines=f.readlines()
-        compil=re.compile("}}|{{")
-        newlines=[]
+    def find_tag(seqs, tag="START"):
+        if isinstance(tag, list):
+            index = [ind for ind, word in enumerate(seqs) if word in tag]
+        else:
+            index = [ind for ind, word in enumerate(seqs) if word == tag]
+        return index
+
+    def perEntity(self,start, end, seqs, tag):
+        xrange = end - start - 1
+        piece_tag = seqs[start + 1:end]
+        if xrange == 1:
+            tag.append('J-PER')
+        elif xrange == 2:
+            if len(piece_tag[0]) >= 2:
+                if piece_tag[0] in doubelsurname:
+                    tag.append("C-PER")
+                else:
+                    tag.append("I-PER")
+
+                if len(piece_tag[1]) == 2:
+                    tag.append("K-PER")
+                else:
+                    tag.append("E-PER")
+            else:
+                tag.append("C-PER")
+                if len(piece_tag[1]) >= 2:
+                    tag.append("K-PER")
+                else:
+                    tag.append("F-PER")
+        else:
+            if len(piece_tag[0]) >= 2:
+                if piece_tag[0] in doubelsurname:
+                    tag.append("C-PER")
+                else:
+                    tag.append("I-PER")
+            else:
+                tag.append("C-PER")
+
+            for i in range(1, len(piece_tag) - 1):
+                if len(piece_tag[i]) >= 2:
+                    tag.append("K-PER")
+                else:
+                    tag.append("D-PER")
+            if len(piece_tag[-1]) >= 2:
+                tag.append("K-PER")
+            else:
+                tag.append("E-PER")
+
+    def genEntityCorpus(self,entype):
+        assert entype in self.entity_tag
+        lines = open(self.files, 'r').readlines()
+        tags=[]
+        words=[]
         for line in lines:
-            wordline=[]
-            words=compil.split(line)
-            for word in words:
-                word=word.strip()
-                if len(word)==0:
-                    continue
-                wordlist=word.split(":",maxsplit=1)
-                if len(wordlist)==2:
-                    name, entity=wordlist
+            seqences = self.drop_tag(line, entype)
+            seqs = self.cut_seq(seqences)
+            init_seq = re.sub("START|END", '', seqences)
+            init_seqs = self.cut_seq(init_seq)
 
-    def _judge(self,words,role):
-        name, entity = words
-        if name==role:
-            for i,word in enumerate(words):
-                pass
-
-
-
-    def static_(self,char_mark,mark):
-        """根据提供的角色标志和角色，给文本做上相应的标记"""
-        assert mark in ['loc','person','org']
-        ner=open(self.ner,'r')
-        nerdata=ner.read()
-        nerdata=json.loads(nerdata)
-        markdt=nerdata[mark]
-
-        f=open(self.corpus,'r')
-        lines=f.readlines()
-        newlines=[]
-        compile_4=re.compile("\s|' '")
-        for line in lines:
-            line=compile_4.sub('',line)
-            cuts=list(jieba.cut(line))
-            for cut in cuts:
-                pass
-
-
+            tag = []
+            index = self.find_tag(seqs, tag=["START", "END"])
+            index = sorted(index)
+            reduce = []
+            for i in range(0, len(index), 2):
+                reduce.append(index[i + 1] - index[i])
+            j = -1
+            i = 0
+            while j < len(seqs) - 1:
+                j += 1
+                if seqs[j] == "START":
+                    if len(tag) > 0:
+                        if tag[-1] != "X-PER" and tag[-1] == "Z-PER":
+                            tag[-1] = "A-PER"
+                    start = j
+                    j = end = reduce[i] + start
+                    self.perEntity(start, end, seqs, tag)
+                    i += 1
+                    if len(reduce) > i:
+                        if seqs[j + 1] == "START":
+                            continue
+                        if seqs[j + 2] == 'START':
+                            tag.append("X-PER")
+                        else:
+                            tag.append('B-PER')
+                        j += 1
+                    else:
+                        if len(seqs) > j + 1:
+                            tag.append('B-PER')
+                            j += 1
+                else:
+                    tag.append("Z-PER")
+            tags.append(tag)
+            words.append(init_seqs)
+        return tags,words
 
 
 if __name__ == '__main__':
     corpus=Corpus('../data/BosonNLP_NER_6C.txt')
     # corpus.gen_ner_corpus()
     name = ["A", "B", "C", "D", "E", "F", "I", "J", "K", "X", "Z"]
-    corpus._static()
 
