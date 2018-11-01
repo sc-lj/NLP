@@ -155,5 +155,3 @@ if __name__ == '__main__':
     # corpus.gen_ner_corpus()
     name = ["A", "B", "C", "D", "E", "F", "I", "J", "K", "X", "Z"]
 
-
-
