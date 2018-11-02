@@ -12,8 +12,8 @@ Dataset/vocab_file.txt
 */*/__pycache__/
 Segmentation/thulac/models
 Classify/data
-NRE/OpenNRE/origin_data/*
-NRE/OpenNRE/data/*
+NRE/OpenNRE/origin_data/
+NRE/OpenNRE/data/
 
 
 
