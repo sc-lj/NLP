@@ -152,8 +152,6 @@ def init_train_files(name):
             instance_triple.append(tup)
             instance_scope.append([s,s])
         instance_scope[len(instance_triple) - 1][1] = s
-        if (s+1) % 100 == 0:
-            print(s)
     return np.array(instance_triple), np.array(instance_scope), sen_len, sen_label, sen_word, sen_pos1, sen_pos2, sen_mask
     
 
