@@ -1,7 +1,7 @@
 from framework import Framework
 import tensorflow as tf
 
-FLAGS = tf.app.flags.FLAGS
+FLAGS = tf.flags.FLAGS
 
 def pcnn_att_rl(is_training):
     if is_training:

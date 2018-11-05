@@ -160,10 +160,6 @@ class Framework(object):
         print('initializing finished')
 
     def train_one_step(self, index, scope, weights, label, label_for_select, result_needed=[]):
-        #print self.data_train_word[index, :].shape
-        #print 'limit bag size < 1000'
-        #if self.data_train_word[index, :].shape[0] > 500:
-        #    return [-1]
         feed_dict = {
             self.word: self.data_train_word[index, :],
             #self.word_vec: self.data_word_vec,
