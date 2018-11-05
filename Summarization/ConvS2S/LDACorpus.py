@@ -50,7 +50,7 @@ class LDAModel():
         # 训练模型
         model.fit(self.feature_vectorizer)
         self.model=model
-        joblib.dump(self.model,"./model/")
+        joblib.dump(self.model,"./model/LDA.m")
 
     def get_topic_distrbution(self):
         return self.model.components_
