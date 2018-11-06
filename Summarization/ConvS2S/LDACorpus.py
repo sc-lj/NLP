@@ -108,18 +108,17 @@ def main():
             contents=f.readlines()
             for content in contents:
                 contentwords.append(content)
-    # look_best_topic_num(contentwords)
-    lda=LDAModel(contentwords)
+    look_best_topic_num(contentwords)
+    # lda=LDAModel(contentwords)
     # distrbution=lda.get_topic_distrbution()
-    # print(distrbution)
-    doc_topic=lda.get_topic_words()
-    corpus=set()
-    for topic in doc_topic:
-        for a in topic.split(','):
-            corpus.add(a)
-    f=open('../data/topic_vocab.txt','w')
-    for cor in corpus:
-        f.write(cor+"\n")
+    # doc_topic=lda.get_topic_words()
+    # corpus=set()
+    # for topic in doc_topic:
+    #     for a in topic.split(','):
+    #         corpus.add(a)
+    # f=open('../data/topic_vocab.txt','w')
+    # for cor in corpus:
+    #     f.write(cor+"\n")
 
 
 def look_best_topic_num(content):
@@ -127,7 +126,7 @@ def look_best_topic_num(content):
     perplexityLst = [1.0] * len(n_topics)
     lda_models = []
     tfidf_vectorizer= TfidfVectorizer(strip_accents='unicode',
-                                       max_features=20000,
+                                       max_features=10000,
                                        max_df=0.5,
                                        min_df=10)
     tfidf = tfidf_vectorizer.fit_transform(content)
