@@ -35,7 +35,7 @@ class LDAModel():
         self.feature_vectorizer=vectorizer.fit_transform(content)
         # 特征向量名
         self.feature_names=vectorizer.get_feature_names()
-
+        joblib.dump(vectorizer,"./model/vectorizer.m")
         if lda:
             lda = LatentDirichletAllocation(n_components=n_topics,
                                             max_iter=1000,  # 迭代次数
