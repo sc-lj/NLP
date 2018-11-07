@@ -46,9 +46,9 @@ class WordSegmentation(object):
         jieba_result = pseg.cut(text)
         
         if use_speech_tags_filter == True:
-            jieba_result = [w.strip() for w in jieba_result if w.flag in self.default_speech_tag_filter and len(w.strip())!=0]
+            jieba_result = [w for w in jieba_result if w.flag in self.default_speech_tag_filter and len(w.word.strip())!=0]
         else:
-            jieba_result = [w.strip() for w in jieba_result if len(w.strip())!=0]
+            jieba_result = [w for w in jieba_result if len(w.word.strip())!=0]
 
         # 去除特殊符号
         word_list = [w.word.strip() for w in jieba_result if w.flag!='x']
