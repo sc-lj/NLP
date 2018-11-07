@@ -1,5 +1,8 @@
 # coding:utf-8
 
+import os,sys
+path=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(os.path.dirname(path))
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.feature_extraction.text import CountVectorizer,TfidfVectorizer,TfidfTransformer
 from sklearn.svm import SVC
@@ -7,24 +10,24 @@ from sklearn.pipeline import Pipeline,FeatureUnion
 from sklearn.grid_search import GridSearchCV
 import numpy as np
 from KwordExtr.SKE.main import SemankeyWord
+from KwordExtr.TextRank.TextRankKeyword import TextRankKeyword
 
 filename=['../data/cnews.test.txt','../data/cnews.train.txt','../data/cnews.val.txt','../data/cnews.vocab.txt']
 
 def genKeyWords(files):
     with open(files,'r') as f:
         lines=f.readlines()
+        print(len(lines))
         lables=[]
         keywords=[]
         for line in lines:
-            try:
-                lable,title,content=line.split(maxsplit=2)
-                lables.append(lable)
-                keyword=SemankeyWord(content=content,title=title)
-                keyword=' '.join(keyword.split(","))
-                keywords.append(keyword)
-            except:
-                print(line)
-                continue
+            lable,content=line.split(maxsplit=1)
+            lables.append(lable)
+            keyword=TextRankKeyword(stop_words_file="../data/stopwords.txt")
+            keyword.analyze(content)
+            word=keyword.get_keywords()
+            words=" ".join([item['word'] for item in word])
+            keywords.append(words)
     return lables,keywords
 
 
@@ -64,5 +67,6 @@ def searchParam():
 
 
 if __name__ == '__main__':
-    svc()
+    # svc()
+    train_label, train_data = genKeyWords("../data/cnews.train.txt")
 
