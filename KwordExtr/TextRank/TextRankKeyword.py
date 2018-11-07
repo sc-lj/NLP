@@ -7,7 +7,7 @@ import networkx as nx
 import numpy as np
 
 import util
-from Segmentation import Segmentation
+from Segment import Segmentation
 
 class TextRankKeyword(object):
     
@@ -81,9 +81,9 @@ class TextRankKeyword(object):
 
         self.keywords = util.sort_words(_vertex_source, _edge_source, window = window, pagerank_config = pagerank_config)
 
-    def get_keywords(self, num = 6, word_min_len = 1):
-        """获取最重要的num个长度大于等于word_min_len的关键词。
-
+    def get_keywords(self, num = 10, word_min_len = 1):
+        """获取最重要的词组长度大于等于word_min_len的关键词。
+        获取6个关键字
         Return:
         关键词列表。
         """
@@ -126,4 +126,10 @@ class TextRankKeyword(object):
                 if self.text.count(phrase) >= min_occur_num]
 
 if __name__ == '__main__':
-    pass
+    content="""阿的江：八一需重新定位 我们有机会但该进的没进   新浪体育讯12月24日，回到主场的北京金隅迎战八一，四节苦战之后，北京队凭借出色表现以84比78险胜八一双鹿，赢取五连胜。赛后，八一双鹿队主教练阿的江点评比赛，“首先感谢媒体朋友们在平安夜来到篮球场观看比赛，气氛非常好，跟过节一样。这场比赛，是八一双鹿队开赛以来打得比较紧的一场比赛，无论是攻防成功率都非常低，特别是进攻， 许多该进的球都不进。做为我们来讲，回到北京想把比赛打好，却给自己背上一些包袱，毕竟联赛才刚刚开始，通过这场比赛，八一双鹿队要重新定位，八一双鹿队现在只是爬坡期，没有成为强队，如果认为自己赢了几场球就给自己造成压力，没有必要。现在是比赛初期，打了几场好球，但赢球之后 反而不能及时调整摆正位置的话，还会出现问题。漫长的联赛会出现各种各样的问题，祝贺北京队获得胜利，北京队每场比赛打得都非常有激情。 祝大家圣诞快乐。”问：北京队取得五连胜，请点评一下北京队的表现。阿的江：这场比赛的比分是84比78，说实话，两队得分都不高，但是八一双鹿队表现得比北京队更差，所以北京队获得胜利。现在北京队开赛取得五连 胜，是一个非常好的开局，我希望他们不要犯我们这场比赛的错误，能够以平常心来对待这些比赛的结果，胜利来之不易，但保持更难。我们也会认真准备。问：你觉得北京队赢在哪里？阿的江：北京队在胶着状态中把握住了机会，八一双鹿队同样也有机会，但该进的都没进，特别是在我们反超比赛的时候，防守出现一些漏洞，北京队及时抓住机会，北京队相对来说，抓机会比较合理。问：前三节都是平局，谈谈第四节吧，八一双鹿队好像失误多，命中率很低。阿的江：今天是八一双鹿队开赛以来得分最低的，不过第四节输给双外援这是第二次，实际上我们在第四节对抗双外援方面有进步，有改观。有些队员像大郅的状态起伏，比赛太紧，不能强求所有队员每场都表现很好，希望 他们逐步恢复状态，打、调相结合，今天的命中率不是他正常的命中率，非常差，这与他今年参加两个大赛，亚运会结束后就投入联赛有关系，作为他来讲也必须及时调整。其实今天的问题我们就是出在命中率上。这种比赛也少见，三节都打平，看得出两家在圣诞夜给球迷奉献了一场精彩的比赛。八一双鹿队队员许钟豪表示，“我们所有的队员都想打好这场比赛，确实给自 己背上一些包袱压力，接下来还有更多的比赛，我们还是脚踏实地重新开 始吧。”(小三儿)"""
+    keyword=TextRankKeyword(stop_words_file="./stopwords.txt")
+    keyword.analyze(content)
+    print(keyword.keywords)
+    a=keyword.get_keywords()
+    print(a)
+
