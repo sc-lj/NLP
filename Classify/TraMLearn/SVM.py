@@ -11,7 +11,7 @@ from sklearn.grid_search import GridSearchCV
 import numpy as np
 from KwordExtr.SKE.main import SemankeyWord
 from KwordExtr.TextRank.TextRankKeyword import TextRankKeyword
-from multiprocessing import Pool
+from multiprocessing import Pool,cpu_count
 
 filename=['../data/cnews.test.txt','../data/cnews.train.txt','../data/cnews.val.txt','../data/cnews.vocab.txt']
 
@@ -26,18 +26,14 @@ def genKeyWords(files):
         lines=f.readlines()
         data=[]
         trkeyword = TextRankKeyword(stop_words_file="../data/stopwords.txt")
-        pool=Pool(6)
+        pool=Pool(10)
         for line in lines:
             keyword=pool.apply_async(func=TRKeyWord,args=(line,trkeyword))
             words=keyword.get()
-            data.append({words[0]:words[1]})
+            data.append(words)
 
-    newdata=[]
-    labels=[]
-    for a in data:
-        for k,v in a.items():
-            newdata.append(v)
-            labels.append(k)
+    newdata=[a[1] for a in data]
+    labels=[a[0] for a in data]
     return newdata,labels
 
 
@@ -77,6 +73,5 @@ def searchParam():
 
 
 if __name__ == '__main__':
-    svc()
-    # data = genKeyWords("../data/cnews.train.txt")
-    # print(len(data))
+    # svc()
+    searchParam()
