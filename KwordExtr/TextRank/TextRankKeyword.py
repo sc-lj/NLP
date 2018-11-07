@@ -5,13 +5,12 @@ from __future__ import (absolute_import, division, print_function,
 
 import networkx as nx
 import numpy as np
-
-import util
-from Segment import Segmentation
-
+import os
+from . import util
+from .Segment import Segmentation
 class TextRankKeyword(object):
     
-    def __init__(self, stop_words_file = None, 
+    def __init__(self, stop_words_file = "./stopwords.txt",
                  allow_speech_tags = util.allow_speech_tags, 
                  delimiters = util.sentence_delimiters):
         """
