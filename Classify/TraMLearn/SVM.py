@@ -15,29 +15,38 @@ from multiprocessing import Pool
 
 filename=['../data/cnews.test.txt','../data/cnews.train.txt','../data/cnews.val.txt','../data/cnews.vocab.txt']
 
+def TRKeyWord(line,trkeyword):
+    lable, content = line.split(maxsplit=1)
+    keyword =trkeyword.get_keywords(content, 10, 1,)
+    words = " ".join([item['word'] for item in keyword])
+    return [lable,words]
+
 def genKeyWords(files):
     with open(files,'r') as f:
         lines=f.readlines()
-        lables=[]
-        keywords=[]
+        data=[]
+        trkeyword = TextRankKeyword(stop_words_file="../data/stopwords.txt")
         pool=Pool(6)
         for line in lines:
-            lable,content=line.split(maxsplit=1)
-            lables.append(lable)
-            trkeyword=TextRankKeyword(stop_words_file="../data/stopwords.txt")
-            keyword=pool.apply_async(trkeyword.get_keywords,args=(content,))
-            word=keyword.get()
-            words=" ".join([item['word'] for item in word])
-            keywords.append(words)
-    return lables,keywords
+            keyword=pool.apply_async(func=TRKeyWord,args=(line,trkeyword))
+            words=keyword.get()
+            data.append({words[0]:words[1]})
+
+    newdata=[]
+    labels=[]
+    for a in data:
+        for k,v in a.items():
+            newdata.append(v)
+            labels.append(k)
+    return newdata,labels
 
 
 def svc():
     count=CountVectorizer(max_df=0.9,max_features=10000)
     tfidf=TfidfTransformer()
     _svc=SVC(C=0.99,kernel="linear")
-    train_label,train_data=genKeyWords("../data/cnews.train.txt")
-    test_label,test_data=genKeyWords("../data/cnews.test.txt")
+    train_data, train_label=genKeyWords("../data/cnews.train.txt")
+    test_data,test_label=genKeyWords("../data/cnews.test.txt")
 
     pipline=Pipeline([("count",count),("tfidf",tfidf),("svc",_svc)])
 
@@ -69,5 +78,5 @@ def searchParam():
 
 if __name__ == '__main__':
     svc()
-    # train_label, train_data = genKeyWords("../data/cnews.train.txt")
-
+    # data = genKeyWords("../data/cnews.train.txt")
+    # print(len(data))
