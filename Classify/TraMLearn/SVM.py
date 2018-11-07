@@ -17,7 +17,6 @@ filename=['../data/cnews.test.txt','../data/cnews.train.txt','../data/cnews.val.
 def genKeyWords(files):
     with open(files,'r') as f:
         lines=f.readlines()
-        print(len(lines))
         lables=[]
         keywords=[]
         for line in lines:
@@ -67,6 +66,6 @@ def searchParam():
 
 
 if __name__ == '__main__':
-    # svc()
-    train_label, train_data = genKeyWords("../data/cnews.train.txt")
+    svc()
+    # train_label, train_data = genKeyWords("../data/cnews.train.txt")
 
