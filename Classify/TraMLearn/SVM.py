@@ -11,6 +11,7 @@ from sklearn.grid_search import GridSearchCV
 import numpy as np
 from KwordExtr.SKE.main import SemankeyWord
 from KwordExtr.TextRank.TextRankKeyword import TextRankKeyword
+from multiprocessing import Pool
 
 filename=['../data/cnews.test.txt','../data/cnews.train.txt','../data/cnews.val.txt','../data/cnews.vocab.txt']
 
@@ -19,12 +20,13 @@ def genKeyWords(files):
         lines=f.readlines()
         lables=[]
         keywords=[]
+        pool=Pool(6)
         for line in lines:
             lable,content=line.split(maxsplit=1)
             lables.append(lable)
-            keyword=TextRankKeyword(stop_words_file="../data/stopwords.txt")
-            keyword.analyze(content)
-            word=keyword.get_keywords()
+            trkeyword=TextRankKeyword(stop_words_file="../data/stopwords.txt")
+            keyword=pool.apply_async(trkeyword.get_keywords,args=(content,))
+            word=keyword.get()
             words=" ".join([item['word'] for item in word])
             keywords.append(words)
     return lables,keywords
