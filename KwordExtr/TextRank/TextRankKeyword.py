@@ -86,7 +86,7 @@ class TextRankKeyword(object):
         Return:
         关键词列表。
         """
-        if len(self.keywords)==0:
+        if not self.keywords:
             self.analyze(text)
         result = []
         count = 0
@@ -105,7 +105,7 @@ class TextRankKeyword(object):
         Return:
         关键短语的列表。
         """
-        if len(self.keywords)==0:
+        if not self.keywords:
             self.analyze(text)
         keywords_set = set([ item.word for item in self.get_keywords(num=keywords_num, word_min_len = 1)])
         keyphrases = set()
