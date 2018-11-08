@@ -9,33 +9,9 @@ from sklearn.svm import SVC
 from sklearn.pipeline import Pipeline,FeatureUnion
 from sklearn.grid_search import GridSearchCV
 import numpy as np
-from KwordExtr.SKE.main import SemankeyWord
-from KwordExtr.TextRank.TextRankKeyword import TextRankKeyword
-from multiprocessing import Pool,cpu_count
+from Data import genKeyWords
 
 filename=['../data/cnews.test.txt','../data/cnews.train.txt','../data/cnews.val.txt','../data/cnews.vocab.txt']
-
-def TRKeyWord(line,trkeyword):
-    lable, content = line.split(maxsplit=1)
-    keyword =trkeyword.get_keywords(content, 10, 1,)
-    words = " ".join([item['word'] for item in keyword])
-    return [lable,words]
-
-def genKeyWords(files):
-    with open(files,'r') as f:
-        lines=f.readlines()
-        data=[]
-        trkeyword = TextRankKeyword(stop_words_file="../data/stopwords.txt")
-        pool=Pool(10)
-        for line in lines:
-            keyword=pool.apply_async(func=TRKeyWord,args=(line,trkeyword))
-            words=keyword.get()
-            data.append(words)
-
-    newdata=[a[1] for a in data]
-    labels=[a[0] for a in data]
-    return newdata,labels
-
 
 def svc():
     count=CountVectorizer(max_df=0.9,max_features=10000)
