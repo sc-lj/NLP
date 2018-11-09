@@ -80,7 +80,7 @@ class TextRankKeyword(object):
 
         self.keywords = util.sort_words(_vertex_source, _edge_source, window = window, pagerank_config = pagerank_config)
 
-    def get_keywords(self,text=None, num = 10, word_min_len = 1):
+    def get_keywords(self,text=None, num = None, word_min_len = 1):
         """获取最重要的词组长度大于等于word_min_len的关键词。
         获取6个关键字
         Return:
@@ -90,6 +90,8 @@ class TextRankKeyword(object):
             self.analyze(text)
         result = []
         count = 0
+        if not num:
+            num=int(len(self.keywords)/3)
         for item in self.keywords:
             if count >= num:
                 break
@@ -98,7 +100,7 @@ class TextRankKeyword(object):
                 count += 1
         return result
     
-    def get_keyphrases(self,text=None, keywords_num = 12, min_occur_num = 2):
+    def get_keyphrases(self,text=None, keywords_num =None, min_occur_num = 2):
         """获取关键短语。
         获取 keywords_num 个关键词构造的可能出现的短语，要求这个短语在原文本中至少出现的次数为min_occur_num。
 
