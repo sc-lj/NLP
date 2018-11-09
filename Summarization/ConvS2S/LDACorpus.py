@@ -122,26 +122,29 @@ def main():
 
 
 def look_best_topic_num(content):
-    n_topics=range(10,40,3)
-    perplexityLst = [1.0] * len(n_topics)
+    max_iters=range(3000,9000,500)
+    perplexityLst = [1.0] * len(max_iters)
     lda_models = []
     tfidf_vectorizer= TfidfVectorizer(strip_accents='unicode',
                                        max_features=10000,
                                        max_df=0.5,
                                        min_df=10)
     tfidf = tfidf_vectorizer.fit_transform(content)
-    for idx, n_topic in enumerate(n_topics):
-        lda = LatentDirichletAllocation(n_components=n_topic,
-                                        max_iter=1000,
+    joblib.dump(tfidf_vectorizer,'./model/tfidf_vectorizer.m')
+    for idx, max_iter in enumerate(max_iters):
+        lda = LatentDirichletAllocation(n_components=10,
+                                        max_iter=max_iter,
                                         learning_method='batch',
                                         evaluate_every=200,
-                                        verbose=0)
+                                        verbose=0,
+                                        n_jobs=5)
         lda.fit(tfidf)
+        joblib.dump(lda, './model/lda_{}.m'.format(max_iter))
         # 计算模型的困惑度
         perplexityLst[idx] = lda.perplexity(tfidf)
         lda_models.append(lda)
     best_index = perplexityLst.index(min(perplexityLst))
-    best_n_topic = n_topics[best_index]
+    best_n_topic = max_iters[best_index]
     print("Best # of Topic: ", best_n_topic)
 
 
