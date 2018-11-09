@@ -1,5 +1,8 @@
 # coding:utf-8
 
+import os,sys
+path=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(os.path.dirname(path))
 from KwordExtr.SKE.main import SemankeyWord
 from KwordExtr.TextRank.TextRankKeyword import TextRankKeyword
 from multiprocessing import Pool,cpu_count
