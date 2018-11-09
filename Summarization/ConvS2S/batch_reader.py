@@ -124,7 +124,7 @@ class Batcher():
         pad_id=self._vocab.WordToId(PAD_TOKEN)
         input_gen=ExampleGen()
         while True:
-            article,abstract=next(input_gen)
+            _,article,abstract=next(input_gen)
             article_sentence=[sent.strip() for sent in ToSentences(article,include_token=False)]
             abstract_sentence=[sent.strip() for sent in ToSentences(abstract,include_token=False)]
 
