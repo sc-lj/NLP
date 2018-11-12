@@ -10,7 +10,7 @@ from random import shuffle
 
 def TRKeyWord(line,trkeyword):
     lable, content = line.split(maxsplit=1)
-    keyword =trkeyword.get_keywords(content, 10, 1,)
+    keyword =trkeyword.get_keywords(content)
     words = " ".join([item['word'] for item in keyword])
     return [lable,words]
 
