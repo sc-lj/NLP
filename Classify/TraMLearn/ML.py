@@ -94,12 +94,11 @@ def K_Means(minibatch):
 
 def DTrees():
     train_data, train_label = genKeyWords("../data/cnews.train.txt")
-    vectors = CountVectorizer()
-    tfidf = TfidfTransformer()
-    tree=DecisionTreeClassifier(criterion="entropy")
+    vectors = CountVectorizer(max_df=0.6)
+    tfidf = TfidfTransformer(use_idf=False)
+    tree=DecisionTreeClassifier(criterion="entropy",max_depth=20)
     pipline=Pipeline([("vectors",vectors),("tfidf",tfidf),("tree",tree)])
-    params={'vectors__max_df': (0.4, 0.5, 0.6, 0.7), 'vectors__max_features': (None, 500, 1000, 1500),
-            'tfidf__use_idf': (True, False),"tree__max_depth":(10,15,20)}
+    params={"tree__max_depth":(20,25,30,35,40)}
     gridsearch=GridSearchCV(pipline,params,n_jobs=10)
     gridsearch.fit(train_data,train_label)
     best_parameters = gridsearch.best_estimator_.get_params()
@@ -124,5 +123,5 @@ def Xgboost():
 if __name__ == '__main__':
     # Knn()
     # Bayes()
-    # DTrees()
-    Xgboost()
+    DTrees()
+    # Xgboost()
