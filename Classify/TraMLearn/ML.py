@@ -7,7 +7,10 @@ from sklearn.pipeline import Pipeline
 from sklearn.externals import joblib
 from sklearn.model_selection import GridSearchCV
 from sklearn.cluster import KMeans,MiniBatchKMeans
+from sklearn.tree import DecisionTreeClassifier,ExtraTreeClassifier
 from sklearn.svm import SVC
+import xgboost as xgb
+from xgboost import XGBClassifier
 from sklearn.metrics import auc,roc_curve
 import numpy as np
 from Data import genKeyWords
@@ -40,19 +43,20 @@ def Knn():
     train_data, train_label=genKeyWords("../data/cnews.train.txt")
     vectors=CountVectorizer()
     tfidf=TfidfTransformer()
-    clf=KNeighborsClassifier(n_neighbors=10,n_jobs=-1)
+    clf=KNeighborsClassifier(n_neighbors=5,n_jobs=-1)
     pipline=Pipeline([("vectors",vectors),("tfidf",tfidf),("clf",clf)])
-    parameters={'clf__n_neighbors':list(range(5,20,2))}
-    grid_search = GridSearchCV(pipline, parameters, n_jobs=-1, verbose=1)
-    grid_search.fit(train_data,train_label)
-    best_parameters = grid_search.best_estimator_.get_params()
-    for param_name in sorted(parameters.keys()):
-        print("\t%s: %r" % (param_name, best_parameters[param_name]))
+    # parameters={'clf__n_neighbors':list(range(5,20,2))}
+    # grid_search = GridSearchCV(pipline, parameters, n_jobs=-1, verbose=1)
+    # grid_search.fit(train_data,train_label)
+    # best_parameters = grid_search.best_estimator_.get_params()
+    # for param_name in sorted(parameters.keys()):
+    #     print("\t%s: %r" % (param_name, best_parameters[param_name]))
 
-    # test_data,test_label=genKeyWords("../data/cnews.test.txt")
-    # predicted = pipline.predict(test_data)
-    # joblib.dump(pipline,"./knn.m")
-    # print('KNeighborsClassifier', np.mean(predicted == test_label))
+    pipline.fit(train_data,train_label)
+    test_data,test_label=genKeyWords("../data/cnews.test.txt")
+    predicted = pipline.predict(test_data)
+    joblib.dump(pipline,"./knn.m")
+    print('KNeighborsClassifier', np.mean(predicted == test_label))
 
 
 def Bayes(mode='mul'):
@@ -78,7 +82,6 @@ def K_Means(minibatch):
     train_data, train_label = genKeyWords("../data/cnews.train.txt")
     vectors = CountVectorizer()
     tfidf = TfidfTransformer()
-
     if minibatch:
         km = MiniBatchKMeans(n_clusters=10, init='k-means++', n_init=1,
                          init_size=1000, batch_size=1000, verbose=False)
@@ -89,7 +92,37 @@ def K_Means(minibatch):
     pipline=Pipeline([("vectors",vectors),("tfidf",tfidf),("kmeans",km)])
     pipline.fit(train_data)
 
+def DTrees():
+    train_data, train_label = genKeyWords("../data/cnews.train.txt")
+    vectors = CountVectorizer()
+    tfidf = TfidfTransformer()
+    tree=DecisionTreeClassifier(criterion="entropy")
+    pipline=Pipeline([("vectors",vectors),("tfidf",tfidf),("tree",tree)])
+    params={'vectors__max_df': (0.4, 0.5, 0.6, 0.7), 'vectors__max_features': (None, 500, 1000, 1500),
+            'tfidf__use_idf': (True, False),"tree__max_depth":(10,15,20)}
+    gridsearch=GridSearchCV(pipline,params,n_jobs=10)
+    gridsearch.fit(train_data,train_label)
+    best_parameters = gridsearch.best_estimator_.get_params()
+    for param_name in sorted(params.keys()):
+        print("\t%s: %r" % (param_name, best_parameters[param_name]))
+
+def Xgboost():
+    train_data, train_label = genKeyWords("../data/cnews.train.txt")
+    vectors = CountVectorizer()
+    tfidf = TfidfTransformer()
+    bst=XGBClassifier(n_jobs=10)
+    pipline=Pipeline([("vectors",vectors),("tfidf",tfidf),("bst",bst)])
+    params={'vectors__max_df': (0.4, 0.5, 0.6, 0.7), 'vectors__max_features': (None, 500, 1000, 1500),
+            'tfidf__use_idf': (True, False),"bst__max_depth":list(range(5,20,2)),}
+    gride_search=GridSearchCV(pipline,params,n_jobs=10)
+    gride_search.fit(train_data,train_label)
+    best_parameters =gride_search.best_estimator_.get_params()
+    for param_name in sorted(params.keys()):
+        print("\t%s: %r" % (param_name, best_parameters[param_name]))
+
 
 if __name__ == '__main__':
-    Knn()
+    # Knn()
     # Bayes()
+    # DTrees()
+    Xgboost()
