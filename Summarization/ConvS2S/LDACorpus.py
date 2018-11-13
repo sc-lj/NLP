@@ -77,11 +77,10 @@ def stopword():
         words=[word.strip() for word in words]
     return words
 
-def cut_words(content):
+def cut_words(content,stopwords):
     re_compile=re.compile("[A-Za-z0-9\s]")
     content=jieba.cut(content)
     content=[word for word in content if not re_compile.match(word)]
-    stopwords=stopword()
     content=[word for word in content if word not in stopwords]
     return content
 
@@ -94,8 +93,9 @@ def main():
         sent="select content from news where 1"
         cursor.execute(sent)
         pool=Pool(cpu_count()-1)
+        stopwords = stopword()
         for content in cursor.fetchall():
-            words = pool.apply_async(func=cut_words, args=(content[0],))
+            words = pool.apply_async(func=cut_words, args=(content[0],stopwords,))
             contentwords.append(words.get())
 
         print(len(contentwords))
