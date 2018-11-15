@@ -29,7 +29,7 @@ def stopwords():
         stopword=f.read()
     return stopword
 
-def cutWords(content):
+def cutWord(content):
     """
     分句子后，然后分词,并去掉停用词
     :param content:

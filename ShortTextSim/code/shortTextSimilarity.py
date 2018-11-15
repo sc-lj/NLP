@@ -199,8 +199,8 @@ def sentenceSimilarity(sentence1,sentence2):
     :return:
     """
     sigma=0.85
-    sentence1=cutWords(sentence1)
-    sentence2=cutWords(sentence2)
+    sentence1=cutWord(sentence1)
+    sentence2=cutWord(sentence2)
     sentenceSet=list(set(sentence1).union(set(sentence2)))
 
     semanticSim=semanticSimilarity(sentence1,sentence2,sentenceSet)
