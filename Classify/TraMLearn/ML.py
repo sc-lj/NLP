@@ -9,6 +9,7 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.cluster import KMeans,MiniBatchKMeans
 from sklearn.tree import DecisionTreeClassifier,ExtraTreeClassifier
 from sklearn.svm import SVC
+from sklearn.metrics import accuracy_score,make_scorer,fbeta_score
 import xgboost as xgb
 from xgboost import XGBClassifier
 from sklearn.metrics import auc,roc_curve
@@ -17,8 +18,8 @@ from Data import genKeyWords
 
 
 def svc():
-    count=CountVectorizer(max_df=0.9,max_features=10000)
-    tfidf=TfidfTransformer()
+    count=CountVectorizer(max_df=0.2,max_features=None)
+    tfidf=TfidfTransformer(use_idf=False)
     _svc=SVC(C=0.99)
     train_data, train_label=genKeyWords("../data/cnews.train.txt")
     test_data,test_label=genKeyWords("../data/cnews.test.txt")
@@ -29,8 +30,7 @@ def svc():
     # print('SVC', np.mean(predicted == test_label))
     label = train_label + test_label
     data = train_data + test_data
-    parameters = {'count__max_df': (0.4, 0.5, 0.6, 0.7), 'count__max_features': (None, 5000, 10000, 15000),
-                  'tfidf__use_idf': (True, False),"svc__kernel":('rbf',"linear","sigmoid")}
+    parameters = {"svc__kernel":('rbf',"linear","sigmoid")}
     grid_search = GridSearchCV(pipline, parameters, n_jobs=-1, verbose=1)
     grid_search.fit(data, label)
 
@@ -98,8 +98,9 @@ def DTrees():
     tfidf = TfidfTransformer(use_idf=False)
     tree=DecisionTreeClassifier(criterion="entropy",max_depth=20)
     pipline=Pipeline([("vectors",vectors),("tfidf",tfidf),("tree",tree)])
-    params={"tree__max_depth":(20,25,30,35,40)}
-    gridsearch=GridSearchCV(pipline,params,n_jobs=10)
+    params={"tree__max_depth":list(range(75,105,5))}
+    accuracy=make_scorer(accuracy_score)
+    gridsearch=GridSearchCV(pipline,params,n_jobs=10,scoring=accuracy)
     gridsearch.fit(train_data,train_label)
     best_parameters = gridsearch.best_estimator_.get_params()
     for param_name in sorted(params.keys()):
@@ -107,13 +108,13 @@ def DTrees():
 
 def Xgboost():
     train_data, train_label = genKeyWords("../data/cnews.train.txt")
-    vectors = CountVectorizer()
-    tfidf = TfidfTransformer()
+    vectors = CountVectorizer(max_df=0.2)
+    tfidf = TfidfTransformer(use_idf=True)
     bst=XGBClassifier(n_jobs=10)
     pipline=Pipeline([("vectors",vectors),("tfidf",tfidf),("bst",bst)])
-    params={'vectors__max_df': (0.4, 0.5, 0.6, 0.7), 'vectors__max_features': (None, 500, 1000, 1500),
-            'tfidf__use_idf': (True, False),"bst__max_depth":list(range(5,20,2)),}
-    gride_search=GridSearchCV(pipline,params,n_jobs=10)
+    params={"bst__max_depth":list(range(37,62,3))}
+    accuracy=make_scorer(accuracy_score)
+    gride_search=GridSearchCV(pipline,params,n_jobs=10,scoring=accuracy)
     gride_search.fit(train_data,train_label)
     best_parameters =gride_search.best_estimator_.get_params()
     for param_name in sorted(params.keys()):
@@ -123,5 +124,7 @@ def Xgboost():
 if __name__ == '__main__':
     # Knn()
     # Bayes()
-    DTrees()
+    # DTrees()
     # Xgboost()
+    svc()
+
