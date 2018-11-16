@@ -28,3 +28,7 @@ def genKeyWords(files):
     newdata=[a[1] for a in data]
     labels=[a[0] for a in data]
     return newdata,labels
+
+if __name__ == '__main__':
+    data,label=genKeyWords('../data/cnews.train.txt')
+    print(set(label))

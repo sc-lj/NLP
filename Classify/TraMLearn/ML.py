@@ -20,23 +20,25 @@ from Data import genKeyWords
 def svc():
     count=CountVectorizer(max_df=0.2,max_features=None)
     tfidf=TfidfTransformer(use_idf=False)
-    _svc=SVC(C=0.99)
+    _svc=SVC(C=0.99,kernel='linear')
     train_data, train_label=genKeyWords("../data/cnews.train.txt")
     test_data,test_label=genKeyWords("../data/cnews.test.txt")
     pipline=Pipeline([("count",count),("tfidf",tfidf),("svc",_svc)])
 
-    # pipline=pipline.fit(train_data,train_label)
-    # predicted = pipline.predict(test_data)
-    # print('SVC', np.mean(predicted == test_label))
-    label = train_label + test_label
-    data = train_data + test_data
-    parameters = {"svc__kernel":('rbf',"linear","sigmoid")}
-    grid_search = GridSearchCV(pipline, parameters, n_jobs=-1, verbose=1)
-    grid_search.fit(data, label)
+    pipline=pipline.fit(train_data,train_label)
+    joblib.dump(pipline, "./SVM.m")
+    predicted = pipline.predict(test_data)
+    print('SVC', np.mean(predicted == test_label))
 
-    best_parameters = grid_search.best_estimator_.get_params()
-    for param_name in sorted(parameters.keys()):
-        print("\t%s: %r" % (param_name, best_parameters[param_name]))
+    # label = train_label + test_label
+    # data = train_data + test_data
+    # parameters = {"svc__kernel":('rbf',"linear","sigmoid")}
+    # grid_search = GridSearchCV(pipline, parameters, n_jobs=-1, verbose=1)
+    # grid_search.fit(data, label)
+
+    # best_parameters = grid_search.best_estimator_.get_params()
+    # for param_name in sorted(parameters.keys()):
+    #     print("\t%s: %r" % (param_name, best_parameters[param_name]))
 
 
 def Knn():
@@ -110,9 +112,15 @@ def Xgboost():
     train_data, train_label = genKeyWords("../data/cnews.train.txt")
     vectors = CountVectorizer(max_df=0.2)
     tfidf = TfidfTransformer(use_idf=True)
-    bst=XGBClassifier(n_jobs=10)
+    bst=XGBClassifier(n_jobs=10,max_depth=55,objective='multi:softmax',num_class=10)
     pipline=Pipeline([("vectors",vectors),("tfidf",tfidf),("bst",bst)])
-    params={"bst__max_depth":list(range(37,62,3))}
+    # pipline.fit(train_data,train_label)
+    # joblib.dump(pipline,"./XGB.m")
+    # test_data, test_label = genKeyWords("../data/cnews.test.txt")
+    # predicted = pipline.predict(test_data)
+    # print('Xgboost', np.mean(predicted == test_label))
+
+    params={"bst__subsample":[0.5,0.6,0.7,0.8,0.9,1],"bst__reg_lambda":[0.6,0.8,1]}
     accuracy=make_scorer(accuracy_score)
     gride_search=GridSearchCV(pipline,params,n_jobs=10,scoring=accuracy)
     gride_search.fit(train_data,train_label)
@@ -120,11 +128,10 @@ def Xgboost():
     for param_name in sorted(params.keys()):
         print("\t%s: %r" % (param_name, best_parameters[param_name]))
 
-
 if __name__ == '__main__':
     # Knn()
     # Bayes()
     # DTrees()
-    # Xgboost()
-    svc()
+    Xgboost()
+    # svc()
 
