@@ -7,8 +7,10 @@ from sklearn.pipeline import Pipeline
 from sklearn.externals import joblib
 from sklearn.model_selection import GridSearchCV
 from sklearn.cluster import KMeans,MiniBatchKMeans
-from sklearn.tree import DecisionTreeClassifier,ExtraTreeClassifier
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
+from sklearn.feature_selection import f_regression
+from sklearn.decomposition import PCA
 from sklearn.metrics import accuracy_score,make_scorer,fbeta_score
 import xgboost as xgb
 from xgboost import XGBClassifier
@@ -120,7 +122,7 @@ def Xgboost():
     # predicted = pipline.predict(test_data)
     # print('Xgboost', np.mean(predicted == test_label))
 
-    params={"bst__subsample":[0.5,0.6,0.7,0.8,0.9,1],"bst__reg_lambda":[0.6,0.8,1]}
+    params={"bst__subsample":[0,1,0.2,0.3,0.4,0.5],"bst__reg_lambda":[0.6,0.8,1]}
     accuracy=make_scorer(accuracy_score)
     gride_search=GridSearchCV(pipline,params,n_jobs=10,scoring=accuracy)
     gride_search.fit(train_data,train_label)
