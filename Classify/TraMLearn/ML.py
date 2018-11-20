@@ -114,21 +114,21 @@ def Xgboost():
     train_data, train_label = genKeyWords("../data/cnews.train.txt")
     vectors = CountVectorizer(max_df=0.2)
     tfidf = TfidfTransformer(use_idf=True)
-    bst=XGBClassifier(n_jobs=10,max_depth=55,objective='multi:softmax',num_class=10)
+    bst=XGBClassifier(n_jobs=10,max_depth=55,objective='multi:softmax',num_class=10,subsample=0.4,reg_lambda=0.8)
     pipline=Pipeline([("vectors",vectors),("tfidf",tfidf),("bst",bst)])
-    # pipline.fit(train_data,train_label)
-    # joblib.dump(pipline,"./XGB.m")
-    # test_data, test_label = genKeyWords("../data/cnews.test.txt")
-    # predicted = pipline.predict(test_data)
-    # print('Xgboost', np.mean(predicted == test_label))
+    pipline.fit(train_data,train_label)
+    joblib.dump(pipline,"./model/XGB.m")
+    test_data, test_label = genKeyWords("../data/cnews.test.txt")
+    predicted = pipline.predict(test_data)
+    print('Xgboost', np.mean(predicted == test_label))
 
-    params={"bst__subsample":[0,1,0.2,0.3,0.4,0.5],"bst__reg_lambda":[0.6,0.8,1]}
-    accuracy=make_scorer(accuracy_score)
-    gride_search=GridSearchCV(pipline,params,n_jobs=10,scoring=accuracy)
-    gride_search.fit(train_data,train_label)
-    best_parameters =gride_search.best_estimator_.get_params()
-    for param_name in sorted(params.keys()):
-        print("\t%s: %r" % (param_name, best_parameters[param_name]))
+    # params={"bst__subsample":[0,1,0.2,0.3,0.4,0.5],"bst__reg_lambda":[0.6,0.8,1]}
+    # accuracy=make_scorer(accuracy_score)
+    # gride_search=GridSearchCV(pipline,params,n_jobs=10,scoring=accuracy)
+    # gride_search.fit(train_data,train_label)
+    # best_parameters =gride_search.best_estimator_.get_params()
+    # for param_name in sorted(params.keys()):
+    #     print("\t%s: %r" % (param_name, best_parameters[param_name]))
 
 if __name__ == '__main__':
     # Knn()
