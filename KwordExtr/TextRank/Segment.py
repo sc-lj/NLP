@@ -11,7 +11,7 @@ import os
 from . import util
 
 def get_default_stop_words_file():
-    d = os.path.dirname(os.path.realpath(__file__))
+    d = os.path.dirname(os.path.abspath(__file__))
     return os.path.join(d, 'stopwords.txt')
 
 class WordSegmentation(object):
