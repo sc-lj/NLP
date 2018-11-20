@@ -1,9 +1,4 @@
 #-*- encoding:utf-8 -*-
-"""
-@author:   letian
-@homepage: http://www.letiantian.me
-@github:   https://github.com/someus/
-"""
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 
@@ -14,6 +9,7 @@ import numpy as np
 import sys
 
 sentence_delimiters = ['?', '!', ';', '？', '！', '。', '；', '……', '…', '\n']
+#                   名形词, 成语,简称略语,习用语,名词,人名,名词方位语素,地名,机构团体,其他专名,时间词,动词,副动词,名动词,英文
 allow_speech_tags = ['an', 'i', 'j', 'l', 'n', 'nr', 'nrfg', 'ns', 'nt', 'nz', 't', 'v', 'vd', 'vn', 'eng']
 
 text_type    = str
