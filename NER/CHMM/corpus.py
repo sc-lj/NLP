@@ -54,7 +54,7 @@ class Corpus():
         cut = [a.strip() for a in cuts if len(a.strip()) != 0]
         return cut
 
-    def find_tag(seqs, tag="START"):
+    def find_tag(self,seqs, tag="START"):
         if isinstance(tag, list):
             index = [ind for ind, word in enumerate(seqs) if word in tag]
         else:
