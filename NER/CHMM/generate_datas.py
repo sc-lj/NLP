@@ -10,9 +10,9 @@ def genertate_initial_vector(hidden_states):
     with open("../data/nt.txt",mode='r') as nrfile:
         all_data = nrfile.readlines()
         for line in all_data:
-            tags_and_freq = line.strip().split(" ")[1:]
+            tags_and_freq = line.rstrip().split(" ")[1:]
             for index in range(0,len(tags_and_freq),2):
-                tmp_list =  tags_and_freq[index:index+2]  #list的第一个元素为状态标识，第二个元素为数量
+                tmp_list = tags_and_freq[index:index+2]  #list的第一个元素为状态标识，第二个元素为数量
                 the_hidden_states[tmp_list[0]] += eval(tmp_list[1])
                 count += eval(tmp_list[1])
     with open("../data/initial_vector.txt",mode="w") as outputfile:
@@ -51,14 +51,14 @@ def generate_emit_probability(initial_freq):
     :return:
     """
     result = []
-    with open("./data/nt.txt",mode="r") as nrfile:
+    with open("../data/nt.txt",mode="r") as nrfile:
         all_data = nrfile.readlines()
         for line in all_data:
-            split_line = line.strip().split(" ")
+            split_line = line.rstrip().split(" ")
             observed_state = split_line[0]
             tags_and_freq = split_line[1:]
             for index in range(0,len(tags_and_freq),2):
-                tmp_list =  tags_and_freq[index:index+2]  #list的第一个元素为隐状态标识，第二个元素为数量
+                tmp_list =tags_and_freq[index:index+2]  #list的第一个元素为隐状态标识，第二个元素为数量
                 result.append([tmp_list[0],observed_state,float(tmp_list[1])/initial_freq[tmp_list[0]]])
 
     # 输出、写入文件

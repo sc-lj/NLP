@@ -14,7 +14,7 @@ class OrgRecognize:
         :return: list，元素为模式串
         """
         result = []
-        with open("./data/nt.pattern.txt", "rb") as file:
+        with open("../data/nt.pattern.txt", "r") as file:
             datas = file.readlines()
             for line in datas:
                 result.append(line.strip())
@@ -26,11 +26,11 @@ class OrgRecognize:
         :return: 字典：key为首状态，value为字典--key为次状态，value为概率
         """
         result = {x: {} for x in hidden_states}
-        with open("./data/transition_probability.txt","rb") as file:
+        with open("../data/transition_probability.txt","r") as file:
             datas = file.readlines()
             for line in datas:
-                split_line = line.strip().split(",")
-                result[split_line[0]][split_line[1]] =  split_line[2]
+                split_line = line.rstrip().split(",")
+                result[split_line[0]][split_line[1]] = split_line[2]
         return result
     def load_initial_vector(self):
         """
@@ -38,7 +38,7 @@ class OrgRecognize:
         :return: 字典：key为隐状态标识，value为概率
         """
         result = {}
-        with open("./data/initial_vector.txt","rb") as file:
+        with open("../data/initial_vector.txt","r") as file:
             datas = file.readlines()
             for line in datas:
                 split_line = line.strip().split(",")
@@ -52,7 +52,7 @@ class OrgRecognize:
         :return: 字典，格式为：key为隐状态，value是一个字典--key为观察状态，value为概率
         """
         result = {x:{} for x in hidden_states}
-        with open("./data/emit_probability.txt","rb") as file:
+        with open("../data/emit_probability.txt","r") as file:
             datas = file.readlines()
             for line in datas:
                 split_line = line.strip().split(",")
@@ -76,7 +76,7 @@ class OrgRecognize:
         #初始化
         tmp_result = {}
         for state in hidden_states:
-            if emit_probability[state].has_key(observation[0]):
+            if emit_probability[state].get(observation[0]):
                 tmp_result[state] = eval(initial_probability[state])*eval(emit_probability[state][observation[0]])
             else:
                 tmp_result[state] = 0
@@ -87,7 +87,7 @@ class OrgRecognize:
             tmp_result = {}
             for current_state in hidden_states:
                 #取最大值：上一次的所有状态(x)*转移到当前状态（current_state）*发射概率
-                if emit_probability[current_state].has_key(word):
+                if emit_probability[current_state].get(word):
                     tmp_result[current_state] = max([compute_recode[index][x]*eval(transition_probability[x][current_state])*
                                                               eval(emit_probability[current_state][word]) for x in hidden_states])
                 else:
@@ -109,7 +109,7 @@ class OrgRecognize:
         """
         org_indices = []  # 存放机构名的索引
         orgs = [] # 存放机构名字符串
-        tag_sequence_str = "".join(tag_sequence)  # 转为字符串
+        tag_sequence_str = "".join(sequence)  # 转为字符串
         for pattern in patterns:
             if pattern in tag_sequence_str:
                 start_index = (tag_sequence_str.index(pattern))
