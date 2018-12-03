@@ -8,7 +8,7 @@ import jieba.posseg as pseg
 import codecs
 import os
 
-from . import util
+import util
 
 def get_default_stop_words_file():
     d = os.path.dirname(os.path.abspath(__file__))
