@@ -341,9 +341,7 @@ class Rake(object):
         else:
             phrase_list = self.generate_en_candidate_keywords(sentence_list)
         word_scores = self.calculate_word_scores(phrase_list)
-        print(word_scores)
         keyword_candidates = self.generate_candidate_keyword_scores(phrase_list, word_scores)
-        print(keyword_candidates)
         sorted_keywords = sorted(six.iteritems(keyword_candidates), key=operator.itemgetter(1), reverse=True)
         return sorted_keywords
 
