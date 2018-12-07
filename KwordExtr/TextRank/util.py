@@ -104,8 +104,8 @@ def sort_words(vertex_source, edge_source, window = 2, pagerank_config = {'alpha
             if w1 in word_index and w2 in word_index:
                 index1 = word_index[w1]
                 index2 = word_index[w2]
-                graph[index1][index2] = 1.0
-                graph[index2][index1] = 1.0
+                graph[index1][index2] += 1.0
+                graph[index2][index1] += 1.0
 
     nx_graph = nx.from_numpy_matrix(graph)
     scores = nx.pagerank(nx_graph, **pagerank_config)          # this is a dict
