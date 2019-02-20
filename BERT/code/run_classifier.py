@@ -14,6 +14,9 @@ import optimization
 import tokenization
 import tensorflow as tf
 import MySQLdb
+import re
+from random import shuffle
+import functools
 
 flags = tf.flags
 
@@ -311,19 +314,113 @@ class ColaProcessor(DataProcessor):
       else:
         text_a = tokenization.convert_to_unicode(line[3])
         label = tokenization.convert_to_unicode(line[1])
-      examples.append(
-          InputExample(guid=guid, text_a=text_a, text_b=None, label=label))
+      examples.append(InputExample(guid=guid, text_a=text_a, text_b=None, label=label))
     return examples
 
-class SelfClassifyProcessor(DataProcessor):
-  """处理分类数据"""
 
+class AttrDict(dict):
+  def __init__(self,*args,**kwargs):
+    super(AttrDict,self).__init__(*args,**kwargs)
+
+  def __setattr__(self, key, value):
+    if key in self.__dict__:
+      self.__dict__[key]=value
+    else:
+      self[key]=value
+
+  def __getattr__(self, item):
+    if item in self.__dict__:
+      return self.__dict__[item]
+
+# 使用@property修饰符实现延迟装饰器
+def lazy_property(func):
+  attr_name="_lazy_"+func.__name__
+
+  @property
+  def _lazy_property(self):
+    if not hasattr(self,attr_name):
+      setattr(self,attr_name,func(self))
+      return getattr(self,attr_name)
+  return _lazy_property
+
+# 使用python描述符实现延迟装饰器
+class lazy():
+  def __init__(self,func):
+    self.func=func
+
+  def __get__(self, instance, owner):
+    val=self.func(instance)
+    setattr(instance,self.func.__name__,val)
+    return val
+
+# 单例模式-只初始化一次
+def singleton(cls):
+  _instances = {}
+  @functools.wraps(cls)
+  def get_instance(*args, **kwargs):
+    if cls not in _instances:
+      _instances[cls] = cls(*args, **kwargs)
+    return _instances[cls]
+  return get_instance
+
+
+class SelfClassifyProcessor(DataProcessor):
+
+  """处理分类数据"""
   def login(self,dbname):
-    db=MySQLdb.connect(host="192.168.1.155",user="root",password="fft12345",database=dbname,charset='utf-8')
+    db=MySQLdb.connect(host="192.168.1.155",user="root",password="fft12345",database=dbname,charset='utf8')
     return db
 
+  def get_example(self):
+    alldata=[]
+    db=self.login("think_db")
+    cursor=db.cursor()
+    cursor.execute("select title,content,topics from csis_region")
+    data=cursor.fetchall()
+    re_compile=re.compile("<[^>]+>",re.S)
+    for title,content,topics in data:
+      content=re_compile.sub("",content)
+      alldata.append(AttrDict(title=title.strip(),content=content.strip(),topics=topics.strip()))
+    return alldata
+
+  @singleton
+  def split_data(self,ratio=0.8):
+    data=self.get_example()
+    num=int(len(data)*ratio)
+    data=shuffle(data)
+    train_data=data[:num]
+    dev_data=data[num:]
+    return train_data,dev_data
+
   def get_train_examples(self, data_dir):
+    train_data,_=self.split_data()
+    return self.create_example(train_data,"train")
+
+  def get_dev_examples(self, data_dir):
+    _,dev_data=self.split_data()
+    return self.create_example(dev_data,'dev')
+
+  def get_test_examples(self, data_dir):
     pass
+
+  def get_labels(self):
+    return ["0", "1", "2", "3", "4", "5", "6"]
+
+  def create_example(self,lines,set_type):
+    examples = []
+    for (i, line) in enumerate(lines):
+      # 只有测试集有头部
+      if set_type == "test" and i == 0:
+        continue
+      guid = "%s-%s" % (set_type, i)
+      if set_type == "test":
+        text_a = tokenization.convert_to_unicode(line["content"])
+        label = tokenization.convert_to_unicode(line["topics"])
+      else:
+        text_a = tokenization.convert_to_unicode(line["content"])
+        label = tokenization.convert_to_unicode(line["topics"])
+      examples.append(InputExample(guid=guid, text_a=text_a, text_b=None, label=label))
+    return examples
 
 
 def convert_single_example(ex_index, example, label_list, max_seq_length,tokenizer):
@@ -717,6 +814,7 @@ def main(_):
       "mnli": MnliProcessor,
       "mrpc": MrpcProcessor,
       "xnli": XnliProcessor,
+      "self": SelfClassifyProcessor
   }
 
   tokenization.validate_case_matches_checkpoint(FLAGS.do_lower_case,
