@@ -331,6 +331,8 @@ class AttrDict(dict):
   def __getattr__(self, item):
     if item in self.__dict__:
       return self.__dict__[item]
+    else:
+      return self[item]
 
 # 使用@property修饰符实现延迟装饰器
 def lazy_property(func):
