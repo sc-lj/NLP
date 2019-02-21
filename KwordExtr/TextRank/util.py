@@ -146,5 +146,243 @@ def sort_sentences(sentences, words, sim_func = get_similarity, pagerank_config 
 
     return sorted_sentences
 
+"""
+关键字提取算法的相关配置
+"""
+from stanfordcorenlp import StanfordCoreNLP
+from nltk.tokenize import regexp_tokenize,word_tokenize
+from nltk.tag import pos_tag
+from nltk.stem import PorterStemmer,LancasterStemmer,RSLPStemmer,SnowballStemmer
+import re,unicodedata
+from contractions import contractions_dict
+
+# 常用名词(单数),常用名词(复数),专有名词(单数),专有名词(复数),形容词或序数词,形容词比较级,形容词最高级,动词基本形式,动词过去式,动名词和现在分词,过去分词,动词非第三人称单数,动词第三人称单数
+ALLOW_SPEECH_TAGS= ['nn', 'nns', 'nnp', 'nnps', 'jj', 'jjr', 'jjs', 'vb', 'vbd', 'vbg', 'vbn', 'vbp', 'vbz']
+
+# ===============保存模型文件路径=======================
+PARAMSFILE="./model/newparams.json"
+LDAFILE="./model/LDA.model"
+VECTORMODELFILE="./model/Vector.model"
+LDAMODELFILE="./model/LdaModel.model"
+STANF_MODULE=StanfordCoreNLP("./stanford-corenlp-full-2018-02-27")
+
+
+def remove_accented_chars(text):
+    """
+    去除英文中的重音字符，如将ě转换成e
+    :param text:
+    :return:
+    """
+    text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode('utf-8', 'ignore')
+    return text
+
+def expand_contractions(text, contraction_mapping=contractions_dict):
+    """
+    扩展缩写，如，don't 转换成do not
+    :param text:
+    :param contraction_mapping:
+    :return:
+    """
+    contractions_pattern = re.compile('({})'.format('|'.join(contraction_mapping.keys())),
+                                      flags=re.IGNORECASE|re.DOTALL)
+    def expand_match(contraction):
+        match = contraction.group(0)
+        first_char = match[0]
+        expanded_contraction = contraction_mapping.get(match)\
+                                if contraction_mapping.get(match)\
+                                else contraction_mapping.get(match.lower())
+        expanded_contraction = first_char+expanded_contraction[1:]
+        return expanded_contraction
+
+    expanded_text = contractions_pattern.sub(expand_match, text)
+    expanded_text = re.sub("'", "", expanded_text)
+    return expanded_text
+
+
+def as_text(v):
+    ## 生成unicode字符串
+    v=v.replace("\u2013",'-')
+    v=v.replace("\u2014","--")
+    table={ord(f):ord(t) for f,t in zip(u"""，‘’“”。！？【】（）％＃＠＆１２３４５６７８９０–""",u""",''"".!?[]()%#@&1234567890-""")}
+    v=v.translate(table)
+    v=remove_accented_chars(v)
+    v=expand_contractions(v)
+    if v is None:
+        return None
+    elif isinstance(v, bytes):
+        return v.decode('utf-8', errors='ignore')
+    elif isinstance(v, str):
+        return v
+    else:
+        raise ValueError('Unknown type %r' % type(v))
+
+
+def readStopFile(path=None):
+    if path is None:
+        path="./enStopwords.txt"
+    with open(path,'r') as f:
+        data=f.readlines()
+    data=[da.strip() for da in data]
+    return data
+
+
+def is_number(chars):
+    try:
+        float(chars) if "." in chars else int(chars)
+        return True
+    except ValueError:
+        return False
+
+
+def filterStopWord(word_seq,stop_words=None,attr_dict=False):
+    """
+    去除停用词
+    :param word_seq:
+    :return:
+    """
+    if stop_words is None:
+        stop_words=readStopFile()
+    seg_words=[]
+    for sent in word_seq:
+        while isinstance(sent,list):
+            seg_words.append(filterStopWord(sent,stop_words=stop_words))
+            break
+        if isinstance(sent,str):
+            if sent not in stop_words:
+                seg_words.append(sent)
+        if isinstance(sent,AttrDict):
+            if sent.word not in stop_words:
+                seg_words.append(sent)
+        if isinstance(sent,tuple):
+            word,pos=sent
+            if word not in stop_words:
+                seg_words.append(AttrDict(word=word,tag=pos))
+
+    return seg_words
+
+
+def filterTagsWord(word_seq,allow_speech_tags=ALLOW_SPEECH_TAGS):
+    """过滤指定词性"""
+    filteredWord=[]
+    for word in word_seq:
+        while isinstance(word,list):
+            filteredWord.append(filterTagsWord(word))
+            break
+
+        if isinstance(word,AttrDict):
+            if word.tag.lower() not in allow_speech_tags:
+                filteredWord.append(word)
+    return filteredWord
+
+class AttrDict(dict):
+    def __init__(self,*args,**kwargs):
+        super(AttrDict,self).__init__(*args,**kwargs)
+        self.__dict__=self
+
+    def __setattr__(self, key, value):
+        if key in self.__dict__:
+            self.__dict__[key]=value
+        else:
+            self[key]=value
+
+    def __getattr__(self, item):
+        if item in self.__dict__:
+            return self.__dict__[item]
+        else:
+            return self[item]
+
+class Segment():
+    def __init__(self,stop_words=None):
+        if stop_words:
+            self.stopWords=stop_words
+        else:
+            self.stopWords=readStopFile()
+
+    def segSentence(self,text,stanford=True):
+        """
+        比较详细的分句和分词，使用nltk中的sent_tokenize不是很完善，所以先用正则分词，在进行合并。
+        :param sentence:
+        :return:
+        """
+        text=as_text(text)
+        reg=re.compile("[\s\t\n ]+")
+        text=reg.sub(" ",text)
+
+        reg_pattern="""(?x)                            # 设置以编写较长的正则条件
+                    (?:(?:(?:[A-Z]\.)+[A-Z]?)(?:\w+))                     # 缩略词 
+                    |\$?\d+(?:[,\.:-])(?:\d+)*%?           # 货币、百分数、比分、时间(H:m)、日期
+                    |Mr\.|Mrs\.|Ms\.
+                    |\w+(?:[-':]\w*)*                   # 用连字符链接的词汇
+                    |\.\.\.                            # 省略符号 
+                    |(?:[.;,"'?(){}:-_`])                # 特殊含义字符 
+                    """
+
+        if stanford:
+            wordseg=STANF_MODULE.word_tokenize(text)
+        else:
+            wordseg=regexp_tokenize(text,reg_pattern)
+        index=0
+        sentences=[]
+        seg_words=[]
+        single_sent=[]
+        for word in wordseg:
+            index+=len(word)
+            single_sent.append(word)
+            if word in ['.',"?","!"]:
+                sentences.append(" ".join(single_sent))
+                seg_words.extend(single_sent)
+                single_sent=[]
+            if len(text)>index and text[index]==' ':
+                index+=1
+        if len(single_sent):
+            sentences.append(" ".join(single_sent))
+            seg_words.extend(single_sent)
+        # 预防最后一句可能没有标点符号结尾
+        return sentences,seg_words
+
+    def segment(self,sentences,stem=False):
+        """
+        对文本进行词性分词,并对词语进行词性过滤和停用词过滤
+        :param text:
+        :return: 返回进行停用词和词性过滤的词组以及返回没有进行任何过滤的词组
+        """
+        if stem:
+            porter_stemmer=PorterStemmer()
+            # 对停用词提取词干
+            self.stopWords=[porter_stemmer.stem(w) for w in self.stopWords]
+        # 先进行分句，在进行分词
+        words=[pos_tag(word_tokenize(s)) for s in sentences]
+        no_filtered_words=[]#没有进行停用词和词性过滤
+        for sent in words:
+            newsent1=[]
+            index=0
+            for w,pos in sent:
+                if stem:
+                    # 提取词干
+                    w=porter_stemmer.stem(w)
+                newsent1.append(AttrDict(word=w.strip().lower(),tag=pos,index=index))
+                index+=1
+            no_filtered_words.append(newsent1)
+        return no_filtered_words
+
+    def filterWord(self,words,is_filter_stop=True,is_filter_tags=False):
+        """
+        :param words: 分好词的序列
+        :param is_filter_stop: 是否过滤停用词
+        :param is_filter_tags: 是否过滤词性
+        :return:
+        """
+        # 过滤停用词
+        if is_filter_stop:
+            words=filterStopWord(words)
+
+        # 按照词性过滤
+        if is_filter_tags:
+            words=filterTagsWord(words)
+
+        return words
+
+
+
 if __name__ == '__main__':
     pass
